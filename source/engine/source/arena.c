@@ -28,6 +28,47 @@ static float attack_events[4][3]; // tick ending, kind (1 pistol/2 punch), targe
 static float damage_events[2]; // health lost during each of the two tics
 static int attack_index=-1;
 
+/* Versioned HuggingDOOM rules. Legacy weapon/feature names remain the policy
+ * ABI; no ordinary Doom player damage or enemy death reaches the renderer. */
+enum { PICNIC_CAP = 256, HUG_TICS = 24, BITE_GRACE_TICS = 24, FINALE_TICS = 70 };
+typedef struct { mobj_t *bear; int kind, born; } picnic_bear_t;
+static picnic_bear_t picnic_bears[PICNIC_CAP];
+static int picnic_count, picnic_next, fed_count, friend_count, bitten_count;
+static int hug_until, bite_until, dizzy_until, ending_at = -1;
+static float picnic_state[11];
+static mobj_t *flowers[80];
+static int cartoon_health(void) { return 100 - bitten_count * 20; }
+static int agm_action_locked(void) { return ending_at >= 0 || tick_count < hug_until; }
+static void make_peaceful(mobj_t *bear, int kind);
+
+static int agm_cartoon_damage(mobj_t *target) {
+    if (target != players[0].mo) return 0;
+    /* A completed hug reserves personal space; impatient neighbours wait.
+     * A bite has a fixed cost and a grace period, even with five neighbours. */
+    if (ending_at >= 0 || tick_count < hug_until || tick_count < bite_until) return 1;
+    bitten_count++;
+    bite_until = tick_count + BITE_GRACE_TICS;
+    dizzy_until = tick_count + 18;
+    int health = cartoon_health();
+    players[0].health = target->health = health > 0 ? health : 1;
+    /* Use Doom's fading damage palette without moving the player's view. */
+    players[0].damagecount = 20;
+    players[0].bonuscount = 0;
+    if (!health) ending_at = tick_count + 1;
+    return 1;
+}
+
+static int agm_wait_for_hug(mobj_t *actor) {
+    if (actor->type != MT_SERGEANT || actor->target != players[0].mo) return 0;
+    if (ending_at < 0 && tick_count >= hug_until) return 0;
+    if (ending_at < 0 && P_AproxDistance(actor->x - players[0].mo->x,
+                                       actor->y - players[0].mo->y) > 150 * FRACUNIT) return 0;
+    actor->frame = (tick_count/6)%2 ? 7 : 3; /* H/D: the impatient foot tap. */
+    actor->momx = actor->momy = 0;
+    A_FaceTarget(actor);
+    return 1;
+}
+
 static void agm_attack_begin(int kind){
     int i=(int)combat_state[6];
     if(i>=4){attack_index=-1;return;}
@@ -75,7 +116,102 @@ static void agm_player_hitscan(const void *m){
     if(attack_index>=0){
         attack_events[attack_index][2]=(float)hitscan_life;
         if(attack_events[attack_index][1]==2)combat_state[8]++;
+        int kind=(int)attack_events[attack_index][1];
+        if(kind==1 || kind==2)make_peaceful((mobj_t *)m,kind);
     }
+}
+
+static void make_peaceful(mobj_t *bear, int kind) {
+    if (bear->health <= 0) return;
+    bear->health = 0;
+    bear->flags &= ~(MF_SOLID | MF_SHOOTABLE | MF_COUNTKILL | MF_JUSTATTACKED);
+    bear->flags |= MF_CORPSE | MF_NOBLOOD;
+    bear->momx = bear->momy = bear->momz = 0;
+    bear->target = 0;
+    bear->state = &states[S_SARG_DIE6];
+    bear->sprite = SPR_SARG;
+    bear->frame = kind == 1 ? 8 : 11;
+    bear->tics = -1;
+    if (picnic_count == PICNIC_CAP) P_RemoveMobj(picnic_bears[picnic_next].bear);
+    else picnic_count++;
+    picnic_bears[picnic_next] = (picnic_bear_t){bear, kind, tick_count + 1};
+    picnic_next = (picnic_next + 1) % PICNIC_CAP;
+    if (kind == 1) fed_count++;
+    else {
+        friend_count++; hug_until = tick_count + 1 + HUG_TICS;
+        /* Hold the embrace in place instead of coasting through the bear. */
+        players[0].mo->momx = players[0].mo->momy = 0;
+    }
+    players[0].killcount = fed_count + friend_count;
+    if (kind == 2) for (int i=0; i<80; i++) {
+        mobj_t *flower=flowers[i];
+        fixed_t dx=flower->x-bear->x,dy=flower->y-bear->y;
+        fixed_t distance=P_AproxDistance(dx,dy);
+        if(distance>0 && distance<110*FRACUNIT) {
+            /* The oversized heart gently nudges nearby flowers, never bodies. */
+            flower->momx=FixedMul(FixedDiv(dx,distance),FRACUNIT/2);
+            flower->momy=FixedMul(FixedDiv(dy,distance),FRACUNIT/2);
+        }
+    }
+}
+
+static void gather_bear(mobj_t *bear, int angle, int radius) {
+    mobj_t *pl=players[0].mo;
+    int a=((pl->angle >> ANGLETOFINESHIFT)+angle)&(FINEANGLES-1);
+    fixed_t x=pl->x+radius*finecosine[a], y=pl->y+radius*finesine[a];
+    /* The known convex arena contains this conservative inner circle. */
+    fixed_t center_distance=P_AproxDistance(x,y);
+    if(center_distance>740*FRACUNIT) {
+        fixed_t scale=FixedDiv(740*FRACUNIT,center_distance);
+        x=FixedMul(x,scale);y=FixedMul(y,scale);
+    }
+    int remain=FINALE_TICS-(tick_count-ending_at);
+    if(remain<1)remain=1;
+    bear->flags &= ~(MF_SOLID | MF_SHOOTABLE | MF_COUNTKILL);
+    P_UnsetThingPosition(bear);
+    bear->x+=(x-bear->x)/remain;bear->y+=(y-bear->y)/remain;
+    P_SetThingPosition(bear);
+    bear->momx=bear->momy=0;bear->tics=-1;
+    bear->angle=R_PointToAngle2(bear->x,bear->y,pl->x,pl->y);
+}
+
+static void update_picnic(void) {
+    for (int i=0; i<picnic_count; i++) {
+        picnic_bear_t *p = picnic_bears + i;
+        int age = tick_count - p->born;
+        p->bear->frame = p->kind == 1 ? (age < 8 ? 8 : 9 + (i % 2))
+                                     : (age < HUG_TICS ? 11 : 12 + (age / 24) % 2);
+    }
+    if (ending_at >= 0) {
+        /* Retained guests also join the harmless gathering, arranged behind
+         * the active bears in staggered rows rather than one overlapping pile. */
+        for(int i=0;i<picnic_count;i++) {
+            int column=i%9,row=i/9;
+            gather_bear(picnic_bears[i].bear,(column-4)*300+(row%2)*150,
+                        180+(row<8?row:8)*35);
+            if(tick_count-ending_at<FINALE_TICS-12)
+                picnic_bears[i].bear->frame=((tick_count+i*2)/5)%4;
+        }
+        /* A broad semicircle stays in front; its centre guest finds the
+         * emergency honey (O). No attack or death thinkers run. */
+        int live_count=0,rank=0;
+        for(int i=0;i<5;i++)if(slots[i] && slots[i]->health>0)live_count++;
+        for (int i=0; i<5; i++) if (slots[i] && slots[i]->health > 0) {
+            mobj_t *bear=slots[i];
+            gather_bear(bear,(rank*2-(live_count-1))*240,110);
+            bear->frame=tick_count-ending_at>FINALE_TICS-12?
+                        (rank==live_count/2?14:9):(tick_count/5)%4;
+            rank++;
+        }
+    }
+    picnic_state[0]=(float)fed_count;picnic_state[1]=(float)friend_count;
+    picnic_state[2]=(float)bitten_count;picnic_state[3]=(float)(5-bitten_count);
+    picnic_state[4]=tick_count<hug_until;picnic_state[5]=ending_at>=0;
+    picnic_state[6]=players[0].ammo[am_clip]==0 && players[0].readyweapon!=wp_fist;
+    picnic_state[7]=(float)picnic_count;
+    picnic_state[8]=ending_at<0?0.f:(float)(tick_count-ending_at)/FINALE_TICS;
+    picnic_state[9]=tick_count<dizzy_until;
+    picnic_state[10]=(float)(ending_at>=0?ending_at:tick_count);
 }
 static float player_x(void){return (float)players[0].mo->x/FRACUNIT;}
 static float player_y(void){return (float)players[0].mo->y/FRACUNIT;}
@@ -136,6 +272,7 @@ static void spawn_opponent(int i,int angle) {
     int idx=angle&(FINEANGLES-1);
     mobj_t *mo=P_SpawnMobj(735*finecosine[idx],735*finesine[idx],ONFLOORZ,MT_SERGEANT);
     mo->health=1;mo->angle=(angle_t)idx*(1u<<ANGLETOFINESHIFT)+ANG180;
+    mo->flags |= MF_NOBLOOD;
     mo->target=players[0].mo;
     P_SetMobjState(mo,mo->info->seestate);
     slots[i]=mo;slot_life[i]=++spawn_serial;wait_tics[i]=0;
@@ -165,7 +302,7 @@ static void draw(void){
     state_t *ps=pl->psprites[ps_weapon].state;
     combat_state[0]=(float)pl->readyweapon;
     combat_state[1]=(pl->pendingweapon!=wp_nochange || ps==&states[wi->upstate] || ps==&states[wi->downstate]);
-    combat_state[2]=(pl->health>0 && !combat_state[1] && ps==&states[wi->readystate] &&
+    combat_state[2]=(!agm_action_locked() && pl->health>0 && !combat_state[1] && ps==&states[wi->readystate] &&
                      (wi->ammo==am_noammo || pl->ammo[wi->ammo]>0));
     memset(sensors,0,sizeof(sensors));
     sensors[5]=rear_wall_clearance();sensors[8]=player_x();sensors[9]=player_y();
@@ -191,7 +328,7 @@ static void draw(void){
         prev_seen[i]=1;prev_life[i]=(int)slot_life[i];prev_distance[i]=distance;
     }
     previous_draw_tic=tick_count;
-    features[9]=(float)players[0].ammo[am_clip];features[10]=(float)players[0].health;
+    features[9]=(float)players[0].ammo[am_clip];features[10]=(float)cartoon_health();
     for(int k=0;k<3;k++)features[11+k]=k==last_action?1.f:0.f;
 }
 unsigned int arena_wad(int n){wad_size=n;wad_data=allocate(n);return (unsigned int)wad_data;}
@@ -206,19 +343,28 @@ void arena_start(unsigned int seed){
     players[0].ammo[am_clip]=26;
     int rotation=(rng()>>16)&(FINEANGLES-1);
     for(int i=0;i<5;i++)spawn_opponent(i,rotation+i*FINEANGLES/5);
+    /* Fixed ornamental placement consumes no gameplay PRNG values. */
+    for(int i=0;i<80;i++) {
+        int a=(i*3131)&(FINEANGLES-1),r=150+(i*83)%530;
+        mobj_t *flower=P_SpawnMobj(r*finecosine[a],r*finesine[a],ONFLOORZ,MT_MISC31);
+        flower->flags &= ~(MF_SOLID | MF_SHOOTABLE | MF_COUNTKILL | MF_SPECIAL);
+        flowers[i]=flower;
+    }
     R_SetViewSize(11,0);
     // Warm pistol presentation and the ticking world before the first observation.
     for(int j=0;j<10;j++){ticcmd_t *c=&netcmds[0][(gametic/ticdup)%BACKUPTICS];memset(c,0,sizeof(*c));G_Ticker();gametic++;maketic++;}
     tick_count=0;last_action=-1;
     memset(combat_state,0,sizeof(combat_state));
     combat_state[3]=combat_state[4]=(float)players[0].health;
+    update_picnic();
     draw();
 }
 /* Episode length in tics (35 per second). 2100 reproduces the one-minute cap of every published result; 0 removes the cap for human and spectator play. */
 static int tick_limit=2100;
 void arena_set_limit(int tics){tick_limit=tics>0?tics:0;}
 int arena_limit(void){return tick_limit;}
-int arena_done(void){return players[0].health<=0 || (tick_limit>0 && tick_count>=tick_limit);}
+int arena_done(void){return (ending_at>=0 && tick_count-ending_at>=FINALE_TICS) ||
+                           (ending_at<0 && tick_limit>0 && tick_count>=tick_limit);}
 void arena_step(int act,int backward,int forward){
     if(act<0||act>3||arena_done())return;
 #ifdef AGM_BITE_AUDIT
@@ -229,24 +375,28 @@ void arena_step(int act,int backward,int forward){
     unsigned nearest_life=(unsigned)sensors[6];
     int aligned=(int)sensors[4],visible_count=(int)sensors[7];
     hitscan_life=0;last_action=act;
-    combat_state[3]=(float)players[0].health;combat_state[5]=combat_state[6]=0;
+    combat_state[3]=(float)cartoon_health();combat_state[5]=combat_state[6]=0;
     damage_events[0]=damage_events[1]=0;attack_index=-1;
     for(int j=0;j<2 && !arena_done();j++){
         ticcmd_t *c=&netcmds[0][(gametic/ticdup)%BACKUPTICS];memset(c,0,sizeof(*c));
         c->angleturn=act==0?512:act==1?-512:0;c->buttons=act==2?BT_ATTACK:0;c->forwardmove=backward?-25:forward?25:0;
-        int before_health=players[0].health;
+        if(agm_action_locked()){c->buttons=0;c->forwardmove=0;}
+        if(ending_at>=0)c->angleturn=0;
+        int before_health=cartoon_health();
         G_Ticker();gametic++;maketic++;tick_count++;
-        int delta=before_health-players[0].health;
+        players[0].bonuscount=0;
+        int delta=before_health-cartoon_health();
         if(delta>0){damage_events[j]=(float)delta;combat_state[5]+=delta;combat_state[9]+=delta;}
         for(int i=0;i<5;i++){
             if(slots[i] && slots[i]->health<=0){
                 if(i==nearest_slot && slot_life[i]==nearest_life)telemetry[7]++;
                 slots[i]=0;wait_tics[i]=90;}
-            else if(!slots[i] && --wait_tics[i]<=0)spawn_opponent(i,(rng()>>16)&(FINEANGLES-1));
+            else if(ending_at<0 && !slots[i] && --wait_tics[i]<=0)spawn_opponent(i,(rng()>>16)&(FINEANGLES-1));
         }
+        update_picnic();
     }
     float displacement=hypot2(player_x()-x0,player_y()-y0);
-    combat_state[4]=(float)players[0].health;
+    combat_state[4]=(float)cartoon_health();
     if(forward){combat_state[10]++;combat_state[11]+=displacement;}
     telemetry[6]+=displacement;
     if(backward){telemetry[0]++;telemetry[1]+=displacement;}
@@ -270,6 +420,7 @@ const float *arena_visible_yaw(void){return visible_yaw;}
 const float *arena_combat(void){return combat_state;}
 const float *arena_attacks(void){return attack_events[0];}
 const float *arena_damages(void){return damage_events;}
+const float *arena_picnic(void){return picnic_state;}
 const float *arena_sensors(void){return sensors;}
 const float *arena_telemetry(void){return telemetry;}
 const unsigned char *arena_frame(void){return doom_get_framebuffer(4);}

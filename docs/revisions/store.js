@@ -1,7 +1,9 @@
+import { loadModelChunk } from '../model/asset-cache.js';
 import { sha256 } from '../shared/sha256.js';
 import { packUrl, siteUrl } from '../shared/site.js';
 import { revisionDiff, diffFileName, nativeDiff, controllerDiff } from './diff.js';
 import { makeHeadPatch } from './patch-codec.js';
+import { REFERENCE } from './reference.js';
 import { TRUST } from './trust.js';
 const MAGIC = new TextEncoder().encode('AGMDNP08');
 const FORMAT = 'agm.browser-weights/1';
@@ -10,6 +12,18 @@ const decoder = new TextDecoder('utf-8', { fatal: true });
 const MAX_HEADER = 8 * 1024 * 1024;
 const copy = (x) => structuredClone(x);
 const hashPattern = /^[0-9a-f]{64}$/;
+/** Model IDs stay portable; simulation evidence is keyed by game rules as well as model/run ID. */
+export function evaluationStorageKey(id) {
+    return REFERENCE.ruleset + ':' + id;
+}
+/** Untagged DOOM-era entries and other environments never supply current-game scores or training credit. */
+export function isCurrentEvaluation(value) {
+    return !!value && typeof value === 'object' && 'ruleset' in value && value.ruleset === REFERENCE.ruleset;
+}
+function markEvaluation(value) {
+    requireThat(value.ruleset === undefined || isCurrentEvaluation(value), 'Evidence belongs to another game ruleset.');
+    return { ...copy(value), ruleset: REFERENCE.ruleset };
+}
 /** Which field of each readout holds its signed codes; every other field must equal the shipped template. */
 const targets = { graft: 'codes', combat: 'codes', facing: 'code' };
 function fail(message, code = 'INVALID_WEIGHTS') {
@@ -134,7 +148,7 @@ async function releaseRevision(base, file, pinned) {
 function builtins() {
     defaults ??= (async () => {
         const original = await record({ precision: 'fp32', parentId: null, ops: [], controller: null }, 'original', 'Original FP32');
-        const shipped = await record({ precision: 'w4', parentId: original.id, ops: TRUST.edited, controller: TRUST.controller }, 'shipped', 'Shipped DNP 4-bit');
+        const shipped = await record({ precision: 'w4', parentId: original.id, ops: TRUST.edited, controller: TRUST.controller }, 'shipped', 'Astra 6 Weight-Space Programming');
         const neutral = await record({ precision: 'w4', parentId: original.id, ops: [], controller: neutralController() }, 'base', '4-bit base · neutral sensor weights');
         const more = await Promise.all(NEUTRAL_RELEASES.map(([, file, id]) => releaseRevision(neutral, file, id)));
         const extra = Object.fromEntries(NEUTRAL_RELEASES.map(([key], i) => [key, more[i]]).filter(([, r]) => r));
@@ -333,9 +347,8 @@ async function networkBase(precision, baseURL, packBaseURL) {
     const manifest = await verifiedManifest(await blobBytes(manifestBlob), precision);
     const chunks = [];
     for (const item of manifest.chunks) {
-        const blob = await fetchBlob(packUrl(precision, item.path, packBaseURL));
-        await chunkEncoding(blob, item);
-        chunks.push(blob);
+        const { bytes } = await loadModelChunk(packUrl(precision, item.path, packBaseURL), item);
+        chunks.push(new Blob([bytes]));
     }
     return { precision, manifestBlob, chunks };
 }
@@ -370,6 +383,7 @@ async function writeSnapshot(tip, lineage, base) {
         effectiveHead(tip),
     ], { type: 'application/octet-stream' });
 }
+// Retain the model database so existing learned weights remain available. Evidence is separately scoped below.
 export async function openRevisionStore({ baseURL = siteUrl('model/'), packBaseURL, dbName = 'agm-dnp-revisions-v1', } = {}) {
     const b = await builtins();
     let db = null;
@@ -441,7 +455,10 @@ export async function openRevisionStore({ baseURL = siteUrl('model/'), packBaseU
         return lineage.reverse();
     }
     async function storeReceipt(database, id, receipt) {
-        await transaction(database, ['receipts'], 'readwrite', (tx) => tx.objectStore('receipts').put({ id, receipt: structuredClone(receipt) }));
+        const marked = receipt && typeof receipt === 'object' && !Array.isArray(receipt)
+            ? markEvaluation(receipt)
+            : copy(receipt);
+        await transaction(database, ['receipts'], 'readwrite', (tx) => tx.objectStore('receipts').put({ id: evaluationStorageKey(id), ruleset: REFERENCE.ruleset, receipt: marked }));
     }
     async function promote({ parentId, ops, controller, name = 'Learned 4-bit', receipt = null }) {
         const database = writable();
@@ -496,7 +513,8 @@ export async function openRevisionStore({ baseURL = siteUrl('model/'), packBaseU
         if (!db)
             return false;
         requireThat(typeof run?.runId === 'string' && run.runId.length > 0, 'A training run needs an ID.');
-        await transaction(db, ['runs'], 'readwrite', (tx) => tx.objectStore('runs').put({ id: run.runId, run: structuredClone(run) }));
+        const marked = markEvaluation(run);
+        await transaction(db, ['runs'], 'readwrite', (tx) => tx.objectStore('runs').put({ id: evaluationStorageKey(run.runId), ruleset: REFERENCE.ruleset, run: marked }));
         return true;
     }
     async function runs() {
@@ -504,15 +522,16 @@ export async function openRevisionStore({ baseURL = siteUrl('model/'), packBaseU
             return [];
         return transaction(db, ['runs'], 'readonly', (tx, done) => {
             const req = tx.objectStore('runs').getAll();
-            req.onsuccess = () => done(req.result.map((x) => x.run));
+            req.onsuccess = () => done(req.result.filter(isCurrentEvaluation).map((x) => x.run));
         });
     }
-    /** The training receipt stored with a promoted revision, if this browser produced it. */
+    /** Current-game evidence only. Old DOOM receipts remain stored but cannot seed scores or training credit. */
     async function receipt(id) {
         if (!db)
             return null;
         try {
-            return (await read(db, 'receipts', id))?.receipt ?? null;
+            const stored = await read(db, 'receipts', evaluationStorageKey(id));
+            return isCurrentEvaluation(stored) ? stored.receipt : null;
         }
         catch {
             return null;
@@ -566,7 +585,8 @@ export async function openRevisionStore({ baseURL = siteUrl('model/'), packBaseU
                     const receipts = tx.objectStore('receipts');
                     for (const d of doomed) {
                         records.delete(d);
-                        receipts.delete(d);
+                        receipts.delete(evaluationStorageKey(d));
+                        receipts.delete(d); // Also remove the historical receipt when its model is explicitly deleted.
                     }
                     done({ removed: doomed, latestId });
                 };

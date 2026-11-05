@@ -4,10 +4,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="theme-color" content="#f8f8f6">
+    <meta name="theme-color" content="#fffcf5">
     <meta name="description"
-        content="Watch a quantized Kumo Small model play DOOM, fine-tune its four-bit weights in your browser with EvoWeights, evolutionary weight-space fine-tuning on the CPU.">
-    <title>EvoWeights · Evolutionary Weight-Space Fine-Tuning</title>
+        content="Play HuggingDOOM, or watch a quantized Kumo Small model learn, fine-tune its four-bit weights in your browser with EvoWeights, evolutionary weight-space fine-tuning on the CPU.">
+    <title>HuggingDOOM · EvoWeights</title>
     <link rel="canonical" href="https://kyr0.github.io/evoweights/">
     <link rel="icon" href="./assets/evoweights-logo.svg" type="image/svg+xml">
     <script src="./theme.js"></script>
@@ -20,23 +20,23 @@
     <link rel="stylesheet" href="./styles/hero-evolution.css">
     <link rel="stylesheet" href="./assets/defuss-shadcn/data-grid.css">
     <link rel="stylesheet" href="./styles/revisions-panel.css">
+    <link rel="stylesheet" href="./styles/huggingdoom.css">
 </head>
 
 <body class="portal-page" id="top">
     <a class="skip-link" href="#main">Skip to content</a>
-    <header class="mk-header portal-header">
+    <header class="mk-header portal-header" data-variant="floating">
         <div class="mk-header-inner">
             <a href="#top" class="mk-header-brand" aria-label="EvoWeights home"><img src="./assets/evoweights-logo.svg"
-                    width="32" height="32" alt=""><span class="mk-header-names"><span
+                    width="48" height="48" alt=""><span class="mk-header-names"><span
                         class="mk-header-name">Evo<span>Weights</span></span><span class="mk-header-byline">by Aron
                         Homberg</span></span></a>
             <nav class="mk-header-nav portal-nav" aria-label="Primary">
                 <ul class="nav-menu-list">
-                    <li class="nav-menu-item"><a class="nav-menu-link" href="#arena">Browser-based CPU training</a></li>
-                    <li class="nav-menu-item"><a class="nav-menu-link" href="#model-tree">Model inheritance tree</a>
+                    <li class="nav-menu-item"><a class="nav-menu-link" href="#arena">Play &amp; train</a></li>
+                    <li class="nav-menu-item"><a class="nav-menu-link" href="#model-tree">Model tree</a>
                     </li>
-                    <li class="nav-menu-item"><a class="nav-menu-link" href="#explore-weights">Model weights
-                            explorer</a></li>
+                    <li class="nav-menu-item"><a class="nav-menu-link" href="#explore-weights">Weight explorer</a></li>
                 </ul>
             </nav>
             <div class="mk-header-actions"><a class="btn paper-nav repo-nav" data-variant="ghost" data-size="sm"
@@ -51,15 +51,7 @@
                         <path
                             d="M1.4446 11.5059c0 1.1021.1673 2.1585.4847 3.1563-.0378-.0028-.0691-.0058-.1058-.0058-.4209 0-.8015.16-1.0704.4512-.3454.3737-.4984.8335-.4316 1.293a1.576 1.576 0 0 0 .2148.5978c-.2319.1864-.4018.4456-.4844.7578-.0646.2448-.131.7543.2149 1.2794a1.4552 1.4552 0 0 0-.0625.1055c-.208.3923-.2207.8372-.0371 1.25.2783.6258.9696 1.1175 2.3126 1.6467.8356.3292 1.5988.5411 1.6056.543 1.1046.2847 2.104.4277 2.969.4277 1.4173 0 2.4754-.3849 3.1525-1.1446 1.538.2651 2.791.1403 3.592.006.6773.7555 1.7332 1.1387 3.1467 1.1387.8649 0 1.8643-.143 2.969-.4278.0068-.0019.77-.2138 1.6056-.543 1.343-.5292 2.0343-1.0208 2.3126-1.6466.1836-.4129.171-.8577-.037-1.25a1.4685 1.4685 0 0 0-.0626-.1056c.346-.525.2795-1.0346.2149-1.2793-.0826-.3122-.2525-.5714-.4844-.7579.11-.1816.1831-.3788.2148-.5977.0669-.4595-.0862-.9193-.4316-1.293-.2688-.2913-.6495-.4513-1.0704-.4513-.0209 0-.0376.0008-.0588.0018.3162-.9966.4846-2.0518.4846-3.1523 0-5.807-4.7362-10.5144-10.5789-10.5144-5.8426 0-10.5788 4.7073-10.5788 10.5144Zm10.5788-9.4831c5.2727 0 9.5476 4.246 9.5476 9.483a9.4201 9.4201 0 0 1-.2696 2.2365c-.0039-.0047-.0079-.011-.0117-.0156-.274-.3255-.6679-.5059-1.1075-.5059-.352 0-.714.1155-1.0763.3438-.2403.1517-.5058.422-.7793.7598-.2534-.3492-.608-.5832-1.0137-.6465a1.5174 1.5174 0 0 0-.2344-.0176c-.9263 0-1.4828.7993-1.6935 1.5177-.1046.2426-.6065 1.3482-1.3614 2.0978-1.1681 1.1601-1.4458 2.3534-.8396 3.6382-.843.1029-1.5836.0927-2.365-.006.5906-1.212.3626-2.4388-.8426-3.6322-.755-.7496-1.2568-1.8552-1.3614-2.0978-.2107-.7184-.7673-1.5177-1.6935-1.5177-.078 0-.1568.0054-.2344.0176-.4057.0633-.7604.2973-1.0137.6465-.2735-.3379-.539-.6081-.7794-.7598-.3622-.2283-.7243-.3438-1.0762-.3438-.4266 0-.8094.171-1.0821.4786a9.4208 9.4208 0 0 1-.2598-2.1936c0-5.237 4.2749-9.483 9.5475-9.483zM8.6443 7.0036c-.4838.0043-.9503.2667-1.1934.7227-.3536.6633-.1006 1.4873.5645 1.84.351.1862.4883-.5261.836-.6485.3107-.1095.841.399 1.0078.086.3536-.6634.1025-1.4874-.5625-1.84a1.3659 1.3659 0 0 0-.6524-.1602Zm6.8403 0c-.2199-.002-.4426.05-.6504.1602-.665.3526-.9181 1.1766-.5645 1.84.1669.313.6971-.1955 1.0079-.086.3476.1224.4867.8347.838.6485.6649-.3527.916-1.1767.5624-1.84-.243-.456-.7096-.7184-1.1934-.7227Zm-9.7565 1.418a.8768.8768 0 0 0-.877.877c0 .4846.3925.877.877.877a.8768.8768 0 0 0 .877-.877.8768.8768 0 0 0-.877-.877zm12.6434 0c-.4845 0-.879.3925-.879.877 0 .4846.3945.877.879.877a.8768.8768 0 0 0 .877-.877.8768.8768 0 0 0-.877-.877zM8.7927 11.459c-.179-.003-.2793.1107-.2793.416 0 .8097.3874 2.125 1.4279 2.924.207-.7123 1.3453-1.2832 1.5079-1.2012.2315.1167.2191.4417.6074.7266.3884-.285.374-.6098.6056-.7266.1627-.082 1.3009.4889 1.5079 1.2012 1.0404-.799 1.4278-2.1144 1.4278-2.924 0-1.2212-1.583.6402-3.5413.6485-1.4686-.0061-2.7266-1.0558-3.2639-1.0645zM4.312 14.4768c.5792.365 1.6964 2.2751 2.1056 3.0177.1371.2488.371.3536.582.3536.4188 0 .7465-.4138.0391-.9395-1.0636-.791-.6914-2.0846-.1836-2.1642a.4302.4302 0 0 1 .0664-.004c.4616 0 .666.7892.666.7892s.5959 1.4898 1.6213 2.508c.942.9356 1.062 1.703.4961 2.6661-.0164-.004-.0159.0236-.1484.2149-.1853.2673-.4322.4688-.7188.6152-.5062.2269-1.1397.2696-1.7833.2696-1.037 0-2.1017-.1824-2.6975-.336-.0293-.0075-3.6505-.9567-3.1916-1.8224.0771-.1454.2033-.2031.3633-.2031.6463 0 1.823.9551 2.3283.9551.113 0 .196-.0865.2285-.2031.2249-.8045-3.2787-1.0522-2.9846-2.1642.0519-.1967.193-.2757.3907-.2754.854 0 2.7704 1.4923 3.172 1.4923.0307 0 .0525-.0085.0645-.0274.2012-.3227.1096-.5865-1.3087-1.4395-1.4182-.8533-2.4315-1.329-1.8653-1.9416.0651-.0707.1574-.1015.2695-.1015.8611.0002 2.8948 1.84 2.8948 1.84s.5487.5683.8809.5683c.0762 0 .1416-.0315.1855-.1054.2355-.3946-2.1858-2.2183-2.3224-2.971-.0926-.51.0641-.7676.3555-.7676-.0006.008.1701-.0285.4942.1759zm16.2257.5918c-.1366.7526-2.5579 2.5764-2.3224 2.9709.044.074.1092.1055.1855.1055.3321 0 .881-.5684.881-.5684s2.0336-1.8397 2.8947-1.84c.1121 0 .2044.0308.2695.1016.5662.6125-.447 1.0882-1.8653 1.9415-1.4183.853-1.51 1.1168-1.3087 1.4396.012.0188.0337.0273.0644.0273.4016 0 2.3181-1.4923 3.1721-1.4923.1977-.0002.3388.0787.3907.2754.294 1.112-3.2095 1.3597-2.9846 2.1642.0325.1166.1156.2032.2285.2032.5054 0 1.682-.9552 2.3283-.9552.16 0 .2862.0577.3633.2032.459.8656-3.1623 1.8149-3.1916 1.8224-.5958.1535-1.6605.336-2.6975.336-.6351 0-1.261-.0409-1.7638-.2599-.2949-.1472-.5488-.3516-.7383-.625-.0411-.0682-.1026-.1476-.1426-.205-.5726-.9679-.455-1.7371.4903-2.676 1.0254-1.0182 1.6212-2.508 1.6212-2.508s.2044-.7891.666-.7891a.4318.4318 0 0 1 .0665.0039c.5078.0796.88 1.3732-.1836 2.1642-.7074.5257-.3797.9395.039.9395.211 0 .445-.1047.5821-.3535.4092-.7426 1.5264-2.6527 2.1056-3.0178.5588-.3524.99-.1816.8497.5918z" />
                     </svg>Models <span aria-hidden="true">↗</span></a>
-                <button class="btn theme-button" data-variant="ghost" data-size="icon" type="button"
-                    data-portal-theme-toggle aria-label="Toggle dark appearance" aria-pressed="false">
-                    <svg class="sun-icon" aria-hidden="true" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="4" />
-                        <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4 19 5" />
-                    </svg>
-                    <svg class="moon-icon" aria-hidden="true" viewBox="0 0 24 24">
-                        <path d="M20.4 14.6a8 8 0 0 1-11-11A8.9 8.9 0 1 0 20.4 14.6Z" />
-                    </svg></button>
+
             </div>
         </div>
     </header>
@@ -70,26 +62,24 @@
                         for efficient AI model fine-tuning</span>
                     <h1 class="mk-hero-title" id="hero-title">Evo<em>Weights.</em></h1>
                     <p class="mk-hero-sub">(R-)Evolutionary Weight-Space Fine-Tuning</p>
-                    <p class="mk-hero-desc"><b>EvoWeights</b> is a novel fine-tuning method inspired by natural
-                        selection. Tell a frontier AI model capable of <a
-                            href="https://en.wikipedia.org/wiki/Weight-space_programming">Weight-Space Programming</a>
-                        what “survival” means for a measurable task. It prepares an AI model (<a
-                            href="https://huggingface.co/nvidia/Kumo-Tabular">NVIDIA Kumo-Tabular Small</a> in this
-                        experiment) weights and adapts the EvoWeights algorithm to the task. EvoWeights then evolves the
-                        model by directly (w/o an AI model) mutating selected quantized weights toward better
-                        performance.</p>
-                    <p class="mk-hero-desc pt-2">In minutes, mutated candidate models compete in thousands of simulated
-                        situations, but only statistically supported improvements survive.</p>
-                    <p class="mk-hero-desc pt-2"><b>No backpropagation, no gradients, no GPU, and no conventional
-                            training dataset required. Just CPU inference, a few examples, and task-specific selection
-                            metrics.</b></p>
-                    <p class="mk-hero-desc pt-2">Watch a 27M-parameter model evolve to play DOOM, live in your browser.
-                    </p>
-                    <div class="mk-hero-actions"><span class="aura aura-gold hero-aura"><a class="btn portal-primary"
+                    <p class="mk-hero-desc"><b>EvoWeights combines AI-engineered weight-space programming with evolutionary
+                            weight-space fine-tuning of quantized model weights.</b> Define a measurable goal. A frontier AI model
+                        helps prepare the model, task interface using weight-space programming, and evaluation criteria. EvoWeights then searches for
+                        better weight configurations through mutation and selection, without further LLM calls.</p>
+                    <p class="mk-hero-desc pt-2">In this experiment, it adapts <a
+                            href="https://huggingface.co/nvidia/Kumo-Tabular">NVIDIA Kumo-Tabular Small</a> by evolving
+                        selected output weights and sensor-controller weights while keeping the transformer backbone
+                        frozen. Candidates compete through simulated gameplay; new revisions are retained only after
+                        passing fresh-seed validation and lineage checks.</p>
+                    <p class="mk-hero-desc pt-2"><b>No backpropagation or GPU is required for browser training.</b>
+                        The model uses 96 labelled examples as context; simulated gameplay supplies the optimization
+                        feedback.</p>
+                    <p class="mk-hero-desc pt-2">Watch a 27M-parameter model adapt to a DOOM arena, live on your CPU.</p>
+                    <div class="mk-hero-actions"><span class="hero-aura"><a class="btn portal-primary"
                                 data-size="lg" href="#arena"><span aria-hidden="true">▶</span> Train this model
-                                in-browser</a></span><span class="aura aura-rainbow hero-aura"><a class="btn hero-play"
+                                in-browser</a></span><span class="hero-aura"><a class="btn hero-play"
                                 data-size="lg" href="#arena"><span aria-hidden="true">▶</span> Let AI Play
-                                DOOM</a></span><a class="btn" data-variant="outline" data-size="lg"
+                                HuggingDOOM</a></span><a class="btn" data-variant="outline" data-size="lg"
                             href="#architecture">How it works <span aria-hidden="true">↓</span></a><a class="btn"
                             data-variant="outline" data-size="lg" href="#use-cases">See Use Cases <span
                                 aria-hidden="true">↓</span></a></div>
@@ -109,7 +99,7 @@
                                     <circle cx="9" cy="12" r="3" />
                                     <path d="M15 10h3M15 14h3M5 18v3" />
                                 </svg></span>
-                            <div><s>VRAM</s><small>EvoWeights mutates model weights directly: no backprop, no gradients,
+                            <div><s>VRAM</s><small>EvoWeights mutates model weights directly: no backpropagation,
                                     no Adam/Muon optimizer.</small></div>
                         </li>
                         <li class="vs-card vs-no"><span class="vs-no-icon"><svg class="evo-icon" viewBox="0 0 24 24"
@@ -118,8 +108,8 @@
                                     <path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5" />
                                     <path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" />
                                 </svg></span>
-                            <div><s>Training data</s><small>We just define target metrics for survival, kills, ammo and
-                                    health. 96 example rows serve as context only.</small></div>
+                            <div><s>Large labelled dataset</s><small>96 labelled example rows serve as context.
+                                    Simulated gameplay supplies the optimization feedback.</small></div>
                         </li>
                         <li class="vs-card vs-no"><span class="vs-no-icon"><svg class="evo-icon" viewBox="0 0 24 24"
                                     aria-hidden="true">
@@ -133,9 +123,8 @@
                 <div class="hero-visual">
                     <div class="hero-bubble aura aura-glow">
                         <div class="bubble-ink">
-                            <p class="shape-message">Beats Astra 6 and Opus 5.5 at <a
-                                    href="https://en.wikipedia.org/wiki/Weight-space_programming">Weight-Space
-                                    Programming</a>! <br /><br /><strong style="color:#cc0000">Runs fast on your CPU for
+                            <p class="shape-message">Outperforms tested frontier-model weight edits in this experiment
+                                <strong>Runs fast on your CPU for
                                     free!</strong></p>
                         </div>
                     </div><!-- evo-plate -->
@@ -147,8 +136,11 @@
                         <div class="evo-stage"><canvas data-evo="canvas" role="img"
                                 aria-label="Schematic animation: a parent model’s four-bit weights spawn six mutants with a few weights raised or lowered. The mutants race on a metric; the three best are finalists, and the best finalist or the crossing of all three becomes the candidate. The candidate replaces the parent only when it passes validation against the parent on fresh seeds (paired t of at least 2).">A
                                 parent model spawns mutants; the best candidate replaces it only after it passes
-                                validation against the parent.</canvas><button data-evo="repeat"
-                                class="evo-slow evo-repeat" type="button" hidden>↺ Repeat the evolution</button></div>
+                                validation against the parent.</canvas><div class="evo-complete" data-evo="complete" role="status" hidden>
+                                <strong>Local optimum reached</strong>
+                                <p data-evo="completion-detail"></p>
+                                <button data-evo="repeat" class="evo-slow evo-repeat" type="button" hidden>↺ Repeat the evolution</button>
+                            </div></div>
                         <ol data-evo="lineage" class="evo-lineage" aria-label="Line of models" aria-live="polite"></ol>
                         <figcaption><span><i class="up"></i> Weight raised</span><span><i class="down"></i> Weight
                                 lowered</span><span>Mutants <b data-evo="tried">0</b></span><span>Kept <b
@@ -170,8 +162,8 @@
                                     <rect x="2" y="7" width="20" height="9" rx="1" />
                                     <path d="M6 10v3M10 10v3M14 10v3M18 10v3M5 16v3M19 16v3" />
                                 </svg>
-                                <div><b>Uses System RAM</b><small>About 140 MB per parallel game for this model.
-                                        Training doesn't need more RAM than inference.</small></div>
+                                <div><b>Uses System RAM</b><small>About 140 MB per parallel game; total memory grows
+                                        with the number of workers.</small></div>
                             </div>
                         </li>
                         <li class="vs-card">
@@ -191,22 +183,24 @@
                                     <path d="M14 17.5h7M17.5 14v7" />
                                 </svg>
                                 <div><b><a href="https://en.wikipedia.org/wiki/Weight-space_programming">Weight-Space
-                                            Programming</a></b><small>An AI agent’s direct edit sets the start;
-                                        evolution mutates the AI model’s weights into a local optimum.</small></div>
+                                            Programming</a></b><small>An AI agent prepares the task interface and search
+                                        space; evolution searches for better weight configurations.</small></div>
                             </div>
                         </li>
                     </ul>
                 </div>
             </section>
-            <section class="evo-steps" aria-labelledby="evo-steps-title">
+            <section class="evo-steps bear-decorated" aria-labelledby="evo-steps-title">
+                <img class="section-bear section-bear-right" src="assets/huggingdoom/bear-A.png" width="96" height="96"
+                    alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false" style="--bear-angle:10deg">
                 <h2 class="evo-steps-title portal-eyebrow" id="evo-steps-title"><b>00</b> EvoWeights in three steps</h2>
                 <ol class="evo-flow">
                     <li><span class="evo-num">1</span><svg class="evo-icon" viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M12 14l4-4" />
                             <path d="M3.3 19a9 9 0 1 1 17.4 0" />
                         </svg><b>Define survival</b>
-                        <p>A metric decides what “survival” means for a decidable task, plus a second goal that may not
-                            get worse.</p>
+                        <p>A metric decides what “survival” means for a decidable task. A secondary metric is checked
+                            for deterioration before a candidate is retained.</p>
                     </li>
                     <li><span class="evo-num">2</span><svg class="evo-icon" viewBox="0 0 24 24" aria-hidden="true">
                             <rect x="8" y="8" width="13" height="13" rx="2" />
@@ -219,22 +213,21 @@
                             <circle cx="12" cy="12" r="9" />
                             <path d="m8 12 3 3 5-6" />
                         </svg><b>Select and inherit</b>
-                        <p>A new generation is kept only when it is clearly better than the current one, by a margin
-                            that luck alone rarely produces. Then the cycle repeats.</p>
+                        <p>Only candidates that pass the statistical selection checks are retained. Then the cycle
+                            repeats.</p>
                     </li>
                 </ol>
             </section>
-            <section id="arena" class="portal-section" aria-labelledby="arena-title">
+            <section id="arena" class="portal-section bear-decorated" aria-labelledby="arena-title">
+                <img class="section-bear section-bear-left" src="assets/huggingdoom/bear-G.png" width="96" height="96"
+                    alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false" style="--bear-angle:-12deg">
                 <div class="chapter-heading">
                     <div>
                         <div class="portal-eyebrow"><b>01</b> Live experiment</div>
-                        <h2 id="arena-title">Adapting An AI Model To Become Good At Playing DOOM</h2>
+                        <h2 id="arena-title">HuggingDOOM</h2>
                     </div><span class="chapter-meta"><i class="signal-dot"></i> BROWSER INFERENCE</span>
                 </div>
-                <p class="section-lead"><a href="https://huggingface.co/nvidia/Kumo-Tabular">NVIDIA Kumo-Tabular
-                        Small</a> is a general-purpose tabular classifier, not made for games: the original FP32 model
-                    plays poorly. EvoWeights turns it into a decent DOOM player by mutating it thousands of times and
-                    keeping only clearly better generations, live in your browser.</p>
+                <p class="section-lead">Hungry yellow bears who love honey. 26 honeycombs in your hand. What could go wrong...? :)</p>
                 <div class="lab-ui arena-instrument">
                     <div class="arena-layout">
                         <div class="stage-col">
@@ -261,46 +254,46 @@
                                             id="backend-detail"></small><span class="rate-label">Decisions/sec</span>
                                         <output id="decision-rate"
                                             title="Model decisions per second: the live game, or all training games together">—</output>
-                                    </p><button id="download-recording" class="tool-button" disabled
+                                    </p><button id="picnic-sound" class="tool-button" type="button" title="Mute or unmute the picnic sounds">Sound on</button><button id="download-recording" class="tool-button" disabled
                                         title="Every game is recorded; only the latest game is kept, in memory">⤓
                                         Download<span class="tb-long"> recording</span></button><button id="full"
                                         class="tool-button" title="Fullscreen" aria-label="Fullscreen">⛶<span
                                             class="tb-long"> Fullscreen</span></button>
                                 </div>
                                 <div class="viewport" id="viewport"><canvas width="320" height="200" id="screen"
-                                        aria-label="First-person view of the live DOOM arena"></canvas>
+                                        aria-label="First-person view of HuggingDOOM, a meadow full of friendly yellow bears" tabindex="0"></canvas>
                                     <div class="overlay" id="overlay">
                                         <div class="overlay-inner"><span class="overline" id="overlay-eyebrow">CHOOSE A
                                                 MODEL</span>
+                                            <p class="picnic-summary" id="picnic-summary" hidden></p>
                                             <div class="pick" id="pick">
                                                 <div class="pick-grid">
                                                     <article class="pick-card"
                                                         data-ref="0fe39052668a65c27f2170fb67a73e8fd93fbb6b12ca7ac16bac75a566b8b2a0">
-                                                        <h3>Base Model FP32</h3>
-                                                        <p>Received no training: the original classifier, guided only by
-                                                            96 demonstration rows.</p>
+                                                        <h3><strong>ORIGINAL</strong><br />Base Model FP32</h3>
+                                                        <p>Original pretrained FP32 model, without task-specific weight
+                                                            updates, guided by 96 demonstration rows.</p>
                                                         <div class="pick-meter" hidden
-                                                            title="48 fixed reference games: full bar = best of these five models; % = change against Base Model FP32">
+                                                            title="48 fixed HuggingDOOM games: full bar = best measured model; % = change against Original FP32">
                                                             <div><span>Survival</span><i><b data-k="tics"></b></i><em
                                                                     data-k="tics"></em></div>
-                                                            <div><span>Kills</span><i><b data-k="kills"></b></i><em
+                                                            <div><span>Hugs</span><i><b data-k="kills"></b></i><em
                                                                     data-k="kills"></em></div>
                                                         </div><button class="launch" data-pick="original"><span
                                                                 aria-hidden="true">▶</span> Let it play</button><button
-                                                            type="button" class="pick-explore" disabled
-                                                            title="The weight explorer compares 4-bit models; this is the unquantized FP32 original.">Explore
+                                                            type="button" class="pick-explore" data-explore="original"
+                                                            title="Compare original FP32 weights with their 4-bit quantization and model edits.">Explore
                                                             Weights</button>
                                                     </article>
                                                     <article class="pick-card"
                                                         data-ref="4155d4d47c55fee231ca021b15fe4b1a347858642b5409b19292eba7ad0647aa">
-                                                        <h3>EvoWeights Terminator</h3>
-                                                        <p>Trained in-browser using EvoWeights and on CPU to terminate as many monsters as
-                                                            possible.</p>
+                                                        <h3>EvoWeights Hugginator</h3>
+                                                        <p>An archived DOOM model optimized for its original completion metric. See its measured HuggingDOOM performance below.</p>
                                                         <div class="pick-meter" hidden
-                                                            title="48 fixed reference games: full bar = best of these five models; % = change against Base Model FP32">
+                                                            title="48 fixed HuggingDOOM games: full bar = best measured model; % = change against Original FP32">
                                                             <div><span>Survival</span><i><b data-k="tics"></b></i><em
                                                                     data-k="tics"></em></div>
-                                                            <div><span>Kills</span><i><b data-k="kills"></b></i><em
+                                                            <div><span>Hugs</span><i><b data-k="kills"></b></i><em
                                                                     data-k="kills"></em></div>
                                                         </div><span class="aura aura-rainbow pick-aura"><button
                                                                 class="launch" data-pick="terminator"><span
@@ -311,13 +304,13 @@
                                                     </article>
                                                     <article class="pick-card"
                                                         data-ref="35cee4df42e2fbde0aac21008cf0e870b016218003a59e91cb7ff772f8a618f1">
-                                                        <h3>EvoWeights Survivor</h3>
-                                                        <p>Trained in-browser using EvoWeights and on CPU to survive as long as possible.</p>
+                                                        <h3>EvoWeights Introvertor</h3>
+                                                        <p>An archived DOOM model optimized for survival. Try transferring its learned behavior to this meadow.</p>
                                                         <div class="pick-meter" hidden
-                                                            title="48 fixed reference games: full bar = best of these five models; % = change against Base Model FP32">
+                                                            title="48 fixed HuggingDOOM games: full bar = best measured model; % = change against Original FP32">
                                                             <div><span>Survival</span><i><b data-k="tics"></b></i><em
                                                                     data-k="tics"></em></div>
-                                                            <div><span>Kills</span><i><b data-k="kills"></b></i><em
+                                                            <div><span>Hugs</span><i><b data-k="kills"></b></i><em
                                                                     data-k="kills"></em></div>
                                                         </div><span class="aura aura-rainbow pick-aura"><button
                                                                 class="launch" data-pick="survivor"><span
@@ -332,10 +325,10 @@
                                                         <p>A fresh Claude Opus 5.5 agent wrote the sensor weights
                                                             directly, without seeing earlier values.</p>
                                                         <div class="pick-meter" hidden
-                                                            title="48 fixed reference games: full bar = best of these five models; % = change against Base Model FP32">
+                                                            title="48 fixed HuggingDOOM games: full bar = best measured model; % = change against Original FP32">
                                                             <div><span>Survival</span><i><b data-k="tics"></b></i><em
                                                                     data-k="tics"></em></div>
-                                                            <div><span>Kills</span><i><b data-k="kills"></b></i><em
+                                                            <div><span>Hugs</span><i><b data-k="kills"></b></i><em
                                                                     data-k="kills"></em></div>
                                                         </div><button class="launch" data-pick="opus"><span
                                                                 aria-hidden="true">▶</span> Let it play</button><button
@@ -345,13 +338,13 @@
                                                     <article class="pick-card"
                                                         data-ref="6fb55175e0733867df890e035ce92b0edb20ae2b5f7e75fc11f04b0c34d321ae">
                                                         <h3>Astra 6 Weight-Space Programming</h3>
-                                                        <p>OpenAI Astra 6 edited 256 FIRE-row weights and wrote the
+                                                        <p>OpenAI Astra 6 edited 256 action-row weights and wrote the
                                                             sensor weights directly, without training.</p>
                                                         <div class="pick-meter" hidden
-                                                            title="48 fixed reference games: full bar = best of these five models; % = change against Base Model FP32">
+                                                            title="48 fixed HuggingDOOM games: full bar = best measured model; % = change against Original FP32">
                                                             <div><span>Survival</span><i><b data-k="tics"></b></i><em
                                                                     data-k="tics"></em></div>
-                                                            <div><span>Kills</span><i><b data-k="kills"></b></i><em
+                                                            <div><span>Hugs</span><i><b data-k="kills"></b></i><em
                                                                     data-k="kills"></em></div>
                                                         </div><button class="launch" data-pick="shipped"><span
                                                                 aria-hidden="true">▶</span> Let it play</button><button
@@ -361,11 +354,10 @@
                                                 </div>
                                                 <hr>
                                                 <div class="pick-bottom">
-                                                    <article class="pick-card pick-you">
-                                                        <h3>Play yourself</h3>
-                                                        <p>Can you beat The Terminator AI at playing DOOM?</p><button
-                                                            id="pick-human" class="launch"><span
-                                                                aria-hidden="true">▶</span> Play yourself</button>
+                                                    <article class="pick-card picnic-welcome">
+                                                        <div><img src="assets/huggingdoom/honeycomb.png" width="32" height="32" alt="" aria-hidden="true"><h3>Honey first. Panic-hugging next.</h3></div>
+                                                        <p>Walk through the flowers. Feed the bears. Make a very silly picnic.</p>
+                                                        <button id="pick-human" class="launch"><span aria-hidden="true">▶</span> Play yourself</button>
                                                     </article>
                                                     <article class="pick-card pick-own" id="pick-own"
                                                         aria-live="polite">
@@ -378,16 +370,23 @@
                                                 id="progress" max="100" value="0" hidden></progress>
                                         </div>
                                     </div>
+                                    <div id="training-overlay" class="training-overlay" role="status" aria-live="off"
+                                        title="Combined simulation speed across all training cores" hidden>Training...</div>
                                     <div class="overlay-tag" id="stage-mode">Preview frame</div>
                                 </div>
-                                <p class="keys-hint" id="keys-hint" hidden>Keyboard: ← → or A D turn · ↑ ↓ or W S move ·
-                                    Space, Alt or Ctrl attack. Episodes are not time-limited; only training games have a
-                                    time cap.</p>
-                                <div class="stats">
-                                    <div><small>HEALTH</small><strong id="health">—</strong></div>
-                                    <div><small>AMMO</small><strong id="ammo">—</strong></div>
-                                    <div><small>KILLS</small><strong id="kills">—</strong></div>
-                                    <div><small>GAME TIME</small><strong id="game-time">0:00</strong></div>
+                                <p class="keys-hint" id="keys-hint" hidden>← → or A D turn · ↑ ↓ or W S walk · hold Space, Alt or Ctrl to toss honey / hug. Five hearts. No timer. No model download for human play.</p>
+                                <div id="touch-controls" class="picnic-touch" role="group" hidden aria-label="Touch controls">
+                                    <button type="button" data-control="left" aria-label="Turn left">↶</button><button type="button" data-control="forward" aria-label="Walk forward">↑</button><button type="button" data-control="backward" aria-label="Walk backward">↓</button><button type="button" data-control="right" aria-label="Turn right">↷</button><button type="button" data-control="fire">Honey / Hug</button>
+                                </div>
+                                <p id="picnic-mode" class="picnic-mode" role="status"></p>
+                                <div class="stats picnic-stats">
+                                    <div class="picnic-hearts"><small>HEARTS</small><strong id="health" role="img" aria-label="No hearts yet">—</strong></div>
+                                    <div><small>HONEYCOMBS</small><strong id="ammo">—</strong></div>
+                                    <div><small>BEARS FED</small><strong id="bears-fed">—</strong></div>
+                                    <div><small>BEARS BEFRIENDED</small><strong id="bears-befriended">—</strong></div>
+                                    <div><small>TIMES BITTEN</small><strong id="times-bitten">—</strong></div>
+                                    <div><small>PICNIC TIME</small><strong id="game-time">0:00</strong></div>
+                                    <output id="kills" hidden aria-label="Total hugs">—</output>
                                 </div>
                             </div>
                             <div class="telemetry-row">
@@ -395,18 +394,18 @@
                                     <h3 id="logits-title">Action logits</h3>
                                     <div id="logits" class="logits"></div><small class="caption" id="timing">Awaiting
                                         first inference</small>
-                                    <div class="maneuver"><span id="maneuver">—</span><small id="range">No threat
-                                            telemetry yet</small></div>
+                                    <div class="maneuver"><span id="maneuver">—</span><small id="range">Bear sensors
+                                            awaiting a game</small></div>
                                 </section>
-                                <section class="tele-card mask-card" aria-label="Monster mask">
+                                <section class="tele-card mask-card" aria-label="Bear mask">
                                     <div class="sensor">
-                                        <div><span>MONSTER MASK</span><span>9 REGIONS</span></div>
-                                        <div id="regions" aria-label="Horizontal monster occupancy"></div>
+                                        <div><span>BEAR MASK</span><span>9 REGIONS</span></div>
+                                        <div id="regions" aria-label="Horizontal bear occupancy"></div>
                                     </div>
                                 </section>
                                 <section class="tele-card state-card" aria-labelledby="state-title">
-                                    <h3 id="state-title">Combat state</h3>
-                                    <div class="combat-sensor"><span id="weapon">Weapon · —</span><span
+                                    <h3 id="state-title">Picnic state</h3>
+                                    <div class="combat-sensor"><span id="weapon">Honey / Hugs · —</span><span
                                             id="intent">Memory · —</span></div>
                                     <div id="guard-status" class="guard-read">Facing guard · awaiting first decision
                                     </div>
@@ -430,7 +429,7 @@
                                 <dl class="revision-facts" hidden>
                                     <div>
                                         <dt>Playing</dt>
-                                        <dd id="revision-active">Built-in DNP</dd>
+                                        <dd id="revision-active">Astra 6 Weight-Space Programming</dd>
                                     </div>
                                     <div>
                                         <dt>Training base</dt>
@@ -461,34 +460,13 @@
                                     <div class="training-setup"><label for="revision-priority">Main goal <select
                                                 id="revision-priority">
                                                 <option value="survival" selected>Survival</option>
-                                                <option value="kills">Kills</option>
+                                                <option value="kills">Hugs</option>
                                             </select></label><small id="revision-priority-hint"></small></div>
-                                    <details class="revision-details">
-                                        <summary>Details</summary>
-                                        <p class="revision-hint">Plays from the parent model without a real-time limit.
-                                            Each generation changes parameter blocks in 48 directions, following the
-                                            chosen mutation size, and plays each direction mirrored, plus and minus, on
-                                            its own seed. The best directions play against the parent on shared seeds.
-                                            The crossing of the best directions competes too, and the final choice is
-                                            made on seeds that did not count in the preselection. The winner must beat
-                                            the parent on fresh seeds by two standard errors, must not be worse by two
-                                            standard errors in the other goal (kills or survival time) and must be ahead
-                                            of every ancestor in its line. Only then is it saved, and the run ends.
-                                            Without this check the search found a strategy that stops fighting and so
-                                            survives every game without a kill. Check games last one minute at first;
-                                            when most of them survive the full time, the game time grows by one minute.
-                                            The run remembers the three candidates with the strongest evidence against
-                                            the parent. The first click on “Stop” makes them play against the parent on
-                                            fresh seeds (without candidates, the generation continues until its race).
-                                            The best one is validated the same way and saved as the new training base
-                                            only if it passes. If it is ahead but not clearly (0 < t < 2), it is saved
-                                                as “unconfirmed” without becoming the training base.</p>
-                                    </details>
                                 </div>
                                 <div class="seed"><label for="seed">Arena seed</label>
                                     <div><input id="seed" type="number" min="0" max="4294967295" step="1" value="9000"
                                             aria-label="Arena seed"><button id="new-seed"
-                                            aria-label="Start a new random seed" title="New random seed">⤨</button>
+                                            aria-label="Start a new random seed" title="New random seed">🔄</button>
                                     </div>
                                 </div>
                                 <div class="revision-training"><span class="aura aura-fire learn-aura"><button
@@ -500,33 +478,41 @@
                                                 id="revision-phase">Training run</b><span
                                                 id="revision-clock">0:00</span></div>
                                         <p id="revision-progress-text" role="status">Training run starting …</p>
-                                        <dl>
-                                            <div>
-                                                <dt>Generation</dt>
-                                                <dd id="revision-round">—</dd>
-                                            </div>
-                                            <div>
-                                                <dt>Games</dt>
-                                                <dd id="revision-games">—</dd>
-                                            </div>
-                                            <div>
-                                                <dt>Decisions</dt>
-                                                <dd id="revision-decisions">—</dd>
-                                            </div>
-                                            <div>
-                                                <dt>CPU cores</dt>
-                                                <dd id="revision-lanes-active">—</dd>
-                                            </div>
-                                            <div>
-                                                <dt>Speed</dt>
-                                                <dd id="revision-rate">—</dd>
-                                            </div>
-                                            <div
-                                                title="EvoWeights remembers the strongest candidates against the parent; “Stop” checks them in a final round">
-                                                <dt>Best candidates</dt>
-                                                <dd id="revision-kept">—</dd>
-                                            </div>
-                                        </dl>
+                                        <div class="training-stats">
+                                            <span class="training-bear" aria-hidden="true">
+                                                <img src="assets/huggingdoom/bear-A.png" width="56" height="56" alt="" decoding="async" draggable="false">
+                                                <img src="assets/huggingdoom/bear-B.png" width="56" height="56" alt="" decoding="async" draggable="false">
+                                                <img src="assets/huggingdoom/bear-C.png" width="56" height="56" alt="" decoding="async" draggable="false">
+                                                <img src="assets/huggingdoom/bear-D.png" width="56" height="56" alt="" decoding="async" draggable="false">
+                                            </span>
+                                            <dl class="training-metrics" aria-label="Training statistics">
+                                                <div>
+                                                    <dt>Generation</dt>
+                                                    <dd id="revision-round">—</dd>
+                                                </div>
+                                                <div>
+                                                    <dt>Games</dt>
+                                                    <dd id="revision-games">—</dd>
+                                                </div>
+                                                <div>
+                                                    <dt>Decisions</dt>
+                                                    <dd id="revision-decisions">—</dd>
+                                                </div>
+                                                <div>
+                                                    <dt>CPU cores</dt>
+                                                    <dd id="revision-lanes-active">—</dd>
+                                                </div>
+                                                <div>
+                                                    <dt>Speed</dt>
+                                                    <dd id="revision-rate">—</dd>
+                                                </div>
+                                                <div
+                                                    title="EvoWeights remembers the strongest candidates against the parent; “Stop” checks them in a final round">
+                                                    <dt>Best candidates</dt>
+                                                    <dd id="revision-kept">—</dd>
+                                                </div>
+                                            </dl>
+                                        </div>
                                         <label class="training-watch"><input type="checkbox" id="revision-watch"
                                                 checked> Show training in the game view</label>
                                         <button id="revision-stop" type="button" hidden>Stop training</button>
@@ -541,7 +527,10 @@
                         </aside>
                     </div>
                     <section class="mk-cta portal-cta" aria-labelledby="consult-title">
-                        <div class="mk-cta-inner">
+                        <div class="mk-cta-inner bear-decorated">
+                            <span class="badge ad-badge" data-variant="outline" data-size="sm">Ad</span>
+                            <img class="section-bear section-bear-right" src="assets/huggingdoom/bear-L.png" width="96" height="96"
+                                alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false" style="--bear-angle:9deg">
                             <div class="mk-cta-copy">
                                 <div class="vs-cta-head">
                                     <div class="aura aura-glow aura-gold vs-cta-portrait" style="--shape-round:1.25rem">
@@ -550,8 +539,8 @@
                                     <h2 class="mk-cta-title" id="consult-title">Want a small model that learns your
                                         task?</h2>
                                 </div>
-                                <p class="mk-cta-desc">Aron Homberg is an independent AI researcher, formally trained Computer Science Expert (C.S.E.), and software engineer with over 20 years of professional experience. He created <strong>EvoWeights</strong>, an evolutionary, gradient-free method for direct neural network weight optimization.</p>
-                                <p class="mk-cta-desc">His research focuses on small, quantized, and on-device AI models, evolutionary optimization, gradient-free fine-tuning, efficient inference engines, and agentic AI systems.</p>
+                                <p class="mk-cta-desc">Aron Homberg is an independent AI researcher, formally trained Computer Science Expert (C.S.E.), and software engineer with over 20 years of professional experience. He created <strong>EvoWeights</strong>, an evolutionary method for direct neural network weight optimization without backpropagation.</p>
+                                <p class="mk-cta-desc">His research focuses on small, quantized, and on-device AI models, evolutionary optimization, fine-tuning without backpropagation, efficient inference engines, and agentic AI systems.</p>
                                 <p class="mk-cta-desc">His technical interests and expertise span custom embedding and reranking models, hybrid and vector search (including late interaction), image similarity search, knowledge graphs and graph-based retrieval, speech recognition (ASR) and synthesis (TTS), multimodal image and video understanding and generation, and high-performance, cross-platform AI inference.</p>
                                 <p class="mk-cta-desc">He actively develops open-source AI systems, with particular emphasis on efficient CPU and browser-based execution, and welcomes international research collaborations and professional consulting engagements.</p>
                             </div>
@@ -689,7 +678,7 @@
                                     …</span><button type="button" class="reference-measure" id="revision-import"
                                     title="Load a complete model file (.agmweights) from this device" disabled>Load
                                     model file</button><button type="button" class="reference-measure"
-                                    id="reference-measure" hidden>Measure total</button><button type="button"
+                                    id="reference-measure" hidden>Measure performance</button><button type="button"
                                     class="reference-measure tree-clear" id="revision-clear" hidden disabled>Clear all
                                     local models</button></div>
                         </div>
@@ -698,13 +687,14 @@
                                 <div class="data-grid-head">
                                     <div class="data-grid-row" role="row">
                                         <div class="data-grid-header" data-locked>Model</div>
+                                        <div class="data-grid-header" data-type="number"
+                                            title="Rank by survival across all measured models; equal survival totals share a rank">Rank</div>
+                                        <div class="data-grid-header"
+                                            title="Survival and hugs on 48 fixed HuggingDOOM games; percentages compare with Original FP32">Performance</div>
                                         <div class="data-grid-header">Parent</div>
                                         <div class="data-grid-header" data-type="number"
                                             title="Native 4-bit codes plus sensor weights changed relative to the parent">
                                             Δ Parameters</div>
-                                        <div class="data-grid-header" data-type="number"
-                                            title="Survival time relative to the Original FP32 on the 48 fixed reference seeds; the tooltip adds the change relative to the parent">
-                                            Total</div>
                                         <div class="data-grid-header">Actions</div>
                                     </div>
                                 </div>
@@ -714,12 +704,12 @@
                     </div>
                 </div>
                 <p class="section-caption"><a href="https://github.com/Daivuk/PureDOOM" target="_blank"
-                        rel="noopener">PureDOOM</a> runs locally with <a href="https://freedoom.github.io/"
-                        target="_blank" rel="noopener">Freedoom</a> artwork and a custom center-defense arena. Browser
-                    and native <a href="https://github.com/Farama-Foundation/ViZDoom" target="_blank"
-                        rel="noopener">ViZDoom</a> scores use separate seed sets.</p>
+                        rel="noopener">PureDOOM</a> runs locally with new meadow and bear artwork, honey and hug mechanics. The engine retains internal action names for model compatibility. Archived DOOM and native <a href="https://github.com/Farama-Foundation/ViZDoom" target="_blank"
+                        rel="noopener">ViZDoom</a> results below describe the earlier task and are not HuggingDOOM scores.</p>
             </section>
-            <section id="architecture" class="portal-section" aria-labelledby="architecture-title">
+            <section id="architecture" class="portal-section bear-decorated" aria-labelledby="architecture-title">
+                <img class="section-bear section-bear-right" src="assets/huggingdoom/bear-H.png" width="96" height="96"
+                    alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false" style="--bear-angle:-8deg">
                 <div class="chapter-heading">
                     <div>
                         <div class="portal-eyebrow"><b>03</b> Architecture</div>
@@ -787,14 +777,17 @@
                     </div>
                 </figure>
             </section>
-            <section id="model-diff" class="portal-section" aria-labelledby="model-diff-title">
+            <section id="model-diff" class="portal-section bear-decorated bear-decorated-bottom" aria-labelledby="model-diff-title">
+                <img class="section-bear section-bear-left" src="assets/huggingdoom/bear-E.png" width="96" height="96"
+                    alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false" style="--bear-angle:-12deg">
                 <div class="chapter-heading">
                     <div>
                         <div class="portal-eyebrow"><b>04</b> Model mutations</div>
                         <h2 id="model-diff-title">Understanding EvoWeights’ Model Mutations</h2>
                     </div><span class="chapter-meta">167 MUTABLE BLOCKS</span>
                 </div>
-                <p class="section-lead">The pretrained model itself stays frozen. A mutation only nudges weights at the
+                <p class="section-lead">The pretrained backbone stays frozen; selected weights in its output head are
+                    evolved. A mutation only nudges weights at the
                     very end: the three output rows that decide LEFT, RIGHT or FIRE, and 119 small extra weights that
                     read named game sensors. Everything before that, including all 12 transformer layers, is never
                     touched.</p>
@@ -842,13 +835,17 @@
                     </div><span class="chapter-meta">PAIRED t ≥ 2</span>
                 </div>
                 <p class="section-lead">Two games on the same seed drift apart once one action differs, so a single game
-                    mostly measures luck. EvoWeights therefore keeps a new model generation only when its improvement is
-                    safeguarded by a statistical check: the child and its parent play the same fresh seeds in pairs, and
+                    mostly measures luck. EvoWeights therefore keeps a new model generation only when it passes
+                    statistical selection checks: the child and its parent play the same fresh seeds in pairs, and
                     the child is kept only when the average difference lies at least two standard errors above zero
                     (paired t ≥ 2).</p>
-                <figure class="luck-figure" data-animate-bars><!-- luck-chart --><svg class="luck-chart"
+                <figure class="luck-figure bear-decorated" data-animate-bars>
+                    <img class="section-bear section-bear-right" src="assets/huggingdoom/bear-I.png" width="96" height="96"
+                        alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false" style="--bear-angle:12deg"><!-- luck-chart -->
+                    <div class="luck-chart-scroll" tabindex="0" aria-label="Survival comparison chart">
+                    <svg class="luck-chart"
                         viewBox="0 0 1000 345" role="img"
-                        aria-label="Survival difference per paired game for 48 games, with the running average and its uncertainty band narrowing as games accumulate.">
+                        aria-label="Survival difference across 48 paired games. Dashed lines outline the average plus or minus two standard errors. Game 20 has a large loss; at game 24 the band includes zero, so the average gain no longer clears the threshold.">
                         <line class="luck-grid" x1="84" x2="985" y1="267.1" y2="267.1" /><text class="luck-axis" x="74"
                             y="272.1" text-anchor="end">-40 s</text>
                         <line class="luck-grid" x1="84" x2="985" y1="217.3" y2="217.3" /><text class="luck-axis" x="74"
@@ -893,7 +890,10 @@
                             <circle class="luck-dot" cx="390.7" cy="136.1" r="4.5" />
                             <circle class="luck-dot" cx="409.9" cy="109.6" r="4.5" />
                             <circle class="luck-dot" cx="429.1" cy="150.1" r="4.5" />
-                            <circle class="luck-dot" cx="448.2" cy="285.0" r="4.5" />
+                            <line class="luck-loss-stem" x1="448.2" x2="448.2" y1="149.1" y2="285" />
+                            <circle class="luck-dot luck-outlier" cx="448.2" cy="285.0" r="7">
+                                <title>Game 20: the largest negative survival difference in this chart</title>
+                            </circle>
                             <circle class="luck-dot" cx="467.4" cy="201.0" r="4.5" />
                             <circle class="luck-dot" cx="486.6" cy="132.6" r="4.5" />
                             <circle class="luck-dot" cx="505.7" cy="208.2" r="4.5" />
@@ -926,47 +926,77 @@
                                 points="103.2,130.9 122.3,134.3 141.5,137.6 160.7,142.2 179.9,154.7 199.0,152.4 218.2,146.5 237.4,150.0 256.5,147.7 275.7,146.9 294.9,141.7 314.0,138.4 333.2,140.2 352.4,142.3 371.6,143.9 390.7,143.4 409.9,141.6 429.1,142.0 448.2,149.1 467.4,151.6 486.6,150.8 505.7,153.2 524.9,152.6 544.1,155.2 563.3,153.2 582.4,155.2 601.6,155.8 620.8,153.3 639.9,151.3 659.1,153.3 678.3,151.1 697.4,154.2 716.6,154.5 735.8,152.0 755.0,152.6 774.1,153.3 793.3,154.2 812.5,155.1 831.6,155.2 850.8,154.2 870.0,153.1 889.1,152.1 908.3,149.4 927.5,150.3 946.7,149.6 965.8,148.7 985.0,147.7" />
                             <line class="luck-mark" x1="294.9" x2="294.9" y1="18" y2="292"
                                 style="stroke-dasharray:1.5 5;stroke-linecap:round;stroke-width:2" />
-                            <line class="luck-mark" x1="524.9" x2="524.9" y1="18" y2="292"
+                            <line class="luck-mark luck-warning" x1="524.9" x2="524.9" y1="18" y2="292"
                                 style="stroke-dasharray:12 5 2 5" />
                             <line class="luck-mark" x1="889.1" x2="889.1" y1="18" y2="292" /><text class="luck-label"
-                                x="881.1" y="32" text-anchor="end">from game 43: certain</text>
-                            <text class="luck-label" x="294.9" y="32.0" text-anchor="middle">game 12: looks
-                                certain</text>
-                            <text class="luck-label" x="524.9" y="284.0" text-anchor="middle">game 24: not
-                                anymore</text>
+                                x="881.1" y="32" text-anchor="end">from game 43: clears again</text>
+                            <text class="luck-label" x="294.9" y="32.0" text-anchor="middle">game 12: clears t ≥ 2</text>
+                            <g class="luck-checkpoint">
+                                <title>Game 24: the lower uncertainty limit is below zero</title>
+                                <path class="luck-interval" d="M518,134.7 H532 M524.9,134.7 V170.5 M518,170.5 H532" />
+                                <circle class="luck-crossing" cx="524.9" cy="170.5" r="6" />
+                            </g>
+                            <text class="luck-label luck-warning" x="524.9" y="32" text-anchor="middle">game 24: not anymore</text>
+                            <text class="luck-label luck-explanation" x="524.9" y="51" text-anchor="middle">band includes zero</text>
+                            <text class="luck-label luck-warning" x="435" y="270" text-anchor="end">game 20: large loss</text>
                         </g>
                         <text class="luck-axis" x="534" y="332" text-anchor="middle">games played</text>
                         <text class="luck-axis" transform="rotate(-90)" x="-155" y="14" text-anchor="middle">metric:
                             survival difference</text>
-                    </svg><!-- /luck-chart -->
-                    <figcaption>Each dot: EvoWeights Terminator vs. Astra 6’s model.<br>Line: the average survival so
-                        far. Band: ±2 standard errors, how far luck could still move it.</figcaption>
+                    </svg>
+                    </div><!-- /luck-chart -->
+                    <div class="luck-legend" aria-label="Chart legend">
+                        <span><i class="luck-key-dot" aria-hidden="true"></i>One paired game</span>
+                        <span><i class="luck-key-mean" aria-hidden="true"></i>Running average</span>
+                        <span><i class="luck-key-band" aria-hidden="true"></i>Average ±2 standard errors</span>
+                        <span><i class="luck-key-loss" aria-hidden="true"></i>Large loss</span>
+                        <span><i class="luck-key-zero" aria-hidden="true"></i>Zero = no improvement</span>
+                    </div>
+                    <figcaption>Each dot compares EvoWeights Terminator with Astra 6’s model in the DOOM arena.
+                        <strong>At game 24, the band includes zero.</strong> The average is still positive, but its
+                        lower uncertainty limit is below zero, so the gain no longer clears t ≥ 2.
+                        The band describes uncertainty in the average, not the spread of individual games.</figcaption>
                 </figure>
                 <ol class="loop-steps luck-steps">
-                    <li><b>Pair</b><span>Child and parent play the same fresh seeds, so the luck both games share
-                            cancels.</span></li>
+                    <li><b>Pair</b><span>Parent and candidate are compared on identical starting seeds.</span></li>
                     <li><b>Measure</b><span>In batches of 16 seeds, up to 64: the paired t of the primary metric,
-                            survival or kills.</span></li>
+                            survival or hugs.</span></li>
                     <li><b>Stop or accept early</b><span>t ≤ -1 stops the check; t ≥ 3 after 32 seeds accepts the child
                             at once.</span></li>
                     <li><b>Keep</b><span>Otherwise the child needs t ≥ 2 and a positive utility gain, and must match
                             every ancestor of its line on the same seeds.</span></li>
                 </ol>
+                <p class="section-lead">These checks provide evidence for selection; they do not guarantee that every
+                    retained revision improves true expected performance or preserves the secondary metric.</p>
             </section>
             <section id="results" class="portal-section" aria-labelledby="results-title">
                 <div class="chapter-heading">
                     <div>
                         <div class="portal-eyebrow"><b>06</b> Results</div>
-                        <h2 id="results-title">Evolution beats Astra 6 and outscores Opus 5.5 in Weight-Space
-                            Programming</h2>
+                        <h2 id="results-title">CPU evolution outperforms the tested Astra 6 and Opus 5.5 weight edits
+                            in this DOOM arena</h2>
                     </div><span class="chapter-meta">EvoWeights vs.<br />Frontier AI Models</span>
                 </div>
-                <p class="section-lead">Evaluated via 48 games played with reserved held-out seeds - each ten-minutes
-                    maximum length. Opus 5.5 and EvoWeights models started from the same sensor weights at zero (Astra 6
-                    designed those sensor weights initially via Weight-Space Programming).</p>
-                <div class="res-chart" data-animate-bars>
-                    <div class="res-group">
-                        <h3>Survival per game<small>mean over 48 held-out 10-minute games</small></h3>
+                <p class="section-lead">Across 48 held-out games per model, EvoWeights Terminator averaged more kills,
+                    and EvoWeights Survivor averaged longer survival, than either tested frontier-model direct edit.</p>
+                <p class="section-lead">Terminator achieved 33.3 kills per game, versus 27.5 for Astra 6 and 27.4 for
+                    Opus 5.5. Survivor averaged 131.4 seconds of survival, versus 40.6 and 50.9 seconds respectively,
+                    with fewer kills.</p>
+                <p class="section-lead">These comparisons evaluate the resulting policies on their target metrics.
+                    The displayed percentage changes and paired t-statistics use Astra 6 as the reference.</p>
+                <div class="res-chart bear-decorated" data-animate-bars>
+                    <img class="section-bear section-bear-right" src="assets/huggingdoom/bear-F.png" width="96" height="96"
+                        alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false" style="--bear-angle:-10deg">
+                    <div class="res-tabs" role="tablist" aria-label="Result metric">
+                        <button type="button" id="res-tab-survival" role="tab" aria-controls="res-survival"
+                            aria-selected="true">Survival per game</button>
+                        <button type="button" id="res-tab-hugs" role="tab" aria-controls="res-hugs"
+                            aria-selected="false" tabindex="-1">Kills per game</button>
+                        <button type="button" id="res-tab-time" role="tab" aria-controls="res-time"
+                            aria-selected="false" tabindex="-1">Time to candidate</button>
+                    </div>
+                    <div class="res-group" id="res-survival" role="tabpanel" aria-labelledby="res-tab-survival" tabindex="0">
+                        <p class="res-caption">Mean over 48 held-out 10-minute games</p>
                         <ul class="res-bars">
                             <li class="agent" style="--k:0"><span class="res-name">Astra 6 Weight-Space
                                     Programming<small>parent: Original FP32</small></span><span class="res-bar"><i
@@ -986,8 +1016,8 @@
                                         s</b> · +223.5 % (t 3.6)</span></li>
                         </ul>
                     </div>
-                    <div class="res-group">
-                        <h3>Kills per game<small>mean over the same games</small></h3>
+                    <div class="res-group" id="res-hugs" role="tabpanel" aria-labelledby="res-tab-hugs" tabindex="0" hidden>
+                        <p class="res-caption">Mean over the same games</p>
                         <ul class="res-bars">
                             <li class="agent" style="--k:0"><span class="res-name">Astra 6 Weight-Space
                                     Programming<small>parent: Original FP32</small></span><span class="res-bar"><i
@@ -1007,8 +1037,8 @@
                                     -10.5 % (t -3.1)</span></li>
                         </ul>
                     </div>
-                    <div class="res-group">
-                        <h3>Time to candidate<small>wall time, lower is better</small></h3>
+                    <div class="res-group" id="res-time" role="tabpanel" aria-labelledby="res-tab-time" tabindex="0" hidden>
+                        <p class="res-caption">Wall time, lower is better</p>
                         <ul class="res-bars">
                             <li class="agent" style="--k:0"><span class="res-name">Astra 6 Weight-Space
                                     Programming<small>parent: Original FP32</small></span><span class="res-bar"><i
@@ -1032,55 +1062,120 @@
                                 class="evo"></i> EvoWeights, trained in the browser</span></div>
                 </div>
             </section>
-            <section id="transformer-contribution" class="portal-section tf-matters" aria-labelledby="tf-title">
+            <section id="transformer-contribution" class="portal-section tf-matters bear-decorated bear-decorated-bottom" aria-labelledby="tf-title">
+                <img class="section-bear section-bear-right" src="assets/huggingdoom/bear-M.png" width="96" height="96"
+                    alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false" style="--bear-angle:10deg">
                 <div class="chapter-heading">
                     <div>
                         <div class="portal-eyebrow"><b>07</b> Ablation</div>
-                        <h2 id="tf-title">How much do Transformer weight mutations contribute to the overall results?
+                        <h2 id="tf-title">How much do the evolved policies depend on Kumo’s output scores?
                         </h2>
                     </div><span class="chapter-meta">48 FRESH GAMES</span>
                 </div>
-                <p class="tf-answer"><b>Both shipped EvoWeights models heavily depend on base model transformer
-                        mutations.</b> When the transformer’s three scores (head rows 0,1,2 set to zero, everything else
-                    unchanged) are frozen and each model plays the same 48 fresh 10-minute games twice, then without the
-                    transformer, both models collapse:</p>
+                <p class="tf-answer">We evaluated each evolved policy on the same 48 fresh seeds with Kumo’s three
+                    action scores enabled and then set to zero, leaving the sensor controller unchanged. Removing
+                    those scores substantially reduced both survival and kills.</p>
                 <div class="tf-cards">
                     <div class="tf-card">
                         <h4>EvoWeights Survivor</h4>
                         <div class="tf-metric"><span>Survival per game</span>
                             <div class="tf-pair"><i class="tf-full" style="width:100%"></i><b>121.0 s</b></div>
-                            <div class="tf-pair"><i class="tf-frozen" style="width:20%"></i><b>23.7 s</b></div><em>-80
+                            <div class="tf-pair"><i class="tf-zeroed" style="width:20%"></i><b>23.7 s</b></div><em>-80
                                 %</em>
                         </div>
                         <div class="tf-metric"><span>Kills per game</span>
                             <div class="tf-pair"><i class="tf-full" style="width:73%"></i><b>24.8</b></div>
-                            <div class="tf-pair"><i class="tf-frozen" style="width:37%"></i><b>12.5</b></div><em>-50
+                            <div class="tf-pair"><i class="tf-zeroed" style="width:37%"></i><b>12.5</b></div><em>-50
                                 %</em>
-                        </div><small>43 of 48 games shorter without the transformer · paired t -4.9 (survival), -12.1
+                        </div><small>43 of 48 games shorter with Kumo scores zeroed · paired t -4.9 (survival), -12.1
                             (kills)</small>
                     </div>
                     <div class="tf-card">
                         <h4>EvoWeights Terminator</h4>
                         <div class="tf-metric"><span>Survival per game</span>
                             <div class="tf-pair"><i class="tf-full" style="width:41%"></i><b>49.2 s</b></div>
-                            <div class="tf-pair"><i class="tf-frozen" style="width:11%"></i><b>12.9 s</b></div><em>-74
+                            <div class="tf-pair"><i class="tf-zeroed" style="width:11%"></i><b>12.9 s</b></div><em>-74
                                 %</em>
                         </div>
                         <div class="tf-metric"><span>Kills per game</span>
                             <div class="tf-pair"><i class="tf-full" style="width:100%"></i><b>34.1</b></div>
-                            <div class="tf-pair"><i class="tf-frozen" style="width:21%"></i><b>7.1</b></div><em>-79
+                            <div class="tf-pair"><i class="tf-zeroed" style="width:21%"></i><b>7.1</b></div><em>-79
                                 %</em>
-                        </div><small>48 of 48 games shorter without the transformer · paired t -13.4 (survival), -20.7
+                        </div><small>48 of 48 games shorter with Kumo scores zeroed · paired t -13.4 (survival), -20.7
                             (kills)</small>
                     </div>
                 </div>
-                <p class="tf-legend"><i class="tf-full"></i> with the transformer <i class="tf-frozen"></i> transformer
-                    scores frozen</p>
-                <p class="tf-note">Both lineages evolved from sensor weights set to zero, so evolution had to build on
-                    what the transformer computes. Models built on Astra 6’s hand-set sensor weights lose nothing
-                    measurable in the same test.</p>
+                <p class="tf-legend"><i class="tf-full"></i> Kumo scores enabled <i class="tf-zeroed"></i> Kumo scores
+                    zeroed</p>
+                <p class="tf-note">This demonstrates that the evolved policies depend on Kumo’s contribution. It does
+                    not isolate the benefit of the output-weight mutations; that requires a separate comparison
+                    restoring the original output weights while retaining the evolved controller.</p>
             </section>
-            <section id="inference" class="portal-section" aria-labelledby="inference-title">
+            <section class="explore-causes" id="explore-causes" lang="en" hidden aria-labelledby="causes-title">
+                <figure class="causes-viz" aria-label="How the cause-and-effect test works"><svg
+                        viewBox="0 0 310 190" role="img" aria-labelledby="ce-title">
+                        <title id="ce-title">Each change group is removed from the candidate and added to the base,
+                            and both play the same games</title><text x="0" y="19" class="ce-label">Candidate</text>
+                        <rect x="96" y="6" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="113" y="6" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="130" y="6" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="147" y="6" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="164" y="6" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="181" y="6" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="198" y="6" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="215" y="6" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="232" y="6" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="249" y="6" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="266" y="6" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="283" y="6" width="13" height="18" rx="3" class="ce-on" /><text x="96" y="39"
+                            class="ce-sub">12 groups of mutated weights</text><text x="0" y="79"
+                            class="ce-label">Knock-out</text>
+                        <rect x="96" y="66" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="113" y="66" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="130" y="66" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="147" y="66" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="164" y="66" width="13" height="18" rx="3" class="ce-hole" />
+                        <rect x="181" y="66" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="198" y="66" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="215" y="66" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="232" y="66" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="249" y="66" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="266" y="66" width="13" height="18" rx="3" class="ce-on" />
+                        <rect x="283" y="66" width="13" height="18" rx="3" class="ce-on" /><text x="96" y="99"
+                            class="ce-sub">without group 5 · 24 games</text><text x="0" y="139"
+                            class="ce-label">Knock-in</text>
+                        <rect x="96" y="126" width="13" height="18" rx="3" class="ce-off" />
+                        <rect x="113" y="126" width="13" height="18" rx="3" class="ce-off" />
+                        <rect x="130" y="126" width="13" height="18" rx="3" class="ce-off" />
+                        <rect x="147" y="126" width="13" height="18" rx="3" class="ce-off" />
+                        <rect x="164" y="126" width="13" height="18" rx="3" class="ce-hit" />
+                        <rect x="181" y="126" width="13" height="18" rx="3" class="ce-off" />
+                        <rect x="198" y="126" width="13" height="18" rx="3" class="ce-off" />
+                        <rect x="215" y="126" width="13" height="18" rx="3" class="ce-off" />
+                        <rect x="232" y="126" width="13" height="18" rx="3" class="ce-off" />
+                        <rect x="249" y="126" width="13" height="18" rx="3" class="ce-off" />
+                        <rect x="266" y="126" width="13" height="18" rx="3" class="ce-off" />
+                        <rect x="283" y="126" width="13" height="18" rx="3" class="ce-off" /><text x="96" y="159"
+                            class="ce-sub">base + group 5 only · 24 games</text>
+                    </svg>
+                    <figcaption>Repeated for every group: the score lost without it and gained with it is its
+                        effect. Bold results stand out from seed noise (|t| ≥ 2).</figcaption>
+                </figure>
+                <div class="causes-head">
+                    <h3 id="causes-title"><svg class="causes-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 2.5 18.5 9 12 15.5 5.5 9z" />
+                            <path d="M12 15.5V21.5M5.5 9H2M18.5 9H22" />
+                            <path d="M10.4 9.2l1.1 1.1 2.2-2.6" />
+                        </svg>Which mutation changes have effects?</h3>
+                </div>
+                <p class="causes-note" id="causes-note"></p><button id="causes-measure" type="button">Approximate
+                    cause and effect</button>
+                <div class="causes-table" id="causes-table"></div>
+                <p class="causes-credit" id="causes-credit" hidden></p>
+            </section>
+            <section id="inference" class="portal-section bear-decorated bear-decorated-bottom" aria-labelledby="inference-title">
+                <img class="section-bear section-bear-left" src="assets/huggingdoom/bear-D.png" width="96" height="96"
+                    alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false" style="--bear-angle:-9deg">
                 <div class="chapter-heading">
                     <div>
                         <div class="portal-eyebrow"><b>08</b> Running the model</div>
@@ -1108,7 +1203,7 @@
                     target: a punchable enemy, a remembered attacker or a damage scan), and the facing guard can shift
                     the choice between stepping back and forward. In the aim and combat matrices one sensor is the
                     constant 1, so 10 of the 119 weights act as fixed biases.</div>
-                <details class="sensor-ref" open>
+                <details class="sensor-ref">
                     <summary>Sensor reference</summary>
                     <div class="sensor-ref-grid">
                         <div class="sr-block">
@@ -1239,7 +1334,9 @@
                         matrix is its actions × its sensors.</p>
                 </details>
             </section>
-            <section id="explore-weights" class="portal-section" aria-labelledby="explore-weights-title">
+            <section id="explore-weights" class="portal-section bear-decorated" aria-labelledby="explore-weights-title">
+                <img class="section-bear section-bear-right" style="top:180px" src="assets/huggingdoom/bear-O.png" width="96" height="96"
+                    alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false" style="--bear-angle:12deg">
                 <div class="chapter-heading">
                     <div>
                         <div class="portal-eyebrow"><b>09</b> Weight explorer</div>
@@ -1257,76 +1354,16 @@
                             <option value="1">1 · RIGHT</option>
                             <option value="2" selected>2 · FIRE</option>
                         </select></label><small id="explore-note" hidden>Default: the model with the highest total
-                        against Shipped DNP 4-bit. The release comparison shows the built-in FIRE edit.</small></div>
+                        against Astra 6 Weight-Space Programming. The release comparison shows the built-in FIRE edit.</small></div>
                 <div class="lab-ui diff-instrument">
                     <div data-weights-explorer data-src="./data/weights-explorer.json">
                         <p class="wx-load">Loading the model comparison…</p>
                     </div>
                 </div>
-                <section class="explore-causes" id="explore-causes" lang="en" hidden aria-labelledby="causes-title">
-                    <figure class="causes-viz" aria-label="How the cause-and-effect test works"><svg
-                            viewBox="0 0 310 190" role="img" aria-labelledby="ce-title">
-                            <title id="ce-title">Each change group is removed from the candidate and added to the base,
-                                and both play the same games</title><text x="0" y="19" class="ce-label">Candidate</text>
-                            <rect x="96" y="6" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="113" y="6" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="130" y="6" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="147" y="6" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="164" y="6" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="181" y="6" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="198" y="6" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="215" y="6" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="232" y="6" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="249" y="6" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="266" y="6" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="283" y="6" width="13" height="18" rx="3" class="ce-on" /><text x="96" y="39"
-                                class="ce-sub">12 groups of mutated weights</text><text x="0" y="79"
-                                class="ce-label">Knock-out</text>
-                            <rect x="96" y="66" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="113" y="66" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="130" y="66" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="147" y="66" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="164" y="66" width="13" height="18" rx="3" class="ce-hole" />
-                            <rect x="181" y="66" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="198" y="66" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="215" y="66" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="232" y="66" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="249" y="66" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="266" y="66" width="13" height="18" rx="3" class="ce-on" />
-                            <rect x="283" y="66" width="13" height="18" rx="3" class="ce-on" /><text x="96" y="99"
-                                class="ce-sub">without group 5 · 24 games</text><text x="0" y="139"
-                                class="ce-label">Knock-in</text>
-                            <rect x="96" y="126" width="13" height="18" rx="3" class="ce-off" />
-                            <rect x="113" y="126" width="13" height="18" rx="3" class="ce-off" />
-                            <rect x="130" y="126" width="13" height="18" rx="3" class="ce-off" />
-                            <rect x="147" y="126" width="13" height="18" rx="3" class="ce-off" />
-                            <rect x="164" y="126" width="13" height="18" rx="3" class="ce-hit" />
-                            <rect x="181" y="126" width="13" height="18" rx="3" class="ce-off" />
-                            <rect x="198" y="126" width="13" height="18" rx="3" class="ce-off" />
-                            <rect x="215" y="126" width="13" height="18" rx="3" class="ce-off" />
-                            <rect x="232" y="126" width="13" height="18" rx="3" class="ce-off" />
-                            <rect x="249" y="126" width="13" height="18" rx="3" class="ce-off" />
-                            <rect x="266" y="126" width="13" height="18" rx="3" class="ce-off" />
-                            <rect x="283" y="126" width="13" height="18" rx="3" class="ce-off" /><text x="96" y="159"
-                                class="ce-sub">base + group 5 only · 24 games</text>
-                        </svg>
-                        <figcaption>Repeated for every group: the score lost without it and gained with it is its
-                            effect. Bold results stand out from seed noise (|t| ≥ 2).</figcaption>
-                    </figure>
-                    <div class="causes-head">
-                        <h3 id="causes-title"><svg class="causes-icon" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M12 2.5 18.5 9 12 15.5 5.5 9z" />
-                                <path d="M12 15.5V21.5M5.5 9H2M18.5 9H22" />
-                                <path d="M10.4 9.2l1.1 1.1 2.2-2.6" />
-                            </svg>Which mutation changes have effects?</h3>
-                    </div>
-                    <p class="causes-note" id="causes-note"></p><button id="causes-measure" type="button">Approximate
-                        cause and effect</button>
-                    <div class="causes-table" id="causes-table"></div>
-                    <p class="causes-credit" id="causes-credit" hidden></p>
-                </section>
             </section>
-            <section id="performance" class="section">
+            <section id="performance" class="section bear-decorated bear-decorated-bottom">
+                <img class="section-bear section-bear-right" src="assets/huggingdoom/bear-N.png" width="96" height="96"
+                    alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false" style="--bear-angle:-9deg">
                 <div class="section-head">
                     <div>
                         <div class="portal-eyebrow"><b>10</b> Fine-tuning in-browser on CPU</div>
@@ -1338,7 +1375,8 @@
                 </div>
                 <p class="perf-lead"><b>Optimizing a small model using EvoWeights needs no GPU.</b> EvoWeights judges
                     every candidate by playing games, so it needs only forward passes on the CPU cores that also run the
-                    game. There are no gradients and no backward pass. Each logical CPU core runs its own WASM engine
+                    game. No backpropagation is required. The optional evidence-based mode uses perturbation-derived
+                    gradient estimates. Each logical CPU core runs its own WASM engine
                     and 4-bit model. A run replays bit for bit on any number of cores, so more cores only shorten the
                     wait.</p>
                 <div class="perf-tabs" role="tablist" aria-label="Benchmark machine"><button type="button" role="tab"
@@ -1360,8 +1398,8 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <th scope="row">EvoWeights Survivor · R3</th>
-                                    <td>Four browser runs from sensor weights set to zero, survival metric (one kills
+                                    <th scope="row">EvoWeights Introvertor · R3</th>
+                                    <td>Four browser runs from sensor weights set to zero, survival metric (one hugs
                                         run without a child included)</td>
                                     <td>VS Code browser (Chrome 150), 18 CPU cores</td>
                                     <td class="num">24.2</td>
@@ -1369,8 +1407,8 @@
                                     <td class="num">4.18</td>
                                 </tr>
                                 <tr>
-                                    <th scope="row">EvoWeights Terminator · R4 · Kills</th>
-                                    <td>Four browser runs from sensor weights set to zero, kills metric</td>
+                                    <th scope="row">EvoWeights Hugginator · R4 · Hugs</th>
+                                    <td>Four browser runs from sensor weights set to zero, hugs metric</td>
                                     <td>VS Code browser (Chrome 150), 18 CPU cores</td>
                                     <td class="num">10.8</td>
                                     <td class="num">3,926</td>
@@ -1409,7 +1447,9 @@
                     </div>
                 </div>
             </section>
-            <section id="use-cases" class="portal-section" aria-labelledby="use-cases-title">
+            <section id="use-cases" class="portal-section bear-decorated" aria-labelledby="use-cases-title">
+                <img class="section-bear section-bear-left" src="assets/huggingdoom/bear-K.png" width="96" height="96"
+                    alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false" style="--bear-angle:-8deg">
                 <div class="chapter-heading">
                     <div>
                         <div class="portal-eyebrow"><b>11</b> Beyond research</div>
@@ -1417,7 +1457,7 @@
                     </div><span class="chapter-meta">FUTURE RESEARCH</span>
                 </div>
                 <p class="section-lead">If a small model runs on a device and its goal can be measured and tried out
-                    safely, the device itself could adapt the model: no data center, no gradients, and the data stays
+                    safely, the device itself could adapt the model: no data center, no backpropagation, and the data stays
                     local. Each example names what would mutate, what defines survival and what must not get worse.</p>
                 <!-- use-cases -->
                 <div class="transfer">
@@ -1484,7 +1524,7 @@
                             experiment.</p>
                         <p><b>Survival</b> The designer’s plain-language goal, written as a metric, on fresh levels and
                             seeds.</p>
-                        <p><b>Must not get worse</b> A second goal, such as kills under a survival goal, may not drop by
+                        <p><b>Must not get worse</b> A second goal, such as hugs under a survival goal, may not drop by
                             two standard errors.</p>
                     </div>
                     <div class="uc-panel" id="uc-panel-5" role="tabpanel" aria-labelledby="uc-tab-5" hidden>

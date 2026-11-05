@@ -4,13 +4,13 @@
 }
 .patch-plate {
   min-width: 0;
-  border-radius: 12px;
+  border-radius: var(--honey-radius);
   margin: 0;
-  background: #242832;
-  color: #edefef;
+  background: linear-gradient(145deg, var(--honey-card), var(--honey-panel));
+  color: var(--honey-ink);
   overflow: hidden;
-  border: 1px solid #343846;
-  box-shadow: 0 12px 35px -24px #0d1226a6;
+  border: 1px solid var(--honey-line);
+  box-shadow: var(--portal-shadow-raised);
 }
 .plate-strip,
 .plate-heading,
@@ -21,30 +21,31 @@
 }
 .plate-strip {
   padding: 0.8rem 1.15rem;
-  border-bottom: 1px solid #404551;
+  border-bottom: 1px solid var(--honey-line);
   font: 600 0.59rem/1.35 var(--evo-mono);
   letter-spacing: 0.09em;
-  color: #d0d3dc;
+  color: var(--honey-ink);
+  background: var(--honey-card);
 }
 .plate-strip b {
-  color: #8c83a1;
+  color: var(--honey-muted);
   margin: 0 0.15rem;
 }
 .plate-strip span + span {
-  color: #bcc1cd;
+  color: var(--honey-ink);
 }
 .plate-heading {
   margin: 1.1rem 1.15rem 0.15rem;
   align-items: baseline;
 }
 .plate-heading span:first-child {
-  font-size: clamp(1.15rem, 2.2vw, 1.7rem);
-  font-weight: 510;
-  letter-spacing: -0.045em;
+  font-size: clamp(1.15rem, 2vw, 1.55rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
 }
 .plate-heading span:last-child {
   font: 600 0.62rem/1 var(--evo-mono);
-  color: #c6bed8;
+  color: var(--honey-ink);
 }
 .patch-plate img {
   display: block;
@@ -53,11 +54,11 @@
   margin: 0.2rem auto 0.8rem;
 }
 .patch-plate figcaption {
-  border-top: 1px solid #404551;
+  border-top: 1px solid var(--honey-line);
   padding: 0.75rem 1.15rem;
   gap: 0.4rem;
   flex-wrap: wrap;
-  color: #d1d5dd;
+  color: var(--honey-ink);
   font: 500 0.64rem/1.45 var(--evo-mono);
 }
 .patch-plate figcaption span {
@@ -68,23 +69,24 @@
 .patch-plate figcaption i {
   width: 7px;
   height: 7px;
-  border-radius: 1px;
+  border-radius: 12px;
 }
 .patch-plate .up {
-  background: #b6a4fc;
+  background: var(--weight-raised);
 }
 .patch-plate .down {
-  background: #65d3bc;
+  background: var(--weight-lowered);
 }
 .patch-plate .flat {
   background: #777e89;
 }
 .patch-plate figcaption b {
   font-weight: 650;
-  color: white;
+  color: var(--honey-ink);
 }
 .evo-plate canvas {
   display: block;
+  border-radius: 0;
   width: calc(100% - 2.3rem);
   aspect-ratio: 2.25;
   margin: 0.55rem auto 0.8rem;
@@ -93,36 +95,75 @@
   font: 600 0.6rem/1 var(--evo-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #d0d3dc;
-  background: transparent;
-  border: 1px solid #4a5060;
+  color: var(--honey-ink);
+  background: var(--honey-card);
+  border: 1px solid var(--honey-accent);
   border-radius: 999px;
   padding: 0.32rem 0.6rem;
   cursor: pointer;
 }
 .evo-slow:hover {
-  border-color: #b6a4fc;
+  background: var(--honey-panel);
 }
 .evo-slow[aria-pressed='true'] {
-  background: #b6a4fc;
-  border-color: #b6a4fc;
-  color: #1b1d24;
+  background: var(--honey-ink);
+  border-color: var(--honey-ink);
+  color: var(--honey-card);
 }
 .evo-slow:focus-visible {
-  outline: 2px solid #b6a4fc;
+  outline: 2px solid var(--honey-ink);
   outline-offset: 2px;
 }
 /* Line of models under the animation, and the repeat button over the canvas */
 .evo-stage {
   position: relative;
 }
-.evo-repeat {
+.evo-complete {
   position: absolute;
-  left: 38%;
-  right: 0;
-  top: calc(50% + 14px);
-  margin-inline: auto;
-  width: max-content;
+  inset: 50% 1.15rem auto 40%;
+  transform: translateY(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+  padding: 1rem;
+  border: 1px solid var(--honey-accent);
+  border-radius: 16px;
+  background: var(--honey-card);
+  color: var(--honey-ink);
+  box-shadow: var(--portal-shadow-raised);
+  text-align: center;
+}
+.evo-complete strong {
+  font-size: 1rem;
+  line-height: 1.25;
+}
+.evo-complete p {
+  margin: 0;
+  color: var(--honey-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.evo-repeat {
+  min-height: 36px;
+  padding: 0.55rem 0.75rem;
+  background: var(--honey-ink);
+  border-color: var(--honey-ink);
+  color: var(--honey-card);
+  line-height: 1.4;
+}
+.evo-repeat:hover {
+  background: var(--honey-accent);
+  color: var(--honey-card);
+}
+@media (max-width: 30rem) {
+  .evo-plate canvas {
+    aspect-ratio: 1;
+  }
+  .evo-complete {
+    position: static;
+    transform: none;
+    margin: 0 1.15rem 1rem;
+  }
 }
 .evo-lineage {
   list-style: none;
@@ -142,16 +183,16 @@
   justify-content: center;
   gap: 0.08rem;
   padding: 0.25rem 0.5rem;
-  border: 1px solid #404551;
-  border-radius: 8px;
+  border: 1px solid var(--honey-line);
+  border-radius: 12px;
   font: 500 0.58rem/1.25 var(--evo-mono);
-  color: #c6bed8;
+  color: var(--honey-ink);
   white-space: nowrap;
 }
 .evo-lineage li b {
   font-size: 0.64rem;
   font-weight: 650;
-  color: #edefef;
+  color: var(--honey-ink);
 }
 .evo-lineage li:not(:first-child)::before {
   content: '→';
@@ -159,14 +200,14 @@
   left: -0.82rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #8c83a1;
+  color: var(--honey-muted);
 }
 .evo-lineage li:last-child:not(.evo-optimum) {
   border-color: #b6a4fc;
 }
 .evo-lineage .evo-optimum {
-  border-color: #b6a4fc;
-  background: #b6a4fc22;
+  border-color: var(--honey-accent);
+  background: var(--honey-panel);
 }
 @media (max-width: 60rem) {
   .evo-lineage {
@@ -176,7 +217,7 @@
 }
 .evo-lineage .evo-gap {
   border-style: dashed;
-  color: #8c83a1;
+  color: var(--honey-muted);
 }
 @media (max-width: 30rem) {
   .evo-lineage .evo-gap {

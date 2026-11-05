@@ -1,10 +1,12 @@
 /** Content-addressed local revision history and portable browser inference weights. */
 import type { HeadOp, ModelManifest, Precision } from '../model/kumo.ts';
+import { loadModelChunk } from '../model/asset-cache.ts';
 import { sha256 } from '../shared/sha256.ts';
 import { packUrl, siteUrl } from '../shared/site.ts';
 import type { Controller } from '../tactical/types.ts';
 import { revisionDiff, diffFileName, nativeDiff, controllerDiff, type RevisionDiff } from './diff.ts';
 import { makeHeadPatch } from './patch-codec.ts';
+import { REFERENCE } from './reference.ts';
 import { TRUST } from './trust.ts';
 
 const MAGIC = new TextEncoder().encode('AGMDNP08');
@@ -14,6 +16,21 @@ const decoder = new TextDecoder('utf-8', { fatal: true });
 const MAX_HEADER = 8 * 1024 * 1024;
 const copy = <T>(x: T): T => structuredClone(x);
 const hashPattern = /^[0-9a-f]{64}$/;
+
+/** Model IDs stay portable; simulation evidence is keyed by game rules as well as model/run ID. */
+export function evaluationStorageKey(id: string): string {
+  return REFERENCE.ruleset + ':' + id;
+}
+
+/** Untagged DOOM-era entries and other environments never supply current-game scores or training credit. */
+export function isCurrentEvaluation(value: unknown): value is { ruleset: string } {
+  return !!value && typeof value === 'object' && 'ruleset' in value && value.ruleset === REFERENCE.ruleset;
+}
+
+function markEvaluation<T extends Record<string, unknown>>(value: T): T & { ruleset: string } {
+  requireThat(value.ruleset === undefined || isCurrentEvaluation(value), 'Evidence belongs to another game ruleset.');
+  return { ...copy(value), ruleset: REFERENCE.ruleset };
+}
 /** Which field of each readout holds its signed codes; every other field must equal the shipped template. */
 const targets = { graft: 'codes', combat: 'codes', facing: 'code' } as const;
 
@@ -253,7 +270,7 @@ function builtins(): Promise<Builtins> {
     const shipped = await record(
       { precision: 'w4', parentId: original.id, ops: TRUST.edited, controller: TRUST.controller },
       'shipped',
-      'Shipped DNP 4-bit',
+      'Astra 6 Weight-Space Programming',
     );
     const neutral = await record(
       { precision: 'w4', parentId: original.id, ops: [], controller: neutralController() },
@@ -501,9 +518,8 @@ async function networkBase(precision: Precision, baseURL: URL, packBaseURL: URL 
   const manifest = await verifiedManifest(await blobBytes(manifestBlob), precision);
   const chunks: Blob[] = [];
   for (const item of manifest.chunks) {
-    const blob = await fetchBlob(packUrl(precision, item.path, packBaseURL));
-    await chunkEncoding(blob, item);
-    chunks.push(blob);
+    const { bytes } = await loadModelChunk(packUrl(precision, item.path, packBaseURL), item);
+    chunks.push(new Blob([bytes]));
   }
   return { precision, manifestBlob, chunks };
 }
@@ -547,6 +563,7 @@ async function writeSnapshot(
   );
 }
 
+// Retain the model database so existing learned weights remain available. Evidence is separately scoped below.
 export async function openRevisionStore({
   baseURL = siteUrl('model/'),
   packBaseURL,
@@ -622,8 +639,12 @@ export async function openRevisionStore({
     return lineage.reverse();
   }
   async function storeReceipt(database: IDBDatabase, id: string, receipt: unknown): Promise<void> {
+    const marked =
+      receipt && typeof receipt === 'object' && !Array.isArray(receipt)
+        ? markEvaluation(receipt as Record<string, unknown>)
+        : copy(receipt);
     await transaction(database, ['receipts'], 'readwrite', (tx) =>
-      tx.objectStore('receipts').put({ id, receipt: structuredClone(receipt) }),
+      tx.objectStore('receipts').put({ id: evaluationStorageKey(id), ruleset: REFERENCE.ruleset, receipt: marked }),
     );
   }
   async function promote({ parentId, ops, controller, name = 'Learned 4-bit', receipt = null }: ChildRequest) {
@@ -688,8 +709,9 @@ export async function openRevisionStore({
   async function saveRun(run: TrainingRun): Promise<boolean> {
     if (!db) return false;
     requireThat(typeof run?.runId === 'string' && run.runId.length > 0, 'A training run needs an ID.');
+    const marked = markEvaluation(run);
     await transaction(db, ['runs'], 'readwrite', (tx) =>
-      tx.objectStore('runs').put({ id: run.runId, run: structuredClone(run) }),
+      tx.objectStore('runs').put({ id: evaluationStorageKey(run.runId), ruleset: REFERENCE.ruleset, run: marked }),
     );
     return true;
   }
@@ -697,14 +719,15 @@ export async function openRevisionStore({
     if (!db) return [];
     return transaction<TrainingRun[]>(db, ['runs'], 'readonly', (tx, done) => {
       const req = tx.objectStore('runs').getAll();
-      req.onsuccess = () => done((req.result as { run: TrainingRun }[]).map((x) => x.run));
+      req.onsuccess = () => done((req.result as { run: TrainingRun }[]).filter(isCurrentEvaluation).map((x) => x.run));
     });
   }
-  /** The training receipt stored with a promoted revision, if this browser produced it. */
+  /** Current-game evidence only. Old DOOM receipts remain stored but cannot seed scores or training credit. */
   async function receipt(id: string): Promise<unknown> {
     if (!db) return null;
     try {
-      return (await read<{ receipt: unknown }>(db, 'receipts', id))?.receipt ?? null;
+      const stored = await read<{ ruleset: string; receipt: unknown }>(db, 'receipts', evaluationStorageKey(id));
+      return isCurrentEvaluation(stored) ? stored.receipt : null;
     } catch {
       return null;
     }
@@ -771,7 +794,8 @@ export async function openRevisionStore({
             const receipts = tx.objectStore('receipts');
             for (const d of doomed) {
               records.delete(d);
-              receipts.delete(d);
+              receipts.delete(evaluationStorageKey(d));
+              receipts.delete(d); // Also remove the historical receipt when its model is explicitly deleted.
             }
             done({ removed: doomed, latestId });
           };

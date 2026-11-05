@@ -1,9 +1,11 @@
+import { loadModelChunk } from '../model/asset-cache.js';
 import { REFERENCE, referenceRecord } from '../revisions/reference.js';
 import { revisionId, getImportedModelAssets } from '../revisions/store.js';
 import { abortError, createYield, workerScope } from '../shared/worker-scope.js';
 import { moduleUrl, packUrl, siteUrl } from '../shared/site.js';
 import { runEDNO, EDNO } from '../training/edno.js';
 import { createLanePool } from '../training/lane-pool.js';
+import { measureOriginalReference } from '../training/original-reference.js';
 import { openLiveES, recipeHash, normalizeRecipe, attributeChange, streamSeed, PRIORITIES, } from '../training/live-es.js';
 /** Fixed explanation seeds, disjoint from search, validation and held-out evaluation seeds. */
 export const EXPLAIN_SEEDS = Object.freeze(Array.from({ length: 24 }, (_, k) => streamSeed(0, 0xa000000 + k, true)));
@@ -30,8 +32,10 @@ async function prefetchAssets(readAsset) {
     const manifestBytes = await get(modelBase, 'manifest.json');
     assets.set('manifest.json', manifestBytes);
     const manifest = JSON.parse(new TextDecoder().decode(manifestBytes));
-    for (const c of manifest.chunks)
-        assets.set(c.path, await get(packUrl('w4', ''), c.path));
+    for (const c of manifest.chunks) {
+        const held = await readAsset?.(c.path);
+        assets.set(c.path, held ?? (await loadModelChunk(packUrl('w4', c.path), c)).bytes);
+    }
     assets.set('policy-simd.wasm', await get(modelBase, 'policy-simd.wasm'));
     assets.set('arena.wasm', await get(engineBase, 'arena.wasm'));
     assets.set('arena.wad.gz', await get(engineBase, 'arena.wad.gz'));
@@ -39,8 +43,10 @@ async function prefetchAssets(readAsset) {
 }
 /** Mirror live counters (pool or in-process engine) onto the reported `counts` object. */
 function mirrorCounts(counts, source, keys) {
-    for (const k of keys)
-        Object.defineProperty(counts, k, { get: () => source[k], set() { }, enumerable: true });
+    for (const k of keys) {
+        const offset = counts[k] ?? 0;
+        Object.defineProperty(counts, k, { get: () => offset + (source[k] ?? 0), set() { }, enumerable: true });
+    }
 }
 async function run(data) {
     const requested = Math.max(1, Math.min(64, Math.floor(Number(data.lanes) || 1)));
@@ -85,6 +91,27 @@ async function run(data) {
         progress(extra);
     };
     try {
+        if (data.type === 'reference') {
+            plan = { pairs: 0, method: 'reference' };
+            for (const item of data.items?.filter((x) => x.precision === 'fp32') ?? []) {
+                if (!item.id)
+                    throw new Error('The FP32 reference needs its model ID.');
+                record(0, 'reference', 'Measuring Original FP32 on the fixed reference games');
+                const result = await measureOriginalReference(item.id, {
+                    stop: () => stop,
+                    yieldTask,
+                    progress: (games, decisions) => {
+                        counts.games = games;
+                        counts.decisions = decisions;
+                        progress();
+                    },
+                });
+                emit({ type: 'reference-result', id: item.id, record: result });
+            }
+            data = { ...data, items: data.items?.filter((x) => x.precision !== 'fp32') };
+            if (!data.items?.length)
+                return;
+        }
         record(0, 'loading', 'Opening 4-bit Kumo and the live PureDOOM arena on ' + requested + ' CPU core' + (requested > 1 ? 's' : ''));
         const assetId = data.type === 'attribute' ? data.child?.id : data.type === 'reference' ? data.items?.[0]?.id : data.parent?.id;
         const readAsset = assetId ? await getImportedModelAssets(assetId) : undefined;

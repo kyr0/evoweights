@@ -1,4 +1,6 @@
 // Release-generated constants. Rebuild with experiments/v08/revisions/generate_trust.py.
+// These authenticate model bytes and portable weight layouts, not game scores or promotion evidence.
+// Keep them unchanged across game rulesets so existing model revision IDs and weight imports stay valid.
 import type { HeadOp } from '../model/kumo.ts';
 import type { Controller } from '../tactical/types.ts';
 import type { ReleasedHead } from './patch-codec.ts';

@@ -5,6 +5,8 @@
 import { siteUrl } from '../shared/site.js';
 /** Episode cap of every published result: one minute at 35 tics per second. */
 export const PUBLISHED_LIMIT_TICS = 2100;
+/** Changes to the task invalidate historical engine fitness comparisons. */
+export const HUGGINGDOOM_RULESET = 'huggingdoom-v1';
 const WIDTH = 320;
 const HEIGHT = 200;
 async function gunzipIfNeeded(bytes) {
@@ -52,6 +54,7 @@ export async function createArena({ assetBase = siteUrl('engine/'), seed = 9000,
         return state();
     }
     const configurable = () => typeof e.arena_set_limit === 'function';
+    const ruleset = () => (e.arena_picnic ? HUGGINGDOOM_RULESET : 'doom-legacy');
     const currentLimit = () => (configurable() ? e.arena_limit() : PUBLISHED_LIMIT_TICS);
     function setLimit(tics) {
         limit = Math.max(0, tics | 0);
@@ -70,6 +73,34 @@ export async function createArena({ assetBase = siteUrl('engine/'), seed = 9000,
         const c = floats(e.arena_combat(), 12);
         const a = floats(e.arena_attacks(), 12);
         const d = floats(e.arena_damages(), 2);
+        const p = e.arena_picnic ? floats(e.arena_picnic(), 11) : null;
+        const picnic = p
+            ? {
+                bearsFed: p[0],
+                bearsBefriended: p[1],
+                timesBitten: p[2],
+                hearts: p[3],
+                hugging: !!p[4],
+                ending: !!p[5],
+                unfolding: !!p[6],
+                peacefulBears: p[7],
+                finaleProgress: Math.max(0, Math.min(1, p[8])),
+                dizzy: !!p[9],
+                activeTics: p[10],
+            }
+            : {
+                bearsFed: 0,
+                bearsBefriended: 0,
+                timesBitten: 0,
+                hearts: Math.ceil(features[10] / 20),
+                hugging: false,
+                ending: false,
+                unfolding: false,
+                peacefulBears: 0,
+                finaleProgress: 0,
+                dizzy: false,
+                activeTics: e.arena_tic(),
+            };
         const threat = {
             visible: !!t[0],
             x: t[1],
@@ -141,6 +172,7 @@ export async function createArena({ assetBase = siteUrl('engine/'), seed = 9000,
             forwardDisplacement: c[11],
         };
         return {
+            picnic,
             features,
             threat,
             telemetry,
@@ -178,5 +210,16 @@ export async function createArena({ assetBase = siteUrl('engine/'), seed = 9000,
         return new Uint8ClampedArray(e.memory.buffer, e.arena_frame(), WIDTH * HEIGHT * 4);
     }
     reset(seed);
-    return { width: WIDTH, height: HEIGHT, reset, step, frame, state, setLimit, limit: currentLimit, configurable };
+    return {
+        width: WIDTH,
+        height: HEIGHT,
+        reset,
+        step,
+        frame,
+        state,
+        setLimit,
+        limit: currentLimit,
+        configurable,
+        ruleset,
+    };
 }

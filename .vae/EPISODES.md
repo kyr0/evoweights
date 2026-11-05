@@ -22,3 +22,29 @@ Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC,
 2026-11-05T02:43:04Z s=8d2d66c5 FINDING docs/ (build output) learn=verifier: .vae/VERIFY.py docs.build-fresh fails when any src/ or public/ file is newer than docs/app/main.js; checked both ways (touch src/theme.ts detected as stale, fre
 2026-11-05T03:17:43Z s=8d2d66c5 DONE fp=914914cc80db cov=81.0% paths=.oxlintrc.json,.prettierrc.json,AGENTS.md,ARCH.md(+164)
 2026-11-05T03:17:43Z s=8d2d66c5 FINDING src/index.html:561 learn=test: tests/unit/site-files.test.ts 'page paragraphs open and close in pairs' fails on the edited file (stray </p> at line 561) and passes on the fix.
+2026-11-05T11:32:46Z s=8d2d66c5 FAIL prose
+2026-11-05T11:44:29Z s=8d2d66c5 FAIL coverage
+2026-11-05T12:20:03Z s=8d2d66c5 DONE fp=ac82fb5fb800 cov=76.8% paths=ARCH.md,README.md,docs/app/hero-evolution.js,docs/app/huggingdoom.js(+85)
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING source/README.md:13 T04 learn=verifier: vae prose check (T04) flags broken relative links.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING public/assets/huggingdoom/PROVENANCE.md:31 T06 learn=verifier: vae prose check (T06).
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING source/engine/HUGGINGDOOM.md:73 learn=none: The audit needs a zig audit build and is not part of make test.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING public/assets/huggingdoom/PROVENANCE.md + sounds/README.txt learn=none: Authorship and licence are the owner's facts; asked in the hand-off.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING scripts/package-engine-source.py:14-23 learn=verifier: .vae/VERIFY.py engine.source-zip-fresh runs .vae/checks/engine-zip-fresh.py; checked both ways (edited source/README.md flagged, restored passes).
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING source/engine/HUGGINGDOOM.md:66 + source/README.md:39 learn=none: Documentation of a manual rebuild.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/engine/arena.ts / arena.c episode cap learn=none: Intent is the owner's decision; a test would pin an unverified value.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/app/revisions-panel.ts:CODE_FILES learn=none: No harness inspects fingerprint membership.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/model/asset-cache.ts:loadModelChunk learn=test: tests/e2e/model-cache.spec.ts 'superseded' block fails without the call (checked by removing it from the build) and passes with it.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING ARCH.md:35 B01 learn=none: Reading-level evidence scope.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING README.md:67 B01 learn=none: Reading-level evidence scope.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/revisions/reference.ts:14 learn=test: tests/unit/huggingdoom-revisions.test.ts asserts REFERENCE.ruleset === HUGGINGDOOM_RULESET.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/app/revisions-panel.ts:1907 learn=none: Export format detail without a consumer test.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING tests/e2e/huggingdoom.spec.ts:120,153 learn=test: The specs themselves now fail on those events.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/app/main.ts touch controls + results tablist learn=test: tests/e2e/huggingdoom.spec.ts and tests/e2e/site.spec.ts.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/index.html:257 + main.ts:28 learn=test: e2e finds the button by role and name 'Sound off'.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/index.html:383,378 + main.ts:169 learn=test: e2e asserts getByRole('img', {name: '5 of 5 hearts'}) and getByRole('group', {name: 'Touch controls'}).
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/styles/huggingdoom.css:158-200 learn=none: No automated contrast check in the suite.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/app/picnic-audio.ts:85 learn=none: Not covered by an e2e request assertion yet.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/app/main.ts:233 learn=none: UI text branch.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/app/main.ts:546-570 learn=none: Needs a missing built-in to reproduce.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/app/picnic-audio.ts:dispose learn=none: Dead code.
+2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/styles/revisions-panel.css + portal.css learn=none: Dead code.

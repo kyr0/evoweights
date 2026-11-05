@@ -15,3 +15,6 @@ __pycache__/
 node_modules/
 coverage/
 .cache/
+
+# Rebuilt C object and generated instrumented header.
+source/engine/build/

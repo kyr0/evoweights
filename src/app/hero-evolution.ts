@@ -47,10 +47,10 @@ function plate(fig: Element): void {
     FLASH = 4;
   const FAST = 210,
     SLOW = 4200; // ms per generation; slow motion is 20× slower
-  const UP = '#b6a4fc',
-    DOWN = '#65d3bc',
-    INK = '#edefef',
-    QUIET = '#9aa0ad';
+  const UP = '#9750ab',
+    DOWN = '#287769',
+    INK = '#493115',
+    QUIET = '#785a2f';
   const FONT = '600 9px ui-monospace, SFMono-Regular, Menlo, monospace',
     BIG = '700 17px ui-monospace, SFMono-Regular, Menlo, monospace';
   const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
@@ -145,9 +145,8 @@ function plate(fig: Element): void {
     decided = false;
   }
   const shade = (level: number) => {
-    const t = (level + 7) / 14,
-      c = (x: number) => Math.round(46 + t * x);
-    return `rgb(${c(92)},${c(96)},${c(110)})`;
+    const t = (level + 7) / 14;
+    return `rgb(${Math.round(151 + t * 98)},${Math.round(101 + t * 120)},${Math.round(30 + t * 113)})`;
   };
 
   function grid(w: number[], x: number, y: number, cell: number, moved?: Map<number, number>, alpha = 1): void {
@@ -175,7 +174,7 @@ function plate(fig: Element): void {
     }
   }
   function bar(x: number, y: number, w: number, value: number, threshold: number, color: string): void {
-    ctx.fillStyle = '#343846';
+    ctx.fillStyle = '#c99c43';
     ctx.fillRect(x, y, w, 4);
     ctx.fillStyle = color;
     ctx.fillRect(x, y, w * value, 4);
@@ -187,7 +186,7 @@ function plate(fig: Element): void {
     ctx.textAlign = align;
     ctx.fillText(text, x, y);
   }
-  // A status badge on a solid dark background, so it never mixes with what lies underneath.
+  // A solid cream badge keeps the status readable over the weight grid.
   function badge(
     text: string,
     x: number,
@@ -197,7 +196,7 @@ function plate(fig: Element): void {
   ): void {
     const w = ctx.measureText(text).width + 8,
       left = align === 'right' ? x - w : align === 'center' ? x - w / 2 : x;
-    ctx.fillStyle = '#0d0f14';
+    ctx.fillStyle = '#fff6dd';
     ctx.fillRect(left, y - 9, w, 12);
     ctx.fillStyle = color;
     ctx.textAlign = 'left';
@@ -217,7 +216,8 @@ function plate(fig: Element): void {
     ctx.font = FONT;
     ctx.textBaseline = 'alphabetic';
     const phase = reduced ? 0.7 : done ? 1 : Math.min(1, (now - cycleStart) / cycleMs);
-    const pc = Math.floor(Math.min((W * 0.36) / COLS, (H - 76) / ROWS)),
+    const compact = W < 360;
+    const pc = Math.floor(Math.min((W * (compact ? 0.44 : 0.36)) / COLS, (H - 76) / ROWS)),
       px = 2,
       py = 18,
       pw = COLS * pc;
@@ -236,32 +236,42 @@ function plate(fig: Element): void {
     // The grid shows the model the mutants come from: the base model until the first child is kept, then the newest child.
     label(kept ? 'CHILD · GEN ' + lastKept.toLocaleString('en-US') : 'BASE MODEL', px, 11, INK);
     parentGrid(px, py, pc);
-    const top = py + ROWS * pc + 10;
-    label('METRIC', px, top + 4);
-    bar(px + 44, top, pw - 44, quality, quality, '#8c83a1');
+    const mx = compact ? px + pw + 18 : px,
+      metricWidth = compact ? W - mx - 2 : pw,
+      top = compact ? py + 10 : py + ROWS * pc + 10;
+    label('METRIC', mx, top + 4);
+    bar(mx + 44, top, metricWidth - 44, quality, quality, '#89652a');
     // Validation row: the candidate's paired t against the parent on fresh seeds, with the gate at t = 2.
-    label('VALIDATION', px, top + 20);
-    const vx = px + 66,
-      vw = pw - 66 - 34,
+    label('VALIDATION', mx, top + 20);
+    const vx = mx + 66,
+      vw = metricWidth - 66 - 34,
       shownT = clamp(cand.t, 0, T_MAX) * val;
-    ctx.fillStyle = '#343846';
+    ctx.fillStyle = '#c99c43';
     ctx.fillRect(vx, top + 16, vw, 4);
-    ctx.fillStyle = decided ? (cand.kept ? UP : '#777e89') : '#8c83a1';
+    ctx.fillStyle = decided ? (cand.kept ? UP : '#a47a34') : '#89652a';
     ctx.fillRect(vx, top + 16, (vw * shownT) / T_MAX, 4);
     ctx.fillStyle = INK;
     ctx.fillRect(vx + (vw * T_GATE) / T_MAX, top + 13, 1.5, 10);
     if (val > 0 && !done)
-      label('t ' + (cand.t * val).toFixed(1), px + pw, top + 20, decided ? (cand.kept ? UP : INK) : QUIET, 'right');
-    label('GENERATION', px, top + 38);
+      label(
+        't ' + (cand.t * val).toFixed(1),
+        mx + metricWidth,
+        top + 20,
+        decided ? (cand.kept ? UP : INK) : QUIET,
+        'right',
+      );
+    label('GENERATION', mx, top + 38);
     ctx.font = BIG;
-    label(generation.toLocaleString('en-US'), px + pw, top + 40, INK, 'right');
+    label(generation.toLocaleString('en-US'), mx + metricWidth, top + 40, INK, 'right');
     ctx.font = FONT;
-    const gx = px + pw + 18,
+    const gx = compact ? px : px + pw + 18,
+      gy = compact ? py + ROWS * pc + 24 : 11,
+      rowHeight = compact ? (H - gy) / 2 : H / 2,
       mw = (W - gx - 2) / 3,
-      mc = Math.floor(Math.min((mw - 10) / COLS, (H / 2 - 26) / ROWS));
+      mc = Math.floor(Math.min((mw - 10) / COLS, (rowHeight - 26) / ROWS));
     mutants.forEach((m, k) => {
       const x = gx + (k % 3) * mw,
-        y = 11 + Math.floor(k / 3) * (H / 2);
+        y = gy + Math.floor(k / 3) * rowHeight;
       const pop = clamp(phase / 0.1, 0, 1),
         finalist = finalists.includes(m),
         isCand = m === cand,
@@ -275,10 +285,10 @@ function plate(fig: Element): void {
         COLS * mc,
         m.score * fill,
         quality,
-        isCand && candOn ? (decided && m.kept ? UP : '#a49bbb') : finalsOn && finalist ? '#8c83a1' : '#5c6270',
+        isCand && candOn ? (decided && m.kept ? UP : '#865009') : finalsOn && finalist ? '#89652a' : '#785a2f',
       );
       // Finalists are marked inside their grid (top-left), so the title row keeps its width.
-      if (finalsOn && finalist && !done) badge('FINALIST', x, y + 16, isCand && candOn ? INK : '#c6bed8', 'left');
+      if (finalsOn && finalist && !done) badge('FINALIST', x, y + 16, isCand && candOn ? INK : '#493115', 'left');
       if (isCand && candOn && !done)
         badge(
           decided ? (m.kept ? 'KEPT' : 'REJECTED') : val > 0 ? 'VALIDATING' : 'CANDIDATE',
@@ -299,7 +309,7 @@ function plate(fig: Element): void {
           'CROSSING ' +
           ids,
         gx + (W - gx) / 2,
-        H / 2 + 2,
+        gy + rowHeight - 9,
         decided && cand.kept ? UP : INK,
         'center',
       );
@@ -314,23 +324,16 @@ function plate(fig: Element): void {
           sign[i] = d;
         }
     }
-    if (done) {
-      const cx = gx + (W - gx) / 2,
-        cy = H / 2;
-      ctx.fillStyle = 'rgba(13,15,20,.86)';
-      ctx.fillRect(gx - 6, cy - 34, W - gx + 6, 76);
-      ctx.font = '700 13px ui-monospace, SFMono-Regular, Menlo, monospace';
-      label('LOCAL OPTIMUM REACHED', cx, cy - 14, UP, 'center');
-      ctx.font = FONT;
-      label('no validated child in ' + STALL + ' generations', cx, cy + 1, INK, 'center');
-    }
     $('tried')!.textContent = tried.toLocaleString('en-US');
     $('kept')!.textContent = String(kept);
   }
 
   // Base model → (earlier children) → parent → child, then the local optimum.
   const list = $('lineage'),
-    repeat = $('repeat');
+    repeat = $('repeat'),
+    complete = $('complete'),
+    completionDetail = $('completion-detail');
+  if (completionDetail) completionDetail.textContent = 'No validated child in ' + STALL + ' generations.';
   function renderLineage(): void {
     if (!list) return;
     const item = (role: string, e: LineageEntry) => {
@@ -368,6 +371,7 @@ function plate(fig: Element): void {
       list.append(li);
     }
     if (repeat) repeat.hidden = !done;
+    if (complete) complete.hidden = !done;
   }
 
   function next(): void {

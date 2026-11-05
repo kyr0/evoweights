@@ -1,7 +1,9 @@
-AGM browser arena · PureDOOM / Freedoom
+HuggingDOOM — Honey & Hugs · PureDOOM / Freedoom
 
-Code and notices for this WASM binary are available in doom-engine-source.zip alongside this file.
-PureDOOM revision 355cfbd16fac119718879239336ee2ea408886bd.
-Upstream GPL v2 file, original id Software notices and complete instrumented build source are included.
-Freedoom artwork copyright 2001-2024 Contributors to the Freedoom project, modified BSD.
-See source/LICENSE-Freedoom.txt in the source archive.
+Corresponding source: huggingdoom-engine-source.zip alongside this file.
+PureDOOM revision 355cfbd16fac119718879239336ee2ea408886bd, GPL v2; original id Software notices retained.
+The source archive includes the unmodified upstream header, instrumenter, modified host adapter, build scripts, atlas compiler and source asset inputs.
+New bear, meadow and prop images were generated for this release. See ../assets/huggingdoom/PROVENANCE.md.
+Legacy supporting IWAD data remains based on Freedoom, copyright 2001-2024 Contributors to the Freedoom project, modified BSD.
+Both licenses are retained in source/engine/source/LICENSE-*.txt.
+The older doom-engine-source.zip is retained only as the archived pre-theme release.

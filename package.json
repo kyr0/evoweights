@@ -1,8 +1,8 @@
 {
   "name": "evoweights",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Static browser lab where a 4-bit Kumo policy plays a WASM DOOM arena and visitors evolve its weights on their own CPU.",
+  "description": "HuggingDOOM — Honey & Hugs: a child-friendly WASM meadow game and EvoWeights browser training lab.",
   "license": "UNLICENSED",
   "author": "Aron Homberg <info@aron-homberg.de>",
   "type": "module",

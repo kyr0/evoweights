@@ -45,6 +45,7 @@ export interface FramePacket {
   health: number;
   ammo: number;
   kills: number;
+  picnic: ArenaState['picnic'];
   done: boolean;
   decision: LiveDecision | null;
   inferenceMs: number;
@@ -140,6 +141,7 @@ function packet(game: Arena, s: ArenaState, decision: LiveDecision | null, ms: n
       health: s.health,
       ammo: s.ammo,
       kills: s.kills,
+      picnic: s.picnic,
       done: s.done,
       decision,
       inferenceMs: ms,
@@ -153,13 +155,13 @@ function packet(game: Arena, s: ArenaState, decision: LiveDecision | null, ms: n
       inferenceP50: percentile(perfSamples, 0.5),
       inferenceP95: percentile(perfSamples, 0.95),
       perfN: perfSamples.length,
-      backend: (runtime as Runtime).info(),
+      backend: human ? { backend: 'human', reason: null } : (runtime?.info() ?? { backend: 'human', reason: null }),
     },
     [rgba.buffer],
   );
 }
 async function tick(): Promise<void> {
-  if (paused || finished || busy || !arena || !runtime || !policy) return;
+  if (paused || finished || busy || !arena || (!human && (!runtime || !policy))) return;
   busy = true;
   const version = epoch,
     t0 = performance.now();
@@ -171,9 +173,9 @@ async function tick(): Promise<void> {
       dt = 0;
     if (human) result = humanDecision();
     else {
-      const core = await runtime.infer(s.features, policy.head);
+      const core = await runtime!.infer(s.features, policy!.head);
       if (version !== epoch || paused) return;
-      result = policy.decide(s, core);
+      result = policy!.decide(s, core);
       dt = performance.now() - start;
     }
     if (n >= 12 && !human) {
@@ -202,9 +204,28 @@ async function tick(): Promise<void> {
   }
 }
 function run(): void {
-  if (!arena || !runtime || finished) return;
+  if (!arena || (!human && (!runtime || !policy)) || finished) return;
   paused = false;
   schedule();
+}
+
+let aiConfig: Extract<PlayRequest, { type: 'init' }> | null = null;
+async function prepareAI(): Promise<void> {
+  if (runtime && policy) return;
+  if (!aiConfig) throw new Error('No model selected');
+  const m = aiConfig;
+  const choice = (m.variant ?? m.policy ?? 'dnp') as string;
+  const { precision } = modelFor(choice, m.revision);
+  [runtime, policy] = await Promise.all([
+    openRuntime(
+      m.backend,
+      ({ loaded, total }) => post({ type: 'loading', loaded, total }),
+      precision,
+      m.revision?.ops,
+      m.revisionId,
+    ),
+    createDecisionPolicy(choice, undefined, m.revision),
+  ]);
 }
 
 workerScope.onmessage = async ({ data: m }: MessageEvent<PlayRequest>) => {
@@ -213,31 +234,31 @@ workerScope.onmessage = async ({ data: m }: MessageEvent<PlayRequest>) => {
       seed = m.seed >>> 0;
       human = !!m.human;
       variant = m.variant ?? m.policy;
-      const choice = variant as string;
-      const { precision } = modelFor(choice, m.revision);
-      [arena, runtime, policy] = await Promise.all([
-        createArena({ seed, limitTics: Number.isFinite(m.limitTics) ? m.limitTics : 0 }),
-        openRuntime(
-          m.backend,
-          ({ loaded, total }) => post({ type: 'loading', loaded, total }),
-          precision,
-          m.revision?.ops,
-          m.revisionId,
-        ),
-        createDecisionPolicy(choice, undefined, m.revision),
-      ]);
+      aiConfig = m;
+      if (human) arena = await createArena({ seed, limitTics: Number.isFinite(m.limitTics) ? m.limitTics : 0 });
+      else
+        [arena] = await Promise.all([
+          createArena({ seed, limitTics: Number.isFinite(m.limitTics) ? m.limitTics : 0 }),
+          prepareAI(),
+        ]);
       reset(arena, seed, true);
       post({ type: 'ready' });
       run();
       return;
     }
-    if (!arena || !runtime) return;
+    if (!arena) return;
     if (m.type === 'control') {
       Object.assign(keys, m.keys);
       return;
     }
     if (m.type === 'human') {
+      if (!m.on && (!runtime || !policy)) {
+        stop();
+        await prepareAI();
+        post({ type: 'ready' });
+      }
       human = !!m.on;
+      run();
       for (const k of Object.keys(keys) as (keyof HumanKeys)[]) keys[k] = false;
       return;
     }

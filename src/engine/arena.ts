@@ -7,6 +7,9 @@ import { siteUrl } from '../shared/site.ts';
 /** Episode cap of every published result: one minute at 35 tics per second. */
 export const PUBLISHED_LIMIT_TICS = 2100;
 
+/** Changes to the task invalidate historical engine fitness comparisons. */
+export const HUGGINGDOOM_RULESET = 'huggingdoom-v1';
+
 export type ArenaAction = 0 | 1 | 2 | 3; // LEFT, RIGHT, FIRE, HOLD
 
 export interface Threat {
@@ -83,7 +86,24 @@ export interface Telemetry {
 
 export type Weapon = 'pistol' | 'fist' | 'other';
 
+/** HuggingDOOM counters; weapon names retain the original model input ABI. */
+export interface PicnicState {
+  bearsFed: number;
+  bearsBefriended: number;
+  timesBitten: number;
+  hearts: number;
+  hugging: boolean;
+  ending: boolean;
+  unfolding: boolean;
+  peacefulBears: number;
+  finaleProgress: number;
+  dizzy: boolean;
+  /** Survival time excludes the harmless 70-tic emergency-honey finale. */
+  activeTics: number;
+}
+
 export interface ArenaState {
+  picnic: PicnicState;
   /** The 14 policy inputs in native feature order. */
   features: Float32Array;
   threat: Threat;
@@ -118,6 +138,8 @@ export interface Arena {
   limit(): number;
   /** False on binaries built before the `arena_set_limit` export existed; those always stop at 2100 tics. */
   configurable(): boolean;
+  /** Identifies mechanics, including when a cached legacy binary is loaded. */
+  ruleset(): typeof HUGGINGDOOM_RULESET | 'doom-legacy';
 }
 
 export interface ArenaOptions {
@@ -144,6 +166,7 @@ interface ArenaExports {
   arena_combat(): number;
   arena_attacks(): number;
   arena_damages(): number;
+  arena_picnic?: () => number;
   arena_frame(): number;
   arena_kills(): number;
   arena_tic(): number;
@@ -203,6 +226,7 @@ export async function createArena({
   }
 
   const configurable = () => typeof e.arena_set_limit === 'function';
+  const ruleset = () => (e.arena_picnic ? HUGGINGDOOM_RULESET : 'doom-legacy');
   const currentLimit = () => (configurable() ? e.arena_limit() : PUBLISHED_LIMIT_TICS);
 
   function setLimit(tics: number): number {
@@ -224,6 +248,34 @@ export async function createArena({
     const c = floats(e.arena_combat(), 12);
     const a = floats(e.arena_attacks(), 12);
     const d = floats(e.arena_damages(), 2);
+    const p = e.arena_picnic ? floats(e.arena_picnic(), 11) : null;
+    const picnic: PicnicState = p
+      ? {
+          bearsFed: p[0],
+          bearsBefriended: p[1],
+          timesBitten: p[2],
+          hearts: p[3],
+          hugging: !!p[4],
+          ending: !!p[5],
+          unfolding: !!p[6],
+          peacefulBears: p[7],
+          finaleProgress: Math.max(0, Math.min(1, p[8])),
+          dizzy: !!p[9],
+          activeTics: p[10],
+        }
+      : {
+          bearsFed: 0,
+          bearsBefriended: 0,
+          timesBitten: 0,
+          hearts: Math.ceil(features[10] / 20),
+          hugging: false,
+          ending: false,
+          unfolding: false,
+          peacefulBears: 0,
+          finaleProgress: 0,
+          dizzy: false,
+          activeTics: e.arena_tic(),
+        };
     const threat: Threat = {
       visible: !!t[0],
       x: t[1],
@@ -297,6 +349,7 @@ export async function createArena({
       forwardDisplacement: c[11],
     };
     return {
+      picnic,
       features,
       threat,
       telemetry,
@@ -334,5 +387,16 @@ export async function createArena({
   }
 
   reset(seed);
-  return { width: WIDTH, height: HEIGHT, reset, step, frame, state, setLimit, limit: currentLimit, configurable };
+  return {
+    width: WIDTH,
+    height: HEIGHT,
+    reset,
+    step,
+    frame,
+    state,
+    setLimit,
+    limit: currentLimit,
+    configurable,
+    ruleset,
+  };
 }

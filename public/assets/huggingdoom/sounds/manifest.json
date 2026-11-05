@@ -1,0 +1,77 @@
+{
+  "generator": "scripts/generate-picnic-sounds.py",
+  "sounds": [
+    {
+      "file": "plop.wav",
+      "seconds": 0.42,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16,
+      "sha256": "fdecfe099d19c865e0a18d9b457665e3c493e23656323eb237861aadf1f883e4"
+    },
+    {
+      "file": "empty-click.wav",
+      "seconds": 0.16,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16,
+      "sha256": "6d3074c81ec56764ecfd8858eefe84c76164dc01e8977cbcc2bd879d2c4a709c"
+    },
+    {
+      "file": "unfold.wav",
+      "seconds": 0.65,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16,
+      "sha256": "27c952e4b4896f8649adc1664acd98b3865f0a2ae99e4c4f592b1fdddf0186d1"
+    },
+    {
+      "file": "eating.wav",
+      "seconds": 0.72,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16,
+      "sha256": "47ed8fee39a1f72d0b500e628422d24cd63acec6e9346e59aabcd3bea7c946d9"
+    },
+    {
+      "file": "mmmrrraww.wav",
+      "seconds": 1.25,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16,
+      "sha256": "2b7d92afe8d9e206cb245deb44b3ab01f54502f654951c83e316fc31b6f86c10"
+    },
+    {
+      "file": "hug.wav",
+      "seconds": 1.2,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16,
+      "sha256": "5c41a754ba6b895833399e5e8b637d3f85a2ce80561a1253390e1ff9e5a3c3bc"
+    },
+    {
+      "file": "chomp.wav",
+      "seconds": 0.4,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16,
+      "sha256": "a68ca833f6dfd8e006febf6063007a2ac0245863b97c22de1f2a743f83b51e79"
+    },
+    {
+      "file": "dizzy.wav",
+      "seconds": 1.1,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16,
+      "sha256": "b0e3f7b307162647196a5dbcad3d1743ee72414c706fa0ba7a45c97ae7a5481e"
+    },
+    {
+      "file": "finale.wav",
+      "seconds": 1.85,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16,
+      "sha256": "bc7793f4763a2231e69cf04c196b57418016b4d96a445ac8396dad331b30bc26"
+    }
+  ]
+}

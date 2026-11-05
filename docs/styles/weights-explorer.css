@@ -1,13 +1,12 @@
 /* All styles are scoped to the weights-explorer component. No framework or font fetch. */
 [data-weights-explorer] {
-  --wx-bg: var(--bg, #101310);
-  --wx-panel: var(--panel, #191d19);
-  --wx-line: var(--line, #343a32);
-  --wx-muted: var(--muted, #a7afa4);
-  --wx-text: var(--fg, #edf0e9);
-  --wx-acid: var(--acid, #cef887);
-  --wx-cool: #a4d8ec;
-  --wx-zero: #51594f;
+  --wx-bg: var(--honey-soft);
+  --wx-panel: var(--honey-card);
+  --wx-line: var(--honey-control-line);
+  --wx-muted: #67533b;
+  --wx-text: var(--honey-ink);
+  --wx-acid: #7a4711;
+  --wx-zero: #8d6423;
   --wx-mono: var(--mono, ui-monospace, Consolas, monospace);
   color: var(--wx-text);
   min-width: 0;
@@ -48,7 +47,7 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   border: 1px solid var(--wx-line);
-  border-radius: 5px;
+  border-radius: 12px;
   background: var(--wx-panel);
 }
 .wx-metric {
@@ -86,8 +85,9 @@
 }
 .wx-viewer {
   border: 1px solid var(--wx-line);
-  border-radius: 5px;
+  border-radius: 12px;
   background: var(--wx-panel);
+  overflow: hidden;
 }
 .wx-toolbar,
 .wx-zoom-head {
@@ -100,25 +100,26 @@
 .wx-toolbar {
   padding: 10px 14px;
   border-bottom: 1px solid var(--wx-line);
-  background: #20251e;
-}
-.wx-modes {
-  display: flex;
-  gap: 4px;
+  background: var(--honey-soft);
 }
 .wx-mode {
-  background: transparent;
-  color: var(--wx-muted);
+  background: var(--wx-panel);
+  color: var(--wx-text);
   border: 1px solid var(--wx-line);
-  border-radius: 3px;
+  border-radius: 12px;
   padding: 7px 10px;
   font-size: 11px;
   cursor: pointer;
 }
 .wx-mode[aria-pressed='true'] {
-  border-color: #849c69;
-  background: #2d3825;
-  color: var(--wx-acid);
+  border-color: var(--wx-text);
+  background: var(--wx-text);
+  color: var(--honey-card);
+}
+.wx-mode:hover:not([aria-pressed='true']),
+.wx-tab:hover:not([aria-selected='true']) {
+  background: var(--honey-panel);
+  color: var(--wx-text);
 }
 .wx-body {
   padding: 14px;
@@ -146,7 +147,7 @@
   color: var(--wx-text);
   background: var(--wx-bg);
   border: 1px solid var(--wx-line);
-  border-radius: 3px;
+  border-radius: 12px;
   font-size: 12px;
 }
 .wx-field input[type='number'] {
@@ -197,10 +198,10 @@
   gap: 0 5px;
   min-width: 0;
   padding: 5px;
-  background: #181d17;
+  background: var(--honey-soft);
   color: var(--wx-text);
   border: 1px solid var(--wx-line);
-  border-radius: 3px;
+  border-radius: 12px;
   cursor: pointer;
   text-align: left;
 }
@@ -219,24 +220,26 @@
   color: var(--wx-muted);
 }
 .wx-group[aria-pressed='true'] {
-  background: #2c3427;
-  border-color: var(--wx-acid);
+  background: var(--honey-panel);
+  border-color: var(--wx-text);
+  box-shadow: inset 0 0 0 1px var(--wx-text);
 }
 .wx-group:disabled {
-  opacity: 0.52;
+  opacity: 1;
+  border-style: dashed;
   cursor: default;
 }
 .wx-fill-up {
-  fill: var(--wx-acid);
+  fill: var(--weight-raised);
 }
 .wx-fill-down {
-  fill: var(--wx-cool);
+  fill: var(--weight-lowered);
 }
 .wx-fill-same {
   fill: var(--wx-zero);
 }
 .wx-fill-dim {
-  fill: #282e26;
+  fill: #d9ceb4;
 }
 .wx-legend {
   display: flex;
@@ -259,35 +262,27 @@
   width: 13px;
   height: 13px;
   font: 700 10px/1 var(--wx-mono);
-  border-radius: 2px;
+  border-radius: 12px;
 }
 .wx-up {
-  background: #394b28;
-  color: #dcffa9;
+  background: var(--weight-raised);
+  color: var(--wx-text);
 }
 .wx-down {
-  background: #29454e;
-  color: #c4f1ff;
+  background: var(--weight-lowered);
+  color: var(--wx-text);
 }
 .wx-same {
-  background: #252a24;
-  color: #bdc8b8;
+  background: var(--honey-card);
+  color: #483820;
 }
 .wx-dim {
-  background: #181c17;
-  border: 1px dashed #596154;
-}
-.wx-swatch.wx-up {
-  background: var(--wx-acid);
-  color: #182010;
-}
-.wx-swatch.wx-down {
-  background: var(--wx-cool);
-  color: #101e25;
+  background: #eee4cf;
+  border: 1px dashed var(--wx-line);
 }
 .wx-swatch.wx-same {
   background: var(--wx-zero);
-  color: #edf1e8;
+  color: #fffaf0;
 }
 .wx-tag {
   font: 10px/1.35 var(--wx-mono);
@@ -301,8 +296,8 @@
 }
 .wx-cell,
 .wx-matrix-cell {
-  border: 1px solid transparent;
-  border-radius: 2px;
+  border: 1px solid var(--wx-line);
+  border-radius: 12px;
   padding: 4px 0;
   min-width: 0;
   height: 25px;
@@ -311,13 +306,18 @@
 }
 .wx-cell[aria-pressed='true'],
 .wx-matrix-cell[aria-pressed='true'] {
-  outline: 2px solid #f7fbf6;
+  outline: 2px solid var(--wx-text);
   outline-offset: -2px;
 }
+.wx-cell:hover:enabled,
+.wx-matrix-cell:hover:enabled {
+  box-shadow: inset 0 0 0 1px var(--wx-text);
+}
 .wx-cell:disabled {
-  background: #1c201c;
-  color: #737c70;
-  opacity: 0.6;
+  background: #eee4cf;
+  color: var(--wx-muted);
+  opacity: 1;
+  border-style: dashed;
   cursor: default;
 }
 .wx-readout,
@@ -418,8 +418,8 @@
 }
 .wx-empty {
   padding: 15px;
-  background: #20251e;
-  border-radius: 3px;
+  background: var(--honey-soft);
+  border-radius: 12px;
 }
 @media (max-width: 960px) {
   .wx-group {
@@ -481,13 +481,9 @@
     font-size: 11px;
   }
 }
-.wx-matrix-cell.wx-changed {
-  outline: 2px solid var(--wx-accent, #7bbf2a);
-  outline-offset: -2px;
-}
+.wx-matrix-cell.wx-changed,
 .wx-swatch.wx-changed {
-  outline: 2px solid var(--wx-accent, #7bbf2a);
-  outline-offset: -2px;
+  box-shadow: inset 0 0 0 1px var(--wx-acid);
 }
 @media (max-width: 440px) {
   .wx-metrics {
@@ -519,9 +515,6 @@
   }
   .wx-group svg {
     height: 30px;
-  }
-  .wx-modes {
-    flex-wrap: wrap;
   }
   .wx-controllers .wx-field {
     width: 100%;
@@ -562,26 +555,26 @@
     fill: Canvas;
   }
 }
-/* Tabs inside the views: one per edited channel (base classifier) or per added matrix (controllers). */
+/* A single toolbar switches between sensor matrices and native output rows. */
 .wx-tabs {
   display: flex;
   gap: 4px;
   overflow-x: auto;
-  padding: 2px 0 8px;
-  margin: 4px 0 6px;
+  padding: 4px;
+  margin: 0;
+  border: 1px solid var(--wx-line);
+  border-radius: 16px;
+  background: var(--honey-panel);
   scrollbar-width: thin;
   max-width: 100%;
 }
-.wx-cluster-tabs {
-  flex-wrap: wrap;
-}
 .wx-tab {
   flex: 0 0 auto;
-  background: transparent;
-  color: var(--wx-muted);
+  background: var(--wx-panel);
+  color: var(--wx-text);
   border: 1px solid var(--wx-line);
-  border-radius: 3px;
-  padding: 5px 9px;
+  border-radius: 12px;
+  padding: 7px 10px;
   font: 500 11px/1.2 var(--wx-mono);
   cursor: pointer;
 }
@@ -589,16 +582,13 @@
   color: var(--wx-text);
 }
 .wx-tab[aria-selected='true'] {
-  border-color: #849c69;
-  background: #2d3825;
-  color: var(--wx-acid);
+  border-color: var(--wx-text);
+  background: var(--wx-text);
+  color: var(--honey-card);
 }
 .wx-tab:focus-visible {
   outline: 2px solid var(--wx-acid);
   outline-offset: 1px;
-}
-.wx-matrix-tabs {
-  margin-top: 10px;
 }
 .wx-fixed {
   font: 600 11px/1.3 var(--wx-mono);
@@ -608,8 +598,8 @@
 .wx-readout-off {
   margin: 8px 0;
   padding: 8px 10px;
-  border-left: 3px solid var(--wx-accent, #7bbf2a);
-  background: color-mix(in srgb, var(--wx-accent, #7bbf2a) 12%, transparent);
+  border-left: 3px solid var(--wx-acid);
+  background: var(--honey-soft);
   font:
     13px/1.45 Arial,
     sans-serif;

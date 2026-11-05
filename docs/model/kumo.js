@@ -2,8 +2,8 @@
  * One-query Kumo Small policy with exact frozen support KV and signed W4 matrices
  * dequantized for FP32 SIMD compute. Safe to call infer repeatedly within one worker.
  */
-import { sha256 } from '../shared/sha256.js';
 import { packUrl, siteUrl } from '../shared/site.js';
+import { loadModelChunk, verifyModelChunk } from './asset-cache.js';
 const HEAD = 'icl_block.head.2.weight';
 const MATH_IMPORTS = { math: { sin: Math.sin, cos: Math.cos, exp: Math.exp, tanh: Math.tanh } };
 function half(value) {
@@ -62,17 +62,14 @@ async function loadChunks(manifest, asset, onProgress, consume) {
     const total = manifest.chunks.reduce((a, c) => a + c.bytes, 0);
     onProgress?.({ loaded, total });
     for (const c of manifest.chunks) {
-        const compressed = new Uint8Array(await (await asset(c.path)).arrayBuffer());
+        const { bytes, encoding } = await asset(c);
         let decoded;
-        if (compressed.length === c.bytes && (await sha256(compressed)) === c.sha256) {
-            const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream('gzip'));
+        if (encoding === 'gzip') {
+            const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
             decoded = new Uint8Array(await new Response(stream).arrayBuffer());
         }
-        else if (compressed.length === c.rawBytes && (await sha256(compressed)) === c.rawSha256) {
-            decoded = compressed;
-        }
         else
-            throw new Error('Policy asset failed integrity verification: ' + c.path);
+            decoded = bytes;
         if (decoded.length !== c.rawBytes || offset + decoded.length > manifest.rawBytes)
             throw new Error('Incorrect decompressed chunk length: ' + c.path);
         consume(decoded, offset);
@@ -159,7 +156,14 @@ export async function createKumoPolicy({ baseURL = siteUrl('model/'), onProgress
         signal?.throwIfAborted();
         return blob == null ? checked(location, signal) : new Response(blob);
     }
-    const pack = (name) => asset(name, packUrl(precision, name));
+    const pack = async (item) => {
+        signal?.throwIfAborted();
+        const held = await readAsset?.(item.path);
+        signal?.throwIfAborted();
+        return held == null
+            ? loadModelChunk(packUrl(precision, item.path), item, signal)
+            : verifyModelChunk(new Uint8Array(await new Response(held).arrayBuffer()), item);
+    };
     const [manifest, wasm] = await Promise.all([
         asset(fp32 ? 'original-manifest.json' : 'manifest.json').then((r) => r.json()),
         runtime ? null : checked(url('policy-simd.wasm'), signal).then((r) => r.arrayBuffer()),

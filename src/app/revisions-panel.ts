@@ -11,10 +11,12 @@ import {
 } from '../revisions/store.ts';
 import {
   referenceGain,
+  rankReferences,
   validReference,
   REFERENCE,
   type ReferenceGain,
   type ReferenceRecord,
+  type ReferenceStanding,
 } from '../revisions/reference.ts';
 import { sha256 } from '../shared/sha256.ts';
 import { TRUST } from '../revisions/trust.ts';
@@ -167,13 +169,13 @@ export interface RevisionsPanel {
   controls(): void;
   readonly active: RevisionRecord | null;
   readonly learning: boolean;
-  /** Open a built-in W4 model (by builtin key) in the weight explorer; false for an unknown or FP32 key. */
+  /** Open a built-in model in the weight explorer; FP32 opens the published release comparison. */
   exploreBuiltin(key: string | undefined): boolean;
   /** Play a revision by ID; false when it is unknown, already playing or refused. */
   playModel(id: string): boolean;
   /** Play a built-in model by builtin key; false when it is unknown, already playing or refused. */
   playBuiltin(key: string | undefined): boolean;
-  /** Play the revision chosen in the selector; false when none, already playing or refused. */
+  /** Play the revision selected in the tree; false when none, already playing or refused. */
   playChoice(): boolean;
   restoreBuiltin(variant: string): Promise<void>;
   restore(id: string): Promise<void>;
@@ -183,6 +185,7 @@ export interface RevisionsPanel {
 const CODE_FILES = [
   'training/edno.js',
   'training/live-es.js',
+  'training/original-reference.js',
   'workers/training-worker.js',
   'workers/training-lane.js',
   'training/lane-pool.js',
@@ -196,6 +199,9 @@ const CODE_FILES = [
   'tactical/facing-guard.js',
   'engine/arena.js',
   'engine/arena.wasm',
+  // HYPOTHESIS: sprite pixels feed the threat-mask observations, so the WAD is part of what produced a measurement
+  // (falsifier: a WAD-only change that leaves every reference record identical).
+  'engine/arena.wad.gz',
   'model/kumo.js',
   'model/policy-simd.wasm',
 ];
@@ -253,11 +259,12 @@ function oneOf<T extends string>(options: readonly T[], value: unknown): value i
   return list.includes(value);
 }
 const selectionKey = 'agm-arena-choice-v8',
+  trainingParentKey = 'agm-arena-training-parent-v1',
   activeKey = 'agm-arena-playing-v8',
   importKey = 'agm-arena-imports-v8',
   lanesKey = 'agm-arena-lanes-v9',
   collapsedKey = 'agm-arena-tree-collapsed-v9',
-  referenceKey = 'agm-arena-reference-v1';
+  referenceKey = REFERENCE.cacheKey;
 const MAX_LANES = 32;
 function laneLimit() {
   const n = Number(globalThis.navigator?.hardwareConcurrency);
@@ -293,7 +300,7 @@ function name(record: RevisionRecord | null | undefined): string {
     (record?.kind === 'original'
       ? 'Original FP32'
       : record?.kind === 'shipped'
-        ? 'Built-in DNP'
+        ? 'Astra 6 Weight-Space Programming'
         : record?.kind === 'base'
           ? '4-bit base'
           : 'Model')
@@ -301,8 +308,14 @@ function name(record: RevisionRecord | null | undefined): string {
 }
 // Shipped children of the 4-bit roots: kind label and source per built-in key.
 const RELEASES: Record<string, [label: string, source: string]> = {
-  survivor: ['EvoWeights · built-in', 'experiments/v11/edno-neutral-browser (browser EvoWeights, survival metric, R3)'],
-  terminator: ['EvoWeights · built-in', 'experiments/v11/edno-neutral-browser (browser EvoWeights, kills metric, R4)'],
+  survivor: [
+    'EvoWeights · built-in',
+    'experiments/v11/edno-neutral-browser (historical DOOM experiment, survival metric, R3)',
+  ],
+  terminator: [
+    'EvoWeights · built-in',
+    'experiments/v11/edno-neutral-browser (historical DOOM experiment, hugs metric, R4)',
+  ],
   opus: ['Opus edit · built-in', 'experiments/v12/independent-edit (independent edit by Claude Opus 5.5)'],
 };
 /** A built-in revision by its key (`shipped`, `neutral`, a release key, …); undefined for keys the store does not ship. */
@@ -541,14 +554,13 @@ export function installRevisions({
     sel.addEventListener('change', show);
   };
   hintFor('revision-mutation', 'revision-mutation-hint', {
-    broad:
-      'Moves 50 % of the parameter blocks by two levels. Found confirmed children from a weak base on three of three search seeds.',
+    broad: 'Moves 50 % of the parameter blocks by two levels.',
     auto: 'Starts with 15 % of the blocks by one level, prefers rarely tested blocks and grows after four generations without a child.',
     uniform: 'Moves 15 % of the parameter blocks by one level.',
   });
   hintFor('revision-priority', 'revision-priority-hint', {
-    survival: 'The check compares survival time; one second counts as much as 2.5 kills.',
-    kills: 'The check compares kills; one kill counts as much as eight seconds.',
+    survival: 'The check compares survival time; one second counts as much as 2.5 hugs.',
+    kills: 'The check compares hugs (fed or befriended); one hug counts as much as eight seconds.',
   });
   function learning(): Learning {
     const method = oneOf(methods, searchSelect?.value) ? searchSelect.value : 'edno-race';
@@ -559,6 +571,8 @@ export function installRevisions({
   let rows: RevisionRecord[] = [],
     tip: RevisionRecord | null = null,
     active: RevisionRecord | null = null,
+    selectedId = read(selectionKey),
+    trainingParentId = read(trainingParentKey),
     seenImports = importedIds(),
     job: TrainingJob | null = null,
     fileBusy = false,
@@ -628,7 +642,7 @@ export function installRevisions({
     return (x < 0 ? '−' : '') + Math.abs(x).toFixed(2);
   }
   // Weight explorer: compare a revision with its parent or any other W4 recipe.
-  // Until the user picks a comparison, the explorer shows the revision with the highest total gain against the shipped DNP model.
+  // Prefer the best measured revision; without current scores, show the included Introvertor example.
   let release: ReleaseDocument | null = null,
     explorerModule: typeof import('./weights-explorer.ts') | null = null,
     exploring: { candidate: string; base: string; row: number } | null = null,
@@ -664,6 +678,8 @@ export function installRevisions({
       exploreBase.disabled = true;
       exploreRow.disabled = true;
       if (causesBox) causesBox.hidden = true;
+      if (exploreNote)
+        exploreNote.textContent = 'Original FP32 weights alongside their 4-bit quantization and Astra 6’s edits.';
       if (exploring) {
         exploring = null;
         await mod.remountWeightsExplorer(host);
@@ -680,7 +696,6 @@ export function installRevisions({
     release ??= (await (
       await fetch(siteUrl('data/weights-explorer.json'), { credentials: 'same-origin' })
     ).json()) as ReleaseDocument;
-    const { TRUST } = await import('../revisions/trust.ts');
     const row = Number(exploreRow.value);
     const model = mod.buildRevisionComparison({
       candidate: { ops: candidate.ops, controller: candidate.controller },
@@ -843,7 +858,7 @@ export function installRevisions({
       num(a.gain.utility) +
       '<small>' +
       num(a.gain.kills, 0) +
-      ' kills</small></td><td class="num ' +
+      ' hugs</small></td><td class="num ' +
       tone(a.sumKnockIn) +
       '">Σ ' +
       num(a.sumKnockIn) +
@@ -881,7 +896,7 @@ export function installRevisions({
           ' fixed explanation seeds (' +
           att.games +
           ' games, goal: ' +
-          (priority() === 'kills' ? 'kills' : 'survival') +
+          (priority() === 'kills' ? 'hugs' : 'survival') +
           ').'
         : '';
     const rc = (await registry.receipt?.(candidate.id).catch(() => null)) as Receipt | null | undefined;
@@ -1002,25 +1017,27 @@ export function installRevisions({
   }
   function autoExplore() {
     if (!exploreAuto || !exploreCandidate || !registry) return;
-    const best = bestRevision(),
+    const candidate = bestRevision() ?? registry.builtins.survivor ?? registry.builtins.neutral,
       shipped = registry.builtins.shipped;
-    if (!best || !shipped || (exploreCandidate.value === best.id && exploreBase.value === shipped.id)) return;
+    if (!shipped || (exploreCandidate.value === candidate.id && exploreBase.value === shipped.id)) return;
     fillExploreSelects();
-    exploreCandidate.value = best.id;
+    exploreCandidate.value = candidate.id;
     exploreBase.value = shipped.id;
-    exploreRow.value = String(busiestRow(shipped, best));
+    exploreRow.value = String(busiestRow(shipped, candidate));
     renderExplorer().catch((e) => notify(errorText(e), true));
   }
   async function explore(record: RevisionRecord, against: RevisionRecord | null = null) {
-    if (!record || record.precision !== 'w4' || !exploreCandidate) return;
+    if (!record || !exploreCandidate) return;
     exploreAuto = false;
     fillExploreSelects();
-    exploreCandidate.value = record.id;
-    // Default comparison: the parent when it is a 4-bit model, otherwise the shipped DNP.
-    const parent = against ?? p(record.parentId);
-    exploreBase.value = parent?.precision === 'w4' ? parent.id : registry.builtins.shipped.id;
-    // Open the row with the most changes first.
-    if (parent?.precision === 'w4') exploreRow.value = String(busiestRow(parent, record));
+    exploreCandidate.value = record.precision === 'fp32' ? '' : record.id;
+    if (record.precision === 'w4') {
+      // Default comparison: the parent when it is a 4-bit model, otherwise the shipped DNP.
+      const parent = against ?? p(record.parentId);
+      exploreBase.value = parent?.precision === 'w4' ? parent.id : registry.builtins.shipped.id;
+      // Open the row with the most changes first.
+      if (parent?.precision === 'w4') exploreRow.value = String(busiestRow(parent, record));
+    }
     // Straight to the explorer itself, not the section introduction above it.
     document.querySelector('[data-weights-explorer]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     try {
@@ -1112,7 +1129,7 @@ export function installRevisions({
   }
   // Total gain ("Total") against the original FP32 model, the root of every line, and step ("Survival") against the parent: every
   // revision plays the same fixed reference seeds (reference.mjs), so totals of all lines are comparable and the total of a child is
-  // exactly the total of its parent times its step. FP32 and the built-in revisions ship their results; others are measured here once
+  // exactly the total of its parent times its step. FP32 and the built-in revisions ship current-game results; others are measured here once
   // and cached in this browser.
   const reference = new Map<string, ReferenceRecord>(),
     shippedReference = new Set<string>();
@@ -1125,7 +1142,7 @@ export function installRevisions({
   }
   async function loadShippedReference() {
     try {
-      const res = await fetch(siteUrl('data/reference-v1.json'));
+      const res = await fetch(siteUrl('data/huggingdoom-reference-v1.json'));
       if (!res.ok) return;
       const d = (await res.json()) as {
         protocol: string;
@@ -1155,6 +1172,69 @@ export function installRevisions({
   const original = () => rows.find((r) => r.kind === 'original');
   // Lookup by an ID that may be missing (no parent, no FP32 row): Map.get of a missing key, typed.
   const referenceOf = (id: string | null | undefined) => (id == null ? undefined : reference.get(id));
+  function standings() {
+    return rankReferences(
+      rows.flatMap((r) => {
+        const rec = reference.get(r.id);
+        return rec ? [[r.id, rec] as const] : [];
+      }),
+    );
+  }
+  function performanceMarkup(r: RevisionRecord, all: ReferenceStanding[] = standings()): string {
+    const mine = all.find((x) => x.id === r.id);
+    if (!mine)
+      return '<span class="performance-pending">' + (referencePending(r) ? 'Measuring…' : 'Not measured') + '</span>';
+    const base = all.find((x) => x.id === original()?.id);
+    return (
+      '<div class="model-performance" aria-label="Model performance">' +
+      (['tics', 'kills'] as const)
+        .map((key) => {
+          const label = key === 'tics' ? 'Survival' : 'Hugs',
+            maximum = Math.max(0, ...all.map((x) => x[key])),
+            width = maximum > 0 ? mine[key] / maximum : 0,
+            average = mine[key] / REFERENCE.count / (key === 'tics' ? 35 : 1),
+            value = average.toFixed(1) + (key === 'tics' ? ' s' : ''),
+            gain = base && base[key] > 0 ? fmtGain(mine[key] / base[key]) : value,
+            total = key === 'tics' ? rootGain(r) : null,
+            line = key === 'tics' ? lineGain(r) : null,
+            title =
+              value +
+              ' per game · ' +
+              REFERENCE.count +
+              ' fixed HuggingDOOM games · full bar = best measured model' +
+              (base && base[key] > 0 ? ' · ' + gain + ' vs Original FP32' : '') +
+              (total ? ' · ' + referenceTitle(total, 'Original FP32') : '') +
+              (line?.gain ? ' · vs line root ' + name(line.root) + ': ' + fmtGain(line.gain.factor) : '');
+          return (
+            '<div class="performance-metric" data-metric="' +
+            key +
+            '" title="' +
+            escape(title) +
+            '">' +
+            '<span>' +
+            label +
+            '</span><strong>' +
+            gain +
+            '</strong><i aria-hidden="true"><b style="--performance:' +
+            width +
+            '"></b></i></div>'
+          );
+        })
+        .join('') +
+      '</div>'
+    );
+  }
+  function renderCardPerformance() {
+    const all = standings();
+    for (const card of document.querySelectorAll<HTMLElement>('.pick-card[data-ref]')) {
+      const r = p(card.dataset.ref);
+      const meter = card.querySelector<HTMLElement>('.pick-meter');
+      if (!r || !meter) continue;
+      meter.hidden = !reference.has(r.id);
+      meter.removeAttribute('title');
+      meter.innerHTML = performanceMarkup(r, all);
+    }
+  }
   function rootGain(r: RevisionRecord | undefined): ReferenceGain | null {
     return r?.precision === 'w4' ? referenceGain(reference.get(r.id), referenceOf(original()?.id)) : null;
   }
@@ -1165,18 +1245,11 @@ export function installRevisions({
     const root = lineageRoot(r);
     return root && root.id !== r.id ? { root, gain: referenceGain(reference.get(r.id), reference.get(root.id)) } : null;
   }
-  // Revisions still to measure: the root of every line first, then the learned revisions in tree order (parents before children).
+  // Every displayed model participates, including FP32 and unrelated built-in lineages.
   function referenceNeeded() {
-    const out: RevisionRecord[] = [],
-      add = (r: RevisionRecord | null) => {
-        if (r?.precision === 'w4' && !reference.has(r.id) && !out.includes(r)) out.push(r);
-      },
-      learned = treeOrder()
-        .map((e) => e.record)
-        .filter((r) => r.kind === 'learned');
-    for (const r of learned) add(lineageRoot(r));
-    for (const r of learned) add(r);
-    return out;
+    return treeOrder()
+      .map((e) => e.record)
+      .filter((r) => !reference.has(r.id));
   }
   const referencePending = (r: RevisionRecord) =>
     !!referenceJob && (referenceJob.ids.has(r.id) || referenceJob.ids.has(r.parentId));
@@ -1206,7 +1279,7 @@ export function installRevisions({
       ', shorter on ' +
       x.worse +
       ' seeds' +
-      (x.kills ? ' · kills ' + fmtGain(x.kills.factor) : '')
+      (x.kills ? ' · hugs ' + fmtGain(x.kills.factor) : '')
     );
   }
   const referenceButton = $maybe<HTMLButtonElement>('reference-measure');
@@ -1217,7 +1290,7 @@ export function installRevisions({
       referenceButton.disabled = false;
       referenceButton.dataset.running = '';
       referenceButton.textContent =
-        'Measuring total · ' +
+        'Measuring performance · ' +
         referenceJob.done +
         ' / ' +
         referenceJob.total +
@@ -1229,20 +1302,22 @@ export function installRevisions({
     }
     // Always visible once the store is open: with nothing left to measure it stays as a disabled status.
     const n = registry ? referenceNeeded().length : 0,
-      done = rows.filter((r) => r.precision === 'w4' && reference.has(r.id)).length;
+      done = rows.filter((r) => reference.has(r.id)).length;
     referenceButton.hidden = !registry;
     delete referenceButton.dataset.running;
-    referenceButton.textContent = n ? 'Measure total · ' + n + ' pending' : 'Total measured · ' + plural(done, 'model');
+    referenceButton.textContent = n
+      ? 'Measure performance · ' + n + ' pending'
+      : 'Performance measured · ' + plural(done, 'model');
     referenceButton.disabled = !n || !!job || !!causesJob || fileBusy || isBenchmarking();
     referenceButton.title = n
       ? 'Plays every model not yet measured on the same ' +
         REFERENCE.count +
         ' fixed seeds, with up to 10 minutes per game; the result stays saved in this browser.'
-      : 'All 4-bit models are measured on the same ' +
+      : 'All models are measured on the same ' +
         REFERENCE.count +
         ' reference seeds. New models are measured automatically after saving.';
   }
-  function relabel(keep = select.value) {
+  function relabel() {
     select.replaceChildren(
       ...treeOrder().map((e) =>
         treeOption(
@@ -1256,9 +1331,15 @@ export function installRevisions({
       ),
     );
     // Default training base: the 4-bit base with neutral (all-zero) sensor weights, the start of the EvoWeights lineages.
-    const fallback = p(registry?.builtins.neutral?.id) || p(registry?.builtins.shipped?.id) || tip;
-    if (p(keep)) select.value = keep;
-    else if (fallback) select.value = fallback.id;
+    const parent = p(trainingParentId);
+    if (parent?.precision === 'w4') select.value = parent.id;
+    else {
+      select.value = registry.builtins.neutral.id;
+      if (trainingParentId) {
+        trainingParentId = null;
+        save(trainingParentKey, '');
+      }
+    }
     autoExplore();
   }
   function startReference() {
@@ -1283,8 +1364,10 @@ export function installRevisions({
       relabel();
       controls();
       renderTree();
+      renderOwnCard();
+      renderCardPerformance();
       updateBorn();
-      if (born && !reference.has(born.id)) setTimeout(startReference, 0);
+      if (!referenceNeeded().length) notify('Performance measured for all ' + plural(rows.length, 'model') + '.');
     };
     w.onmessage = ({ data: m }: MessageEvent<WorkerReply>) => {
       if (referenceJob !== target) return;
@@ -1294,6 +1377,8 @@ export function installRevisions({
         relabel();
         controls();
         renderTree();
+        renderOwnCard();
+        renderCardPerformance();
         updateBorn();
       } else if (m.type === 'progress') {
         if (Number.isFinite(m.games)) target.games = m.games;
@@ -1309,12 +1394,14 @@ export function installRevisions({
     // One lane stays free for the game in the arena.
     w.postMessage({
       type: 'reference',
-      items: items.map((r) => ({ id: r.id, ops: r.ops, tactical: r.controller })),
+      items: items.map((r) => ({ id: r.id, precision: r.precision, ops: r.ops, tactical: r.controller })),
       lanes: Math.max(1, lanes() - 1),
       watch: false,
     } satisfies TrainingRequest);
     controls();
     renderTree();
+    renderOwnCard();
+    updateBorn();
   }
   // A confirmed child gets its own overlay in the game view: congratulations, the live reference measurement, results and play.
   // Overlay card "Your own models": models trained in this browser, or a pointer to the training panel when there are none.
@@ -1367,7 +1454,27 @@ export function installRevisions({
     const row = document.createElement('div');
     row.className = 'own-row';
     row.append(pick, b);
-    card.replaceChildren(h, p0, row);
+    const meter = document.createElement('div');
+    meter.className = 'own-performance';
+    const update = () => {
+      const chosen = p(pick.value);
+      meter.innerHTML = chosen ? performanceMarkup(chosen) : '';
+    };
+    pick.onchange = () => {
+      update();
+      if (!reference.has(pick.value)) startReference();
+    };
+    const exploreButton = document.createElement('button');
+    exploreButton.type = 'button';
+    exploreButton.className = 'pick-explore';
+    exploreButton.dataset.ownExplore = '';
+    exploreButton.textContent = 'Explore Weights';
+    exploreButton.onclick = () => {
+      const chosen = p(pick.value);
+      if (chosen) void explore(chosen);
+    };
+    update();
+    card.replaceChildren(h, p0, meter, row, exploreButton);
   }
   function bornView(
     saved: RevisionRecord,
@@ -1400,9 +1507,9 @@ export function installRevisions({
         : '');
     $in(el, '.born-play').onclick = () => {
       const r = p(saved.id);
+      if (!r || !setActive(r, true)) return;
       el.remove();
       born = null;
-      if (r) setActive(r, true);
     };
     $in(el, '.born-close').onclick = () => {
       el.remove();
@@ -1419,35 +1526,31 @@ export function installRevisions({
       bar = $in<HTMLProgressElement>(el, 'progress'),
       status = $in(el, '.born-status');
     if (!r) return;
-    if (!reference.has(born.id)) {
-      const t = referenceJob?.ids.has(born.id) ? referenceJob : null,
+    const all = standings(),
+      standing = all.find((x) => x.id === r.id),
+      mine = rootGain(r),
+      missing = referenceNeeded();
+    if (!mine || !standing || missing.length) {
+      const t = referenceJob,
         total = (t ? t.total : 1) * REFERENCE.count,
         games = Math.min(t?.games ?? 0, total);
       bar.max = total;
       bar.value = games;
       status.textContent = t
         ? 'Validating on the ' + REFERENCE.count + ' reference games: ' + games + ' of ' + total + ' played …'
-        : 'Waiting for the reference measurement …';
+        : 'Performance comparison incomplete. Use “Measure performance” above the model tree to finish it.';
+      $in(el, '.born-results').hidden = true;
+      $in(el, '.born-play').hidden = !reference.has(born.id);
       return;
     }
     bar.max = 1;
     bar.value = 1;
     status.textContent = 'Validation complete.';
-    const fp = original(),
-      all = [
-        ...(fp ? [{ id: fp.id, f: 1 }] : []),
-        ...rows.flatMap((x) => {
-          const g = x.precision === 'w4' ? rootGain(x) : null;
-          return g ? [{ id: x.id, f: g.factor }] : [];
-        }),
-      ].sort((a, b) => b.f - a.f);
-    const mine = rootGain(r),
-      par = born.parentId ? rootGain(p(born.parentId)) : null,
-      rank = all.findIndex((e) => e.id === born?.id) + 1;
+    const parentGain = referenceGain(reference.get(r.id), referenceOf(born.parentId));
     const items = [
-      ['Survival vs Original FP32', mine ? fmtGain(mine.factor) : '—'],
-      ['Rank among all models', '#' + rank + ' of ' + all.length],
-      ...(mine && par ? [['Survival vs parent', fmtGain(mine.factor / par.factor)]] : []),
+      ['Survival vs Original FP32', fmtGain(mine.factor)],
+      ['Rank among all models', '#' + standing.rank + ' of ' + all.length],
+      ...(parentGain ? [['Survival vs parent', fmtGain(parentGain.factor)]] : []),
     ];
     const dl = $in(el, '.born-results');
     dl.hidden = false;
@@ -1472,6 +1575,9 @@ export function installRevisions({
     relabel();
     controls();
     renderTree();
+    renderOwnCard();
+    renderCardPerformance();
+    updateBorn();
   }
   referenceButton?.addEventListener('click', () => (referenceJob ? stopReference() : startReference()));
   async function loadGains() {
@@ -1624,11 +1730,11 @@ export function installRevisions({
       renderTree();
     }
   }
-  // Rows are separate grids, so Model, Parent, Δ Parameters and Total are measured at their natural widths once and shared by every row.
+  // Separate row grids share the natural widths of all data columns.
   function fitModelColumn() {
     const grid = $maybe('revision-tree');
     if (!grid) return;
-    const cols = ['--col-model', '--col-parent', '--col-delta', '--col-total'];
+    const cols = ['--col-model', '--col-rank', '--col-performance', '--col-parent', '--col-delta'];
     cols.forEach((c) => grid.style.setProperty(c, 'max-content'));
     const rowsNow = [...grid.querySelectorAll('.data-grid-row')];
     cols.forEach((c, i) => {
@@ -1660,10 +1766,11 @@ export function installRevisions({
     const body = $maybe('revision-tree-body'),
       meta = $maybe('revision-tree-meta');
     if (!body || !rows.length) return;
-    const children = childrenMap();
+    const children = childrenMap(),
+      all = standings();
     const collapsed = collapsedIds(),
       html: string[] = [],
-      selected = select.value;
+      selected = selectedId;
     let shown = 0;
     const walk = (r: RevisionRecord, depth: number) => {
       const kids = children.get(r.id) || [],
@@ -1677,6 +1784,7 @@ export function installRevisions({
           ? (registry.controllerDiff?.(parent.controller, r.controller).length ?? null)
           : null;
       const open = !collapsed.has(r.id),
+        standing = all.find((x) => x.id === r.id),
         flags =
           (r.id === tip?.id ? '<b class="tree-flag tree-flag-tip" title="Training base">★</b>' : '') +
           (r.id === active?.id ? '<b class="tree-flag tree-flag-active" title="Playing">▶</b>' : '');
@@ -1700,6 +1808,15 @@ export function installRevisions({
           '</span>' +
           flags +
           '</div>' +
+          '<div class="data-grid-cell tree-rank" data-type="number" title="Rank by survival across ' +
+          all.length +
+          ' measured models of ' +
+          rows.length +
+          '; equal survival totals share a rank">' +
+          (standing ? '#' + standing.rank : '—') +
+          '</div><div class="data-grid-cell tree-performance">' +
+          performanceMarkup(r, all) +
+          '</div>' +
           '<div class="data-grid-cell tree-parent">' +
           (parent ? escape(name(parent)) : '—') +
           '</div>' +
@@ -1719,49 +1836,6 @@ export function installRevisions({
                   ' edited native codes, 119 sensor weights"'
                 : '') +
               '>—</div>') +
-          (() => {
-            const x = rootGain(r),
-              s = stepGain(r),
-              g = gains.get(r.id);
-            const missing = referencePending(r)
-              ? '<span title="Being measured on the reference seeds">…</span>'
-              : '<span title="Not yet measured on the reference seeds · “Measure total” above the tree">—</span>';
-            const promoted = g
-              ? (g.unconfirmed ? ' · Unconfirmed, final round: ' : ' · At promotion: ') +
-                pct(g.survival) +
-                ' on ' +
-                g.seeds +
-                ' fresh validation seeds' +
-                (g.minutes ? ' (' + g.minutes + ' min)' : '') +
-                (g.kills !== null ? ', kills ' + pct(g.kills) : '') +
-                (g.priority === 'kills' ? ', goal: kills' : '') +
-                (g.cross ? ', crossing relative to the training base' : '')
-              : '';
-            const line = r.kind === 'learned' ? lineGain(r) : null,
-              lineText = line?.gain
-                ? ' · relative to the line root ' + name(line.root) + ': ' + fmtGain(line.gain.factor)
-                : '';
-            const total =
-              r.kind === 'original'
-                ? '<div class="data-grid-cell tree-gain" data-type="number" title="Reference point for “Total”: the Original FP32 model on the same ' +
-                  REFERENCE.count +
-                  ' reference seeds">Baseline</div>'
-                : r.precision !== 'w4'
-                  ? '<div class="data-grid-cell" data-type="number">—</div>'
-                  : x
-                    ? '<div class="data-grid-cell tree-gain tree-root-gain" data-type="number" title="' +
-                      escape(
-                        referenceTitle(x, 'the Original FP32') +
-                          lineText +
-                          (s ? ' · relative to the parent: ' + fmtGain(s.factor) : '') +
-                          promoted,
-                      ) +
-                      '">' +
-                      fmtGain(x.factor) +
-                      '</div>'
-                    : '<div class="data-grid-cell tree-root-gain" data-type="number">' + missing + '</div>';
-            return total;
-          })() +
           '<div class="data-grid-cell tree-actions">' +
           (w4
             ? '<button type="button" data-action="explore" title="Show the weight changes relative to the parent in the explorer below">Explore</button>'
@@ -1833,7 +1907,8 @@ export function installRevisions({
                 seeds: rec.tics.length,
                 survivalTics: rec.tics.reduce((x, y) => x + y, 0),
                 kills: rec.kills.reduce((x, y) => x + y, 0),
-                recipeSHA256: rec.hash,
+                // VERIFIED: FP32 reference records carry the revision ID in `hash` (original-reference.ts); only W4 records hold a recipe hash.
+                recipeSHA256: a.precision === 'fp32' ? null : rec.hash,
                 totalVsFP32: fixed(rootGain(a)),
                 stepVsParent: a.kind === 'learned' ? fixed(stepGain(a)) : null,
               }
@@ -1971,7 +2046,7 @@ export function installRevisions({
     else if (action === 'diff') void exportDiff(r);
     else if (action === 'provenance') void exportProvenance(r);
     else if (action === 'delete') void requestDelete(r);
-    else if (action === 'weights') void exportWeights();
+    else if (action === 'weights') void exportWeights(r);
     else renderTree();
   });
   $maybe('revision-tree-body')?.addEventListener('keydown', (e) => {
@@ -1994,6 +2069,7 @@ export function installRevisions({
     $('revision-adopt').hidden = true;
     $<HTMLButtonElement>('revision-adopt').disabled = !ready || !!job || fileBusy || bench || !registry?.persistent;
     $('revision-learn').hidden = !!job;
+    $('training-overlay').hidden = !job;
     $<HTMLButtonElement>('revision-learn').disabled = !registry?.persistent || !tip || fileBusy || bench || !!causesJob;
     if (causesButton && !causesJob) causesButton.disabled = !!job;
     $('revision-stop').hidden = !job;
@@ -2050,7 +2126,7 @@ export function installRevisions({
     } else if (mutationSelect) mutationSelect.title = '';
     renderReference();
     $('revision-tip').textContent = tip ? renderName(tip) : 'Determining …';
-    $('revision-active').textContent = active ? renderName(active) : 'Built-in DNP';
+    $('revision-active').textContent = active ? renderName(active) : 'Astra 6 Weight-Space Programming';
     if (chosen) {
       const parent = p(chosen.parentId);
       const detail =
@@ -2076,7 +2152,6 @@ export function installRevisions({
     const round = ++refreshSerial;
     const [items, latest] = await Promise.all([registry.list(), registry.latest()]);
     if (round !== refreshSerial) return;
-    const keep = preferred || select.value;
     // Virtual W4 bases are offered as roots until a lineage is started from them.
     virtualIds = new Set();
     for (const v of ['neutral', ...Object.keys(RELEASES)].map((k) => builtinOf(registry.builtins, k)))
@@ -2085,14 +2160,16 @@ export function installRevisions({
         virtualIds.add(v.id);
       }
     rows = items;
+    if (preferred) selectedId = preferred;
     tip = latest;
     await Promise.all([loadGains(), shippedReady]);
     if (round !== refreshSerial) return;
-    relabel(keep);
+    relabel();
     fillExploreSelects();
     controls();
     renderTree();
     renderOwnCard();
+    renderCardPerformance();
     if (job?.parentId && !job.saving && tip?.id !== job.parentId)
       stop('The training base was updated in another tab. Training run stopped.');
   };
@@ -2109,15 +2186,28 @@ export function installRevisions({
     return true;
   }
   function selectRecord(record: RevisionRecord) {
-    select.value = record.id;
+    selectedId = record.id;
     save(selectionKey, record.id);
     controls();
     renderTree();
   }
+  const quantizedParentMessage =
+    'Original FP32 was switched to the quantized 4-bit base with neutral sensor weights for training.';
+  // FP32 is available for playback and export, but training uses its neutral 4-bit counterpart.
+  function switchFP32TrainingParent(): boolean {
+    if (option()?.precision !== 'fp32') return false;
+    select.value = registry.builtins.neutral.id;
+    return true;
+  }
   select.addEventListener('change', () => {
     $('revision-save-file').hidden = true;
-    save(selectionKey, select.value);
-    notify('');
+    const switched = switchFP32TrainingParent();
+    // Only an explicit change in Parent model may override the neutral training default.
+    trainingParentId = select.value;
+    save(trainingParentKey, trainingParentId);
+    const parent = option();
+    if (parent) selectRecord(parent);
+    notify(switched ? quantizedParentMessage : '');
     controls();
     renderTree();
   });
@@ -2147,9 +2237,8 @@ export function installRevisions({
       controls();
     }
   };
-  // Complete weight file of the selected model; the tree's download action selects its row first.
-  const exportWeights = async () => {
-    const r = option();
+  // Export the clicked tree row independently of the training parent.
+  const exportWeights = async (r: RevisionRecord) => {
     if (!r || fileBusy) return;
     fileBusy = true;
     controls();
@@ -2270,13 +2359,10 @@ export function installRevisions({
       $('revision-lanes-active').textContent =
         (m.busyLanes ?? m.lanes) + ' / ' + m.lanes + (m.plan ? ' · ' + m.plan.pairs * 2 + ' candidates' : '');
     if (Number.isFinite(m.rate)) {
+      const realtime = ((m.rate * 2) / 35).toFixed(0);
+      $('training-overlay').textContent = m.rate > 0 ? 'Training... in ' + realtime + 'x realtime' : 'Training...';
       $('revision-rate').textContent =
-        m.rate > 0
-          ? Math.round(m.rate).toLocaleString('en-US') +
-            ' decisions/s · ' +
-            ((m.rate * 2) / 35).toFixed(0) +
-            '× real time'
-          : '—';
+        m.rate > 0 ? Math.round(m.rate).toLocaleString('en-US') + ' decisions/s · ' + realtime + '× real time' : '—';
       const toolbarRate = $maybe('decision-rate');
       if (toolbarRate) toolbarRate.textContent = m.rate > 0 ? Math.round(m.rate).toLocaleString('en-US') : '—';
     }
@@ -2303,7 +2389,7 @@ export function installRevisions({
       (rc?.kind === 'cross' ? ' · crossing' : '') +
       (rc?.kind === 'final' ? ' · final round' : '') +
       (rc?.unconfirmed ? ' · unconfirmed' : '') +
-      (rc?.priority === 'kills' ? ' · Kills' : '')
+      (rc?.priority === 'kills' ? ' · Hugs' : '')
     );
   }
   // A final-round candidate ahead of the parent but below the gate is stored as an unconfirmed child; the training base stays.
@@ -2322,7 +2408,7 @@ export function installRevisions({
             name(saved) +
             '”; the training base stays ' +
             name(tip) +
-            '. “Total” is being measured on the reference seeds.',
+            '. Performance is being measured on the reference seeds.',
         ),
       );
       startReference();
@@ -2378,7 +2464,7 @@ export function installRevisions({
             : '') +
           ': ' +
           renderName(saved) +
-          '. “Total” is being measured on the reference seeds.',
+          '. Performance is being measured on the reference seeds.',
       );
       bornView(saved, p(target.parentId), {
         seconds: (performance.now() - target.started) / 1000,
@@ -2394,7 +2480,9 @@ export function installRevisions({
   }
   $('revision-learn').onclick = async () => {
     if (!registry?.persistent || job || fileBusy || isBenchmarking() || causesJob) return;
-    // The selected parent model becomes the training base first; a model that cannot be trained (FP32) stops here.
+    // Keep the FP32 fallback at the training boundary as well as in the selector.
+    const switched = switchFP32TrainingParent();
+    // Adopt the selected quantized parent before starting the worker.
     const chosen = option();
     if (chosen && chosen.id !== tip?.id) {
       if (!canAdopt(chosen)) {
@@ -2448,7 +2536,7 @@ export function installRevisions({
         run.code ??= code;
       })
       .catch(() => {});
-    notify('');
+    notify(switched ? quantizedParentMessage : '');
     $('revision-progress').hidden = false;
     $('revision-receipt').hidden = true;
     $('revision-progress-text').textContent = 'Checking the latest 4-bit model …';
@@ -2458,6 +2546,7 @@ export function installRevisions({
     $('revision-decisions').textContent = '0';
     $('revision-lanes-active').textContent = lanes() + ' requested';
     $('revision-rate').textContent = '—';
+    $('training-overlay').textContent = 'Training...';
     trainingView($<HTMLInputElement>('revision-watch').checked);
     updateTime(target);
     target.clock = setInterval(() => updateTime(target), 1000);
@@ -2467,6 +2556,8 @@ export function installRevisions({
       if (job !== target) return;
       if (!parent || parent.precision !== 'w4' || !parent.controller)
         throw new Error('The latest 4-bit training base could not be loaded.');
+      if (parent.id !== chosen?.id)
+        throw new Error('The training base changed before the run started. Select the parent model and try again.');
       target.parentId = parent.id;
       tip = parent;
       controls();
@@ -2627,7 +2718,7 @@ export function installRevisions({
   const ready = (async () => {
     try {
       registry = await openRevisionStore();
-      await refresh(read(selectionKey));
+      await refresh();
       const saved = p(read(activeKey)) || tip || registry.builtins.shipped;
       if (saved) setActive(saved, false);
       if (!registry.persistent)
@@ -2660,23 +2751,23 @@ export function installRevisions({
     // Weight explorer from a model card: the model against its 4-bit base (Astra 6's composite: against the neutral 4-bit base).
     exploreBuiltin(key) {
       const r = builtinOf(registry?.builtins, key);
-      if (!r || r.precision !== 'w4') return false;
+      if (!r) return false;
       void explore(r, key === 'shipped' ? registry.builtins.neutral : null);
       return true;
     },
     playModel(id) {
       const r = p(id);
       if (!r) return false;
-      return r.id !== active?.id ? setActive(r, true) : false;
+      return setActive(r, true);
     },
     playBuiltin(key) {
       const r = builtinOf(registry.builtins, key);
       if (!r) return false;
-      return r.id !== active?.id ? setActive(r, true) : false;
+      return setActive(r, true);
     },
     playChoice() {
-      const r = option();
-      return r && r.id !== active?.id ? setActive(r, true) : false;
+      const r = p(selectedId);
+      return r ? setActive(r, true) : false;
     },
     async restoreBuiltin(variant) {
       await ready;

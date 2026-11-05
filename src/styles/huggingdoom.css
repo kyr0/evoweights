@@ -1,0 +1,249 @@
+/* Daylight game artwork and warm, rounded picnic controls. */
+#arena .lab-ui {
+  --acid: var(--honey-accent);
+  --line: var(--honey-line);
+  --dim: var(--honey-muted);
+  --text: var(--honey-ink);
+}
+#arena .stage {
+  border: 1px solid var(--honey-line);
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--honey-soft);
+  color: #344626;
+  box-shadow: var(--portal-shadow);
+}
+#arena .stage-head,
+#arena .stage-toolbar {
+  background: var(--honey-soft);
+  color: #344626;
+}
+#arena .stage-head button,
+#arena .stage-toolbar button {
+  color: #344626;
+}
+#arena .viewport {
+  aspect-ratio: 8 / 5;
+  background: #9dcd74 url('../assets/huggingdoom/meadow.png') center / cover no-repeat;
+}
+#arena .viewport.running,
+#arena .viewport:fullscreen {
+  background: var(--honey-ink);
+}
+#arena .viewport canvas {
+  background: var(--honey-ink);
+  border-radius: 0;
+}
+#arena .overlay {
+  background: color-mix(in srgb, var(--honey-soft) 20%, transparent);
+}
+#arena .overlay-inner {
+  width: min(96%, 1000px);
+  background: var(--honey-panel);
+  color: var(--honey-ink);
+  border: 1px solid var(--honey-control-line);
+  border-radius: 15px;
+  box-shadow: 0 5px 30px #34511d33;
+  padding: 18px;
+}
+#arena .overline,
+#arena .overlay small {
+  color: #5f693c;
+}
+#arena .pick-card {
+  background: var(--honey-paper);
+  color: var(--honey-ink);
+  border-color: var(--honey-control-line);
+  border-radius: 12px;
+  box-shadow: 0 3px 0 #93601826;
+}
+#arena .pick-card h3 {
+  color: var(--honey-ink);
+}
+#arena .pick-card p {
+  color: #59451e;
+}
+#arena .pick-explore {
+  background: var(--honey-soft);
+  color: var(--honey-ink);
+  border-color: var(--honey-control-line);
+}
+#arena .pick-explore:hover:enabled {
+  background: var(--honey-panel);
+  border-color: var(--honey-accent);
+}
+#arena .pick-explore:disabled {
+  color: var(--honey-muted);
+  border-color: var(--honey-line);
+  opacity: 1;
+}
+#arena .pick-own select {
+  background: var(--honey-paper);
+  border-color: var(--honey-control-line);
+}
+#arena .launch {
+  background: var(--honey-button);
+  color: var(--honey-ink);
+  border: 1px solid var(--honey-accent);
+  border-radius: 12px;
+}
+#arena .launch:hover {
+  background: #ffdb77;
+  color: var(--honey-ink);
+}
+#arena .overlay-tag {
+  background: color-mix(in srgb, var(--honey-soft) 87%, transparent);
+  color: #40522d;
+}
+#arena .training-overlay {
+  position: absolute;
+  z-index: 3;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 1.5rem);
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--honey-accent);
+  border-radius: 999px;
+  background: var(--honey-button);
+  color: var(--honey-ink);
+  box-shadow: var(--portal-shadow);
+  font: 650 0.82rem/1.4 var(--font-sans, system-ui, sans-serif);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  pointer-events: none;
+}
+#arena .picnic-welcome {
+  min-width: 0;
+  align-items: stretch;
+  text-align: left;
+}
+#arena .picnic-welcome > div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+#arena .picnic-welcome img {
+  flex: none;
+}
+#arena .picnic-welcome h3 {
+  margin: 0;
+  color: #825914;
+}
+#arena .picnic-welcome p {
+  margin: 0;
+}
+#arena .picnic-welcome .launch {
+  margin-top: auto;
+}
+#arena .picnic-summary {
+  max-width: 34rem;
+  color: #59613d;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+#arena .picnic-stats {
+  grid-template-columns: 1.3fr repeat(5, 1fr);
+  background: var(--honey-soft);
+}
+#arena .picnic-stats > div {
+  min-width: 0;
+  padding: 12px 10px;
+}
+#arena .picnic-stats strong {
+  color: #5c4b26;
+  font-size: 20px;
+}
+#arena .picnic-stats small {
+  color: #5f6b45; /* 5.3:1 on --honey-soft */
+  font-size: 8px;
+  letter-spacing: 0.025em;
+}
+#arena .picnic-hearts strong {
+  color: #b04a5c; /* 4.9:1 on --honey-soft */
+  letter-spacing: 0;
+  font-size: 16px;
+}
+#arena .keys-hint {
+  color: #596d3c;
+  background: var(--honey-soft);
+  margin: 0;
+  padding: 0.6rem 0.9rem;
+}
+#arena .picnic-mode {
+  margin: 0;
+  padding: 0.5rem 0.9rem;
+  background: var(--honey-soft);
+  color: #77521c;
+  font-size: 0.8rem;
+}
+#arena .picnic-mode:empty {
+  display: none;
+}
+#arena .picnic-touch {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.7rem;
+  background: var(--honey-soft);
+}
+#arena .picnic-touch[hidden],
+#arena [hidden] {
+  display: none;
+}
+#arena .picnic-touch button {
+  touch-action: none;
+  min-width: 44px;
+  min-height: 44px;
+  background: var(--honey-soft);
+  color: #59451e;
+  border: 1px solid var(--honey-control-line); /* control boundary at least 3:1 */
+  border-radius: 12px;
+  font-size: 1rem;
+}
+#arena .picnic-touch button:last-child {
+  margin-left: auto;
+  padding: 0 1rem;
+  background: #f6c85a;
+  font-weight: 700;
+}
+#arena .picnic-touch button:active {
+  background: #e0bb50;
+}
+#arena button:focus-visible,
+#screen:focus-visible {
+  outline: 3px solid #987000;
+  outline-offset: 3px;
+}
+@media (max-width: 800px) {
+  #arena .picnic-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  #arena .picnic-stats > div:nth-child(4) {
+    border-left: 0;
+  }
+}
+
+/* Daylight contrast and cards stay inside the stage at laptop and mobile widths. */
+#arena .stage-head .playback,
+#arena .stage-head #restart,
+#arena .stage-toolbar .tool-button {
+  background: var(--honey-soft);
+  color: #344626;
+  border-color: var(--honey-line);
+}
+#arena .runtime-info output,
+#arena .runtime-info small,
+#arena .status,
+#arena .stage-head .wasm a {
+  color: #40522d;
+}
+#arena .pick-grid {
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+}
+#arena .pick-card {
+  min-width: 0;
+}
+#arena .pick-card h3 {
+  overflow-wrap: anywhere;
+}

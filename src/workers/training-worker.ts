@@ -1,13 +1,15 @@
 /** Training coordinator. Spawns one evaluation lane per requested vCPU and runs the EvoWeights generation loop over them (protocol 7,
  * `learning.method` 'edno'); message `attribute` measures which change groups of a child explain its difference from a base; message
  * `reference` plays revisions on the fixed reference seeds of `revisions/reference.ts` (the tree's total gain). */
-import type { AssetBytes, ReadModelAsset } from '../model/kumo.ts';
+import type { AssetBytes, ModelManifest, ReadModelAsset } from '../model/kumo.ts';
+import { loadModelChunk } from '../model/asset-cache.ts';
 import { REFERENCE, referenceRecord, type ReferenceRecord } from '../revisions/reference.ts';
 import { revisionId, getImportedModelAssets } from '../revisions/store.ts';
 import { abortError, createYield, workerScope } from '../shared/worker-scope.ts';
 import { moduleUrl, packUrl, siteUrl } from '../shared/site.ts';
 import { runEDNO, EDNO, type EdnoMessage } from '../training/edno.ts';
 import { createLanePool, type LanePool, type LanePort } from '../training/lane-pool.ts';
+import { measureOriginalReference } from '../training/original-reference.ts';
 import {
   openLiveES,
   recipeHash,
@@ -118,10 +120,11 @@ async function prefetchAssets(readAsset: ReadModelAsset | undefined): Promise<Ma
   const assets = new Map<string, AssetBytes>();
   const manifestBytes = await get(modelBase, 'manifest.json');
   assets.set('manifest.json', manifestBytes);
-  const manifest = JSON.parse(new TextDecoder().decode(manifestBytes as Uint8Array<ArrayBuffer>)) as {
-    chunks: { path: string }[];
-  };
-  for (const c of manifest.chunks) assets.set(c.path, await get(packUrl('w4', ''), c.path));
+  const manifest = JSON.parse(new TextDecoder().decode(manifestBytes as Uint8Array<ArrayBuffer>)) as ModelManifest;
+  for (const c of manifest.chunks) {
+    const held = await readAsset?.(c.path);
+    assets.set(c.path, held ?? (await loadModelChunk(packUrl('w4', c.path), c)).bytes);
+  }
   assets.set('policy-simd.wasm', await get(modelBase, 'policy-simd.wasm'));
   assets.set('arena.wasm', await get(engineBase, 'arena.wasm'));
   assets.set('arena.wad.gz', await get(engineBase, 'arena.wad.gz'));
@@ -130,7 +133,10 @@ async function prefetchAssets(readAsset: ReadModelAsset | undefined): Promise<Ma
 
 /** Mirror live counters (pool or in-process engine) onto the reported `counts` object. */
 function mirrorCounts(counts: TrainingCounts, source: Partial<TrainingCounts>, keys: (keyof TrainingCounts)[]): void {
-  for (const k of keys) Object.defineProperty(counts, k, { get: () => source[k], set() {}, enumerable: true });
+  for (const k of keys) {
+    const offset = counts[k] ?? 0;
+    Object.defineProperty(counts, k, { get: () => offset + (source[k] ?? 0), set() {}, enumerable: true });
+  }
 }
 
 async function run(data: Extract<TrainingRequest, { type: 'start' | 'attribute' | 'reference' }>): Promise<void> {
@@ -182,6 +188,25 @@ async function run(data: Extract<TrainingRequest, { type: 'start' | 'attribute' 
     progress(extra);
   };
   try {
+    if (data.type === 'reference') {
+      plan = { pairs: 0, method: 'reference' };
+      for (const item of data.items?.filter((x) => x.precision === 'fp32') ?? []) {
+        if (!item.id) throw new Error('The FP32 reference needs its model ID.');
+        record(0, 'reference', 'Measuring Original FP32 on the fixed reference games');
+        const result = await measureOriginalReference(item.id, {
+          stop: () => stop,
+          yieldTask,
+          progress: (games, decisions) => {
+            counts.games = games;
+            counts.decisions = decisions;
+            progress();
+          },
+        });
+        emit({ type: 'reference-result', id: item.id, record: result });
+      }
+      data = { ...data, items: data.items?.filter((x) => x.precision !== 'fp32') };
+      if (!data.items?.length) return;
+    }
     record(
       0,
       'loading',

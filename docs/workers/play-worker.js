@@ -61,6 +61,7 @@ function packet(game, s, decision, ms) {
         health: s.health,
         ammo: s.ammo,
         kills: s.kills,
+        picnic: s.picnic,
         done: s.done,
         decision,
         inferenceMs: ms,
@@ -74,11 +75,11 @@ function packet(game, s, decision, ms) {
         inferenceP50: percentile(perfSamples, 0.5),
         inferenceP95: percentile(perfSamples, 0.95),
         perfN: perfSamples.length,
-        backend: runtime.info(),
+        backend: human ? { backend: 'human', reason: null } : (runtime?.info() ?? { backend: 'human', reason: null }),
     }, [rgba.buffer]);
 }
 async function tick() {
-    if (paused || finished || busy || !arena || !runtime || !policy)
+    if (paused || finished || busy || !arena || (!human && (!runtime || !policy)))
         return;
     busy = true;
     const version = epoch, t0 = performance.now();
@@ -125,10 +126,24 @@ async function tick() {
     }
 }
 function run() {
-    if (!arena || !runtime || finished)
+    if (!arena || (!human && (!runtime || !policy)) || finished)
         return;
     paused = false;
     schedule();
+}
+let aiConfig = null;
+async function prepareAI() {
+    if (runtime && policy)
+        return;
+    if (!aiConfig)
+        throw new Error('No model selected');
+    const m = aiConfig;
+    const choice = (m.variant ?? m.policy ?? 'dnp');
+    const { precision } = modelFor(choice, m.revision);
+    [runtime, policy] = await Promise.all([
+        openRuntime(m.backend, ({ loaded, total }) => post({ type: 'loading', loaded, total }), precision, m.revision?.ops, m.revisionId),
+        createDecisionPolicy(choice, undefined, m.revision),
+    ]);
 }
 workerScope.onmessage = async ({ data: m }) => {
     try {
@@ -136,26 +151,33 @@ workerScope.onmessage = async ({ data: m }) => {
             seed = m.seed >>> 0;
             human = !!m.human;
             variant = m.variant ?? m.policy;
-            const choice = variant;
-            const { precision } = modelFor(choice, m.revision);
-            [arena, runtime, policy] = await Promise.all([
-                createArena({ seed, limitTics: Number.isFinite(m.limitTics) ? m.limitTics : 0 }),
-                openRuntime(m.backend, ({ loaded, total }) => post({ type: 'loading', loaded, total }), precision, m.revision?.ops, m.revisionId),
-                createDecisionPolicy(choice, undefined, m.revision),
-            ]);
+            aiConfig = m;
+            if (human)
+                arena = await createArena({ seed, limitTics: Number.isFinite(m.limitTics) ? m.limitTics : 0 });
+            else
+                [arena] = await Promise.all([
+                    createArena({ seed, limitTics: Number.isFinite(m.limitTics) ? m.limitTics : 0 }),
+                    prepareAI(),
+                ]);
             reset(arena, seed, true);
             post({ type: 'ready' });
             run();
             return;
         }
-        if (!arena || !runtime)
+        if (!arena)
             return;
         if (m.type === 'control') {
             Object.assign(keys, m.keys);
             return;
         }
         if (m.type === 'human') {
+            if (!m.on && (!runtime || !policy)) {
+                stop();
+                await prepareAI();
+                post({ type: 'ready' });
+            }
             human = !!m.on;
+            run();
             for (const k of Object.keys(keys))
                 keys[k] = false;
             return;

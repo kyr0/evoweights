@@ -45,6 +45,12 @@ CONFIG = {
 # changed doc page matching, e.g. {"id": "docs.arch.diagram", "kind": "contains", "path": "docs/ARCHITECTURE.md",
 # "text": "```mermaid", "claim": "architecture page keeps its diagram"}.
 RULES = [{
+    "id": "engine.source-zip-fresh",
+    "kind": "command",
+    # Regression: the zip kept an old source/README.md and PROVENANCE.md after both were edited.
+    "command": "python3 .vae/checks/engine-zip-fresh.py",
+    "claim": "the downloadable engine source zip matches the files it packages",
+}, {
     "id": "docs.build-fresh",
     "kind": "command",
     # docs/ is deployed as committed. tsc rewrites every emitted module on each build; copied files keep their source

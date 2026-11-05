@@ -25,7 +25,7 @@ export function installRecorder(canvas, { button }, currentSeed) {
                 chunks: [],
                 bytes: 0,
                 mime: rec.mimeType || type || 'video/webm',
-                name: 'evoweights-doom-seed-' + currentSeed() + '-' + new Date().toISOString().replace(/[:.]/g, '-'),
+                name: 'huggingdoom-honey-hugs-seed-' + currentSeed() + '-' + new Date().toISOString().replace(/[:.]/g, '-'),
             };
             rec.ondataavailable = ({ data }) => {
                 if (data.size && last === session) {

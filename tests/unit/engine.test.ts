@@ -9,7 +9,12 @@ import { createHash } from 'node:crypto';
 import { createArena, type ArenaState } from '../../src/engine/arena.ts';
 import { siteUrl } from '../../src/shared/site.ts';
 
-const arena = await createArena({ seed: 9000 });
+// Archived protocol tests run the exact original binary and WAD; picnic rules have separate tests.
+const arena = await createArena({
+  seed: 9000,
+  readAsset: async (name) =>
+    new Uint8Array(await Bun.file(new URL('../fixtures/legacy-engine/' + name, import.meta.url)).arrayBuffer()),
+});
 const hash = (bytes: Uint8ClampedArray) => createHash('sha256').update(bytes).digest('hex');
 const norm = (deg: number) => ((deg + 540) % 360) - 180;
 const close = (x: number, y: number, eps = 0.0002) => assert.ok(Math.abs(x - y) <= eps, `${x} != ${y}`);

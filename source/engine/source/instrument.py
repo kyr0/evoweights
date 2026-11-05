@@ -6,6 +6,7 @@ def insert(a,b):
     global s
     if s.count(a)!=1:raise RuntimeError('Unsupported upstream header: '+a[:80])
     s=s.replace(a,b)
+insert('#define MAXVISSPRITES 128', '#define MAXVISSPRITES 512')
 insert('    int mobjflags;', '    int mobjflags;\n    unsigned char agm_slot;')
 insert('    vis->mobjflags = thing->flags;', '    vis->mobjflags = thing->flags;\n    vis->agm_slot = agm_slot_id(thing);')
 insert('    vis->mobjflags = 0;', '    vis->mobjflags = 0;\n    vis->agm_slot = 0;')
@@ -24,6 +25,8 @@ insert('        P_DamageMobj(th, shootthing, shootthing, la_damage);',
 # Record the weapon's actual attack callback; a held FIRE command can be in windup.
 insert('    P_LineAttack(player->mo, angle, MELEERANGE, slope, damage);',
        '    agm_attack_begin(2);\n    P_LineAttack(player->mo, angle, MELEERANGE, slope, damage);\n    agm_attack_end();')
+insert('void A_Punch(player_t* player, pspdef_t* psp)\n{',
+       'void A_Punch(player_t* player, pspdef_t* psp)\n{\n    if (agm_action_locked()) return;')
 pistol_start=s.index('void A_FirePistol(player_t* player, pspdef_t* psp)\n{')
 pistol_end=s.index('\n}',pistol_start)
 pistol=s[pistol_start:pistol_end]
@@ -32,6 +35,9 @@ if pistol.count(line)!=1:raise RuntimeError('Unsupported A_FirePistol')
 insert(pistol, pistol.replace(line,'    agm_attack_begin(1);\n'+line+'\n    agm_attack_end();'))
 # Compile-time-only bite research hooks. The public build has neither their code nor their exports.
 insert('static void agm_attack_end(void);', '''static void agm_attack_end(void);
+static int agm_action_locked(void);
+static int agm_cartoon_damage(mobj_t *target);
+static int agm_wait_for_hug(mobj_t *actor);
 #ifdef AGM_BITE_AUDIT
 static void agm_bite_start(mobj_t *actor);
 static void agm_bite_strike(mobj_t *actor, int health_before);
@@ -51,4 +57,14 @@ insert(bite,bite.replace('    int damage;', '''    int damage;
 #ifdef AGM_BITE_AUDIT
     if (actor->target == players[0].mo) agm_bite_strike(actor, health_before);
 #endif''')
+# HuggingDOOM changes are injected at verified single matches, leaving the
+# vendored GPL source untouched and its exact upstream revision identifiable.
+insert('void A_Chase(mobj_t* actor)\n{',
+       'void A_Chase(mobj_t* actor)\n{\n    if (agm_wait_for_hug(actor)) return;')
+insert('void A_SargAttack(mobj_t* actor)\n{',
+       'void A_SargAttack(mobj_t* actor)\n{\n    if (agm_wait_for_hug(actor)) return;')
+insert('void A_FirePistol(player_t* player, pspdef_t* psp)\n{',
+       'void A_FirePistol(player_t* player, pspdef_t* psp)\n{\n    if (agm_action_locked()) return;')
+insert('    if ( !(target->flags & MF_SHOOTABLE) )',
+       '    if (agm_cartoon_damage(target)) return;\n\n    if ( !(target->flags & MF_SHOOTABLE) )')
 Path(sys.argv[2]).write_text(s)

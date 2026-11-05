@@ -1,4 +1,6 @@
 // W4 classifier edits affect only its final linear readout, whose input is identical across revisions.
+// These fixed observations check numerical inference equivalence, not game performance. They remain valid
+// after a theme/rules change; game-score references are isolated by revisions/reference.ts instead.
 import type { HeadOp } from '../model/kumo.ts';
 import { makeHeadPatch, type ReleasedHead } from '../revisions/patch-codec.ts';
 import { siteUrl } from '../shared/site.ts';

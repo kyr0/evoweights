@@ -1,7 +1,7 @@
 /** Parallel mirrored signed-code evolution on the complete released live policy (protocol 6).
  * Survival-first scalar utility, several antithetic pairs per generation, lane-parallel games.
  * Every game is a deterministic function of (recipe, seed, horizon); lanes only change wall-clock time. */
-import { createArena } from '../engine/arena.ts';
+import { createArena, HUGGINGDOOM_RULESET, type ArenaState } from '../engine/arena.ts';
 import {
   createKumoPolicy,
   type AssetBytes,
@@ -226,6 +226,7 @@ export type TrainingFrame = {
   kills: number;
   tic: number;
   weapon: string;
+  picnic?: ArenaState['picnic'];
 };
 
 /** Messages from the evaluation engine: progress records and, while watched, game frames. */
@@ -715,6 +716,8 @@ export async function openLiveES({
     createKumoPolicy({ baseURL: modelBase, runtime, precision: 'w4', readAsset: provide }),
     createArena({ assetBase: engineBase, seed: 0, readAsset: (name) => bytes(engineBase, name) }),
   ]);
+  if (arena.ruleset() !== HUGGINGDOOM_RULESET)
+    throw new Error('HuggingDOOM engine required; refresh cached game assets before training.');
   const instance = api as Required<KumoExports> | null;
   if (!instance) throw new Error('Policy WASM did not instantiate');
   const bridge = policy.gpuBridge(),
@@ -809,7 +812,7 @@ export async function openLiveES({
       visibleDecisions = 0;
     const hiddenSum = hidden ? new Float64Array(1024) : null;
     hiddenMean = null;
-    while (n < horizon && !state.done) {
+    while (n < horizon && !state.done && !state.picnic?.ending) {
       const core = coreFor(state.features, headKey);
       if (hiddenSum && sampleHidden) for (let i = 0; i < 1024; i++) hiddenSum[i] += sampleHidden[i];
       const d = controller.decide(state, core);
@@ -864,6 +867,7 @@ export async function openLiveES({
           kills: state.kills,
           tic: state.tic,
           weapon: state.weapon,
+          picnic: state.picnic,
         };
         emit(frame, [pixels]);
         lastFrame = now;
@@ -884,7 +888,9 @@ export async function openLiveES({
         checkStop();
       }
     }
-    if (pendingSince >= 0) reactionTics += Math.min(REACTION.capTics, state.tic - pendingSince);
+    // The emergency-honey finale is presentation, not additional survival or policy experience.
+    const activeTics = state.picnic?.activeTics ?? state.tic;
+    if (pendingSince >= 0) reactionTics += Math.min(REACTION.capTics, activeTics - pendingSince);
     if (hiddenSum) {
       hiddenMean = new Float32Array(1024);
       for (let i = 0; i < 1024; i++) hiddenMean[i] = hiddenSum[i] / Math.max(1, n);
@@ -892,14 +898,14 @@ export async function openLiveES({
     const t = state.telemetry;
     counts.games++;
     // Rate observers: the pistol spends one bullet per shot; a health drop is a decision step in which damage landed.
-    const minutes = Math.max(1, state.tic) / RATES.ticsPerMinute;
+    const minutes = Math.max(1, activeTics) / RATES.ticsPerMinute;
     return {
       role,
       seed,
       horizon,
       decisions: n,
-      terminal: state.done,
-      tics: state.tic,
+      terminal: state.done || !!state.picnic?.ending,
+      tics: activeTics,
       limit: state.limit ?? CURRICULUM.minuteTics,
       kills: state.kills,
       health: state.health,

@@ -1,13 +1,13 @@
 /* Original v0.5 arena controls, scoped to the embedded instruments. */
 .lab-ui {
-  color-scheme: dark;
-  --bg: #101310;
-  --panel: #191d19;
-  --line: #343a32;
-  --muted: #a7afa4;
-  --dim: #919b8c;
-  --fg: #edf0e9;
-  --acid: #cef887;
+  color-scheme: light;
+  --bg: var(--honey-shell);
+  --panel: var(--honey-panel);
+  --line: var(--honey-line);
+  --muted: var(--honey-muted);
+  --dim: var(--honey-muted);
+  --fg: var(--honey-ink);
+  --acid: var(--honey-accent);
   --mono: ui-monospace, SFMono-Regular, Consolas, monospace;
   font-family: Inter, Arial, Helvetica, sans-serif;
   background: var(--bg);
@@ -18,7 +18,11 @@
 }
 .lab-ui .legacy-body {
   margin: 0;
-  background: radial-gradient(ellipse at 62% 12%, #20251a55, transparent 40%);
+  background: radial-gradient(
+    ellipse at 62% 12%,
+    color-mix(in srgb, var(--honey-soft) 33%, transparent),
+    transparent 40%
+  );
 }
 :where(.lab-ui) a {
   color: inherit;
@@ -53,7 +57,7 @@
 }
 :where(.lab-ui) .top {
   border-bottom: 1px solid var(--line);
-  background: #101310ec;
+  background: color-mix(in srgb, var(--honey-soft) 93%, transparent);
 }
 :where(.lab-ui) .nav {
   height: 64px;
@@ -84,7 +88,7 @@
 :where(.lab-ui) nav {
   gap: 26px;
   font-size: 13px;
-  color: #c3cbbd;
+  color: var(--honey-ink);
 }
 :where(.lab-ui) nav a:hover,
 :where(.lab-ui) .downloads a:hover,
@@ -104,7 +108,7 @@
   letter-spacing: 1.45px;
 }
 :where(.lab-ui) .kicker {
-  color: #bdc6b8;
+  color: var(--honey-ink);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -112,7 +116,7 @@
 :where(.lab-ui) .rule {
   width: 24px;
   height: 2px;
-  background: var(--acid);
+  background: var(--honey-button);
 }
 :where(.lab-ui) h1,
 :where(.lab-ui) h2,
@@ -132,7 +136,7 @@
 }
 :where(.lab-ui) .intro p,
 :where(.lab-ui) .kit p {
-  color: #b9c3b4;
+  color: var(--honey-muted);
   line-height: 1.55;
   font-size: 16px;
 }
@@ -147,7 +151,7 @@
 :where(.lab-ui) .replay {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 5px;
+  border-radius: 12px;
   overflow: hidden;
 }
 :where(.lab-ui) .stage-head {
@@ -156,10 +160,10 @@
   gap: 12px;
   height: 38px;
   padding: 0 13px;
-  background: #20251e;
+  background: var(--honey-soft);
 }
 :where(.lab-ui) .stage-title {
-  color: #c1c9ba;
+  color: var(--honey-ink);
   letter-spacing: 1.1px;
   font-size: 9px;
 }
@@ -172,7 +176,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #c4ccbb;
+  color: var(--honey-ink);
   font-size: 9px;
 }
 :where(.lab-ui) .status i,
@@ -188,12 +192,12 @@
 }
 :where(.lab-ui) .status[data-live='yes'] i,
 :where(.lab-ui) .dot {
-  background: var(--acid);
+  background: var(--honey-button);
 }
 :where(.lab-ui) .viewport {
   position: relative;
   aspect-ratio: 1.65;
-  background: #050604 url('../assets/poster.webp') center/cover no-repeat;
+  background: var(--honey-soft) url('../assets/poster.webp') center/cover no-repeat;
   isolation: isolate;
 }
 :where(.lab-ui) .viewport canvas {
@@ -201,7 +205,7 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background: #070907;
+  background: var(--honey-soft);
   image-rendering: pixelated;
   visibility: hidden;
 }
@@ -209,7 +213,7 @@
   visibility: visible;
 }
 :where(.lab-ui) .viewport:fullscreen {
-  background: #050605;
+  background: var(--honey-soft);
   display: grid;
   place-items: center;
   width: 100%;
@@ -220,31 +224,36 @@
   inset: 0;
   display: grid;
   place-items: center;
-  background: linear-gradient(0deg, #05070588, #05070515 65%, #05070524);
+  background: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--honey-soft) 53%, transparent),
+    color-mix(in srgb, var(--honey-soft) 8%, transparent) 65%,
+    color-mix(in srgb, var(--honey-soft) 14%, transparent)
+  );
 }
 :where(.lab-ui) .overlay-inner {
   display: grid;
   justify-items: center;
   gap: 11px;
-  background: #10150ee3;
-  border: 1px solid #77836670;
-  border-radius: 4px;
+  background: color-mix(in srgb, var(--honey-soft) 89%, transparent);
+  border: 1px solid color-mix(in srgb, var(--honey-line) 44%, transparent);
+  border-radius: 12px;
   padding: 21px 27px;
   text-align: center;
 }
 :where(.lab-ui) .overline {
-  color: #cad7c2;
+  color: var(--honey-ink);
   font-size: 9px;
 }
 :where(.lab-ui) .launch,
 :where(.lab-ui) .primary {
-  background: var(--acid);
+  background: var(--honey-button);
   color: #18300f;
   border: 0;
   font-weight: 750;
 }
 :where(.lab-ui) .launch {
-  border-radius: 3px;
+  border-radius: 12px;
   padding: 12px 24px;
   min-width: 163px;
 }
@@ -253,23 +262,23 @@
 }
 :where(.lab-ui) .launch:hover,
 :where(.lab-ui) .downloads a.primary:hover {
-  background: #dcffa8;
+  background: var(--honey-soft);
   color: #10180d;
 }
 :where(.lab-ui) .overlay small,
 :where(.lab-ui) .overlay-tag,
 :where(.lab-ui) .caption {
   font: 11px/1.45 var(--mono);
-  color: #b7c2ae;
+  color: var(--honey-muted);
 }
 :where(.lab-ui) .overlay-tag {
   position: absolute;
   right: 9px;
   bottom: 8px;
-  background: #0a0c09bd;
+  background: color-mix(in srgb, var(--honey-soft) 74%, transparent);
   padding: 3px 6px;
   font-size: 9px;
-  border-radius: 2px;
+  border-radius: 12px;
 }
 :where(.lab-ui) .overlay progress {
   height: 5px;
@@ -289,12 +298,12 @@
   border: 0;
   background: transparent;
   padding: 5px 9px;
-  color: #bdc6b9;
+  color: var(--honey-ink);
   font-size: 12px;
 }
 :where(.lab-ui) .transport button:hover:enabled,
 :where(.lab-ui) .seed button:hover {
-  background: #30362c;
+  background: var(--honey-panel);
   color: white;
 }
 :where(.lab-ui) .transport .expand {
@@ -343,7 +352,7 @@
   justify-content: space-between;
 }
 :where(.lab-ui) .minor {
-  color: #a7b39e;
+  color: var(--honey-muted);
   font-size: 9px;
 }
 :where(.lab-ui) .tiny-blocks {
@@ -365,31 +374,31 @@
   align-items: center;
   justify-content: flex-start;
   gap: 10px;
-  background: #1e231e;
+  background: var(--honey-soft);
   border: 1px solid var(--line);
-  border-radius: 3px;
+  border-radius: 12px;
   text-align: left;
   padding: 9px 10px;
   min-height: 48px;
 }
 :where(.lab-ui) .choices button:hover {
-  border-color: #6a7563;
+  border-color: var(--honey-line);
 }
 :where(.lab-ui) .choices .chosen {
-  background: #2d3825;
-  border-color: #829f63;
+  background: var(--honey-panel);
+  border-color: var(--honey-line);
 }
 :where(.lab-ui) .choices button i {
   width: 12px;
   height: 12px;
-  border: 1px solid #8e9887;
+  border: 1px solid var(--honey-line);
   border-radius: 50%;
   flex: 0 0 auto;
 }
 :where(.lab-ui) .choices .chosen i {
-  border: 3px solid #39482d;
+  border: 3px solid var(--honey-line);
   outline: 1px solid var(--acid);
-  background: var(--acid);
+  background: var(--honey-button);
 }
 :where(.lab-ui) .choices button span {
   font-size: 13px;
@@ -405,13 +414,13 @@
 :where(.lab-ui) .choices em {
   margin-left: auto;
   font: 10px var(--mono);
-  color: #8d9986;
+  color: var(--honey-muted);
 }
 :where(.lab-ui) .import {
   font: 11px var(--mono);
   display: inline-block;
   padding: 11px 0 0;
-  color: #cdd8c3;
+  color: var(--honey-ink);
   cursor: pointer;
 }
 :where(.lab-ui) .sr {
@@ -426,7 +435,7 @@
 }
 :where(.lab-ui) .message {
   display: block;
-  color: #e2cba2;
+  color: var(--honey-muted);
   font-size: 11px;
   overflow-wrap: anywhere;
 }
@@ -449,24 +458,24 @@
   grid-template-columns: 35px 1fr 45px;
   gap: 8px;
   font: 10px/1.3 var(--mono);
-  color: #abb5a3;
+  color: var(--honey-muted);
 }
 :where(.lab-ui) .track {
   height: 4px;
-  background: #30372d;
+  background: var(--honey-panel);
   overflow: hidden;
 }
 :where(.lab-ui) .track i {
   display: block;
   width: 0;
   height: 100%;
-  background: #707d67;
+  background: var(--honey-panel);
 }
 :where(.lab-ui) .logit.active {
   color: var(--acid);
 }
 :where(.lab-ui) .active .track i {
-  background: var(--acid);
+  background: var(--honey-button);
 }
 :where(.lab-ui) .logit output {
   text-align: right;
@@ -483,10 +492,10 @@
 }
 :where(.lab-ui) .seed input {
   width: 82px;
-  background: #111510;
+  background: var(--honey-soft);
   border: 1px solid var(--line);
   padding: 5px 6px;
-  border-radius: 2px;
+  border-radius: 12px;
   font: 12px var(--mono);
 }
 :where(.lab-ui) .seed button {
@@ -518,9 +527,9 @@
   margin: 12px 0 0;
 }
 :where(.lab-ui) .meta-tag {
-  border: 1px solid #414b3d;
+  border: 1px solid var(--honey-line);
   padding: 6px 9px;
-  color: #afbaa7;
+  color: var(--honey-muted);
   font-size: 9px;
 }
 :where(.lab-ui) .evidence-grid {
@@ -533,10 +542,10 @@
 :where(.lab-ui) .lead {
   line-height: 1.5;
   font-size: 16px;
-  color: #cbd2c5;
+  color: var(--honey-ink);
 }
 :where(.lab-ui) .lead b {
-  color: #edf1e8;
+  color: var(--honey-ink);
 }
 :where(.lab-ui) table {
   border-collapse: collapse;
@@ -597,7 +606,7 @@
 }
 :where(.lab-ui) .downloads a {
   border: 1px solid var(--line);
-  border-radius: 3px;
+  border-radius: 12px;
   padding: 9px 12px;
   font-size: 12px;
 }
@@ -606,11 +615,11 @@
 }
 :where(.lab-ui) code {
   font-family: var(--mono);
-  color: #deeacb;
+  color: var(--honey-ink);
 }
 :where(.lab-ui) footer {
   border-top: 1px solid var(--line);
-  color: #8f9c86;
+  color: var(--honey-muted);
 }
 :where(.lab-ui) footer .wrap {
   height: 56px;
@@ -737,7 +746,7 @@
   gap: 4px;
   align-items: center;
   font-size: 11px;
-  color: #bbc5b5;
+  color: var(--honey-ink);
 }
 :where(.lab-ui) .auto input {
   accent-color: var(--acid);
@@ -760,8 +769,8 @@
   font: 10px var(--mono);
   background: none;
   border: 0;
-  border-bottom: 1px dotted #78916a;
-  color: #c5d4bc;
+  border-bottom: 1px dotted var(--honey-line);
+  color: var(--honey-ink);
   padding: 2px 0;
 }
 :where(.lab-ui) .sample:hover {
@@ -788,8 +797,8 @@
 :where(.lab-ui) #regions i {
   display: block;
   height: 15px;
-  background: linear-gradient(to top, #bddc89 var(--fill, 0%), #30382c var(--fill, 0%));
-  border-bottom: 1px solid #687862;
+  background: linear-gradient(to top, #bddc89 var(--fill, 0%), var(--honey-panel) var(--fill, 0%));
+  border-bottom: 1px solid var(--honey-line);
 }
 :where(.lab-ui) .maneuver {
   display: flex;
@@ -823,7 +832,7 @@
   margin-top: 15px;
   border: 1px solid var(--line);
   background: var(--panel);
-  border-radius: 4px;
+  border-radius: 12px;
 }
 :where(.lab-ui) .runtime-panel label,
 :where(.lab-ui) .runtime-panel b {
@@ -833,11 +842,11 @@
   font-weight: 700;
 }
 :where(.lab-ui) .runtime-panel select {
-  background: #10150f;
+  background: var(--honey-soft);
   color: var(--fg);
   padding: 8px;
   border: 1px solid var(--line);
-  border-radius: 3px;
+  border-radius: 12px;
 }
 :where(.lab-ui) .runtime-panel small,
 :where(.lab-ui) .runtime-panel output {
@@ -965,7 +974,7 @@
 :where(.lab-ui) .segmented {
   display: inline-flex;
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 12px;
   overflow: hidden;
 }
 :where(.lab-ui) .segmented label {
@@ -982,7 +991,7 @@
   font: 600 12px var(--mono);
 }
 :where(.lab-ui) .segmented input:checked + span {
-  background: var(--acid);
+  background: var(--honey-button);
   color: #171c11;
 }
 :where(.lab-ui) .segmented input:focus-visible + span {
@@ -998,9 +1007,9 @@
   margin-top: 5px;
   padding: 5px;
   color: var(--fg);
-  background: #121610;
+  background: var(--honey-soft);
   border: 1px solid var(--line);
-  border-radius: 3px;
+  border-radius: 12px;
 }
 :where(.lab-ui) .runtime-info {
   margin: 10px 0 0;
@@ -1083,7 +1092,7 @@
   width: min(100%, 840px);
   height: auto;
   display: block;
-  background: #111;
+  background: var(--honey-soft);
   border: 1px solid var(--line);
 }
 :where(.lab-ui) .retreat-proof figcaption {

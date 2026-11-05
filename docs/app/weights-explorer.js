@@ -219,30 +219,22 @@ function nativeView(model) {
     }
     const editedLabel = model.editedLabel || 'edited';
     filters.append(make('span', 'wx-fixed', 'Coordinates · ' + (filter === 'edited' ? editedLabel + ' only' : 'all channels')));
-    // One tab per activation cluster (C0 … C7) replaces the cluster selector; channels are picked in the group map and the zoom grid.
-    const tabHost = make('div', 'wx-tab-host');
-    const clusterTabs = clusters.length
-        ? tabStrip('Activation clusters', [
-            ['', 'All', 'All ' + n(channels.filter((c) => filter === 'all' || c.changed).length) + ' channels'],
+    // Clusters filter the current row; the toolbar owns the single set of view tabs.
+    if (clusters.length)
+        filters.append(select('Activation cluster', [
+            ['', 'All channels'],
             ...clusters.map((c) => [
                 String(c.cluster),
-                'C' + c.cluster,
-                'Cluster C' + c.cluster + ' · ' + n(c.size) + ' channels',
+                'C' + c.cluster + ' · ' + n(c.size) + ' channels',
             ]),
         ], cluster, (v) => {
             cluster = String(v);
             changeFilter();
-        }, 'wx-cluster-tabs')
-        : null;
-    if (clusterTabs)
-        tabHost.append(clusterTabs.strip);
-    function syncTabs() {
-        clusterTabs?.mark(cluster);
-    }
+        }));
     const mapPane = make('div', 'wx-pane'), coordPane = make('div', 'wx-pane');
     mapPane.append(make('h4', '', 'Class ' + head.row + ' channel map'), make('p', 'wx-hint', 'One tile per quantization group. Read channels left to right, top to bottom within a tile.'), overview, legend([
-        ['up', '+', 'Parameter increased'],
-        ['down', '−', 'Parameter decreased'],
+        ['up', '+', 'Weight raised'],
+        ['down', '−', 'Weight lowered'],
         ['same', '·', 'Unchanged'],
         ['dim', '', 'Filtered out'],
     ]), info);
@@ -251,13 +243,13 @@ function nativeView(model) {
     panes.append(mapPane, coordPane);
     // The revision view shows its summary tiles in place of the intro, coordinate filter and match count.
     if (model.compact)
-        root.append(tabHost, panes);
+        root.append(panes);
     else
         root.append(make('p', 'wx-intro', model.intro ||
             head.name +
                 ' · output row ' +
                 head.row +
-                ' · assigned to FIRE (attack) by the DOOM task. Select a cluster tab, then a group or a channel to inspect it.'), filters, tabHost, status, panes);
+                ' · assigned to FIRE (attack) by the DOOM task. Select an activation cluster, then a group or a channel to inspect it.'), filters, status, panes);
     function render() {
         const picked = channels[current], g = groups[picked.group], visible = channels.filter(match);
         const selectedCluster = clusters.find((c) => String(c.cluster) === cluster);
@@ -272,7 +264,6 @@ function nativeView(model) {
                 (selectedCluster && Number.isFinite(selectedCluster.meanPairCorrelation)
                     ? ' · mean within-cluster Pearson r ' + weight(selectedCluster.meanPairCorrelation)
                     : '');
-        syncTabs();
         overview.replaceChildren();
         for (const group of groups) {
             const matches = group.cells.filter(match), b = btn('wx-group', '');
@@ -363,7 +354,7 @@ function nativeView(model) {
                     : 'mean absolute edit ' + weight(g.meanAbsDelta) + ' weight units per edited channel')));
         focus.append(grid, make('p', 'wx-hint', 'Arrow keys move by cell or row. Home and End jump within the group.'));
         const readHead = make('div', 'wx-zoom-head');
-        readHead.append(make('h4', '', 'Channel ' + current + ' ← ' + (picked.changed ? 'edited' : 'unedited')));
+        readHead.append(make('h4', '', 'Channel ' + current + ' was ' + (picked.changed ? 'edited' : 'unedited')));
         const table = make('table', 'wx-values'), thead = table.createTHead().insertRow();
         for (const text of ['Stage', 'Parameter', 'Weight']) {
             const th = make('th', '', text);
@@ -398,28 +389,17 @@ function nativeView(model) {
     render();
     return root;
 }
-function controllerView(model, opts = {}) {
+function controllerView(model, index) {
     const root = make('div', 'wx-controllers');
     if (!model.controllers.length) {
         root.append(make('p', 'wx-empty', 'No added controller matrix in this release.'));
         return root;
     }
-    let index = opts.index ?? 0, row = 0, col = 0;
+    let row = 0, col = 0;
     const view = make('div', 'wx-controller-view');
-    // One tab per added matrix; a cell is chosen in the matrix itself.
-    // In the revision view the explorer's own tab bar chooses the matrix (opts.bare); elsewhere the view has its own matrix tabs.
-    const matrixTabs = opts.bare
-        ? null
-        : tabStrip('Added matrices', model.controllers.map((m, i) => [i, m.name + (m.nonzero === 0 ? ' · off' : '')]), index, (v) => {
-            index = Number(v);
-            row = 0;
-            col = 0;
-            render();
-        }, 'wx-matrix-tabs');
-    root.append(...(matrixTabs ? [matrixTabs.strip] : []), view);
+    root.append(view);
     function render() {
         const m = model.controllers[index];
-        matrixTabs?.mark(index);
         const zone = make('div', 'wx-matrix-scroll'), table = make('table', 'wx-matrix');
         table.setAttribute('aria-label', m.name + ' signed parameters, output rows by input columns');
         const header = table.createTHead().insertRow(), corner = make('th', '', 'Output / input');
@@ -535,9 +515,19 @@ function controllerView(model, opts = {}) {
     render();
     return root;
 }
+function controllerTabs(model) {
+    return model.controllers.map((m, i) => [
+        'm' + i,
+        m.name
+            .replace(/ sensor weights.*$/, '')
+            .replace('Tactical readout', 'Aim')
+            .replace('Combat readout', 'Combat') + (m.nonzero === 0 ? ' · off' : ''),
+        m.name,
+    ]);
+}
 function renderComparison(host, model) {
     const s = model.summary;
-    const content = make('div', 'wx-content'), stats = make('div', 'wx-metrics');
+    const content = make('div', 'wx-content'), stats = make('div', 'wx-metrics wx-metrics-release');
     const totalSlots = model.controllers.reduce((a, c) => a + c.slots, 0), nonzero = model.controllers.reduce((a, c) => a + c.nonzero, 0);
     stats.append(metric('FP32 → 4-bit', s.quantizationChanged, 'native weight values changed during quantization'), metric('4-bit → DNP', s.directChanged, 'native weight coordinates directly edited'), metric('Added sensor weights', totalSlots, n(nonzero) + ' nonzero parameters in ' + model.controllers.length + ' controller matrices'));
     const scope = make('p', 'wx-intro', 'The native backbone contains ' +
@@ -545,29 +535,18 @@ function renderComparison(host, model) {
         ' parameters. Comparing the original FP32 values directly with the edited backbone gives ' +
         n(s.netChanged) +
         ' changed weights. A coordinate can change at both stages.');
-    const viewer = make('div', 'wx-viewer'), toolbar = make('div', 'wx-toolbar'), controls = make('div', 'wx-modes');
-    controls.setAttribute('role', 'group');
-    controls.setAttribute('aria-label', 'Weight comparison view');
-    const body = make('div', 'wx-body');
-    const views = [
-        ['Base model weights · row 2', nativeView],
-        ['Extra weights added', controllerView],
-    ];
-    const cached = [];
-    views.forEach(([label, fn], i) => {
-        const b = btn('wx-mode', label);
-        b.setAttribute('aria-pressed', String(!i));
-        b.dataset.view = String(i);
-        b.onclick = () => {
-            controls.querySelectorAll('button').forEach((t, j) => t.setAttribute('aria-pressed', String(i === j)));
-            body.replaceChildren((cached[i] ??= fn(model)));
-        };
-        controls.append(b);
-    });
-    toolbar.append(controls);
-    viewer.append(toolbar, body);
-    body.append((cached[0] = nativeView(model)));
-    content.append(stats, scope, viewer, inventory(model));
+    const viewer = make('div', 'wx-viewer'), toolbar = make('div', 'wx-toolbar'), body = make('div', 'wx-body');
+    // The release includes FP32 coordinates for FIRE only. Keep all available views in the same toolbar.
+    const rowView = 'r' + model.head.row, items = [...controllerTabs(model), [rowView, 'Row Fire']], first = items[0][0], cached = {};
+    const show = (v) => {
+        tabs.mark(v);
+        body.replaceChildren((cached[v] ??= v === rowView ? nativeView(model) : controllerView(model, Number(v.slice(1)))));
+    };
+    const tabs = tabStrip('Explorer view', items, first, show, 'wx-view-tabs');
+    toolbar.append(tabs.strip);
+    viewer.append(toolbar, stats, body);
+    show(first);
+    content.append(viewer, scope, inventory(model));
     host.replaceChildren(content);
     return model;
 }
@@ -699,6 +678,7 @@ export function buildRevisionComparison({ candidate, base, release, head, row = 
     };
 }
 export function renderRevisionDiff(host, model, opts = {}) {
+    const restoreTabFocus = host.contains(document.activeElement) && document.activeElement?.getAttribute('role') === 'tab';
     const s = model.summary, content = make('div', 'wx-content'), stats = make('div', 'wx-metrics');
     stats.append(metric('Base model weights', s.directChanged, 'head coordinates that differ · rows ' + s.rowChanges.map((k, r) => r + ': ' + n(k)).join(' · ')), metric('Extra weights added', s.controllerChanged, 'of ' +
         n(s.controllerSlots) +
@@ -711,13 +691,8 @@ export function renderRevisionDiff(host, model, opts = {}) {
     const viewer = make('div', 'wx-viewer'), toolbar = make('div', 'wx-toolbar'), body = make('div', 'wx-body');
     // One tab bar: the added sensor-weight matrices first, then the three output rows. A row other than the built one asks the host
     // to rebuild the comparison for that row (opts.onRow); every choice is reported so the host can keep it (opts.onView).
-    const short = (name) => name.replace(/ sensor weights.*$/, '');
     const items = [
-        ...model.controllers.map((m, i) => [
-            'm' + i,
-            short(m.name) + (m.nonzero === 0 ? ' · off' : ''),
-            m.name,
-        ]),
+        ...controllerTabs(model),
         ['r0', 'Row Left'],
         ['r1', 'Row Right'],
         ['r2', 'Row Fire'],
@@ -730,9 +705,7 @@ export function renderRevisionDiff(host, model, opts = {}) {
         }
         tabs.mark(v);
         opts.onView?.(v);
-        body.replaceChildren((cached[v] ??= v.startsWith('r')
-            ? nativeView(model)
-            : controllerView(model, { index: Number(v.slice(1)), bare: true })));
+        body.replaceChildren((cached[v] ??= v.startsWith('r') ? nativeView(model) : controllerView(model, Number(v.slice(1)))));
     };
     const first = opts.view !== undefined &&
         items.some(([v]) => v === opts.view) &&
@@ -740,7 +713,7 @@ export function renderRevisionDiff(host, model, opts = {}) {
         ? opts.view
         : 'm0';
     const tabs = tabStrip('Explorer view', items, first, show, 'wx-view-tabs');
-    // The three summary tiles sit inside the explorer, between its header and the selected view.
+    // Summary tiles stay inside the explorer, between its header and the selected view.
     toolbar.append(tabs.strip);
     viewer.append(toolbar, stats, body);
     show(first);
@@ -748,6 +721,8 @@ export function renderRevisionDiff(host, model, opts = {}) {
     // Registered as mounted, so a late lazy mount of the release view does not replace this comparison.
     mounted.set(host, Promise.resolve(model));
     host.replaceChildren(content);
+    if (restoreTabFocus)
+        tabs.strip.querySelector('[aria-selected="true"]')?.focus({ preventScroll: true });
     return model;
 }
 export function remountWeightsExplorer(host, options = {}) {

@@ -8,8 +8,12 @@
  * Horizon: ten minutes, the curriculum maximum. At one minute 19 of 48 games of EDNO W4 · R1 hit the cap, which compresses the totals
  * of strong lines; a game costs only as long as it survives, so the long horizon adds no cost for weak revisions.
  * This module has no imports so the page can use the arithmetic without loading the engine. */
+// Game results are environment-specific. Weight IDs and inference fixtures are not.
+// Keep this literal equal to HUGGINGDOOM_RULESET in the engine adapter; no engine import belongs here.
 export const REFERENCE = Object.freeze({
-  protocol: 'agm.dnp.reference/1',
+  ruleset: 'huggingdoom-v1',
+  protocol: 'huggingdoom-v1.reference/1',
+  cacheKey: 'huggingdoom-v1-reference-v1',
   master: 0,
   index: 0xc000000,
   count: 48,
@@ -37,6 +41,30 @@ export interface ReferenceGain {
   kills: RatioEstimate | null;
   better: number;
   worse: number;
+}
+
+export interface ReferenceStanding {
+  id: string;
+  rank: number;
+  tics: number;
+  kills: number;
+}
+
+/** Rank all measured models by survival; equal survival totals share a rank. No baseline is required. */
+export function rankReferences(records: Iterable<readonly [string, ReferenceRecord]>): ReferenceStanding[] {
+  const ranked = [...records]
+    .filter(([, record]) => validReference(record))
+    .map(([id, record]) => ({
+      id,
+      rank: 0,
+      tics: record.tics.reduce((a, b) => a + b, 0),
+      kills: record.kills.reduce((a, b) => a + b, 0),
+    }))
+    .sort((a, b) => b.tics - a.tics || a.id.localeCompare(b.id));
+  ranked.forEach((entry, i) => {
+    entry.rank = i > 0 && entry.tics === ranked[i - 1].tics ? ranked[i - 1].rank : i + 1;
+  });
+  return ranked;
 }
 
 export function referenceRecord(
@@ -74,7 +102,7 @@ export function ratioOfSums(a: number[], b: number[]): RatioEstimate | null {
   return { factor, se: Math.sqrt(ss / (n * (n - 1))) / meanA, n };
 }
 
-/** Survival and kills of a revision against a reference revision (its lineage root or its parent). */
+/** Survival and peaceful-bear totals against a reference measured under the same HuggingDOOM rules. */
 export function referenceGain(child: unknown, base: unknown): ReferenceGain | null {
   if (!validReference(child) || !validReference(base)) return null;
   const survival = ratioOfSums(base.tics, child.tics);

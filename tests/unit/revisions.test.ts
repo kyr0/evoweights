@@ -11,6 +11,7 @@ import {
 } from '../../src/revisions/patch-codec.ts';
 import {
   ratioOfSums,
+  rankReferences,
   REFERENCE,
   referenceGain,
   referenceRecord,
@@ -185,6 +186,29 @@ describe('diffs', () => {
 });
 
 describe('reference set arithmetic', () => {
+  test('rankings include every measured model, start at one without FP32, and share survival ties', () => {
+    const score = (tics: number, kills = 1) => ({
+      protocol: REFERENCE.protocol,
+      hash: 'measured',
+      tics: Array(48).fill(tics),
+      kills: Array(48).fill(kills),
+    });
+    const child = score(300);
+    expect(rankReferences([['child', child]])).toEqual([{ id: 'child', rank: 1, tics: 14400, kills: 48 }]);
+    const ranked = rankReferences([
+      ['original', score(100)],
+      ['child', child],
+      ['sibling', score(300, 2)],
+      ['other-line', score(200)],
+      ['historical', { ...score(1000), protocol: 'agm.dnp.reference/1' }],
+    ]);
+    expect(ranked.map(({ id, rank }) => [id, rank])).toEqual([
+      ['child', 1],
+      ['sibling', 1],
+      ['other-line', 3],
+      ['original', 4],
+    ]);
+  });
   test('ratioOfSums and referenceGain', () => {
     expect(ratioOfSums([1, 1], [2, 2])).toEqual({ factor: 2, se: 0, n: 2 });
     expect(ratioOfSums([0, 0], [1, 1])).toBeNull();

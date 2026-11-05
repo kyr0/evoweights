@@ -9,6 +9,8 @@ import type { BenchReply, BenchRequest, BenchResult } from '../workers/bench-wor
 import type { FramePacket, HumanKeys, PlayReply, PlayRequest } from '../workers/play-worker.ts';
 import { installRecorder, type GameState } from './recorder.ts';
 import { installRevisions } from './revisions-panel.ts';
+import { HuggingDoomView, type PicnicFrame } from './huggingdoom.ts';
+import { PicnicAudio } from './picnic-audio.ts';
 
 /** The page's required elements; a missing one is a markup bug and fails at first use, as before. */
 function $<T extends HTMLElement = HTMLElement>(selector: string): T {
@@ -16,8 +18,20 @@ function $<T extends HTMLElement = HTMLElement>(selector: string): T {
 }
 const canvas = $<HTMLCanvasElement>('#screen'),
   ctx = canvas.getContext('2d', { alpha: false }) as CanvasRenderingContext2D;
-const names = ['LEFT', 'RIGHT', 'FIRE', 'HOLD'];
-const variants: Record<string, string> = { dnp: 'Latest DNP', original: 'Original weights (FP32)' };
+const names = ['LEFT', 'RIGHT', 'HONEY', 'WAIT'];
+const picnicView = new HuggingDoomView();
+const picnicAudio = new PicnicAudio();
+let muted = false;
+$('#picnic-sound').onclick = () => {
+  muted = !muted;
+  picnicAudio.setMuted(muted);
+  $('#picnic-sound').textContent = muted ? 'Sound off' : 'Sound on';
+  if (!muted) void picnicAudio.unlock().catch(() => {});
+};
+const variants: Record<string, string> = {
+  dnp: 'Astra 6 Weight-Space Programming',
+  original: 'Original weights (FP32)',
+};
 const headline: Record<GameState, string> = {
   idle: 'STANDBY',
   loading: 'LOADING',
@@ -59,7 +73,7 @@ $('#logits').innerHTML = names
   .map(
     (n) =>
       '<div class="logit" ' +
-      (n === 'HOLD' ? 'hidden' : '') +
+      (n === 'WAIT' ? 'hidden' : '') +
       '><span>' +
       n +
       '</span><div class="track"><i></i></div><output>—</output></div>',
@@ -77,6 +91,7 @@ if (typeof ResizeObserver === 'function') new ResizeObserver(fitPick).observe($(
 function status(s: GameState, detail?: string): void {
   state = s;
   recorder.state(s);
+  picnicAudio.setPlaying(s === 'live');
   benchmark.disabled = timingBusy || s === 'loading' || !!revisions?.learning;
 
   const previewing = trainingPreview && s !== 'live';
@@ -93,10 +108,11 @@ function status(s: GameState, detail?: string): void {
   $('#toggle .symbol').textContent = s === 'paused' || s === 'ended' ? '▶' : 'Ⅱ';
   $('#overlay').hidden = s === 'live' || previewing;
   $('#progress').hidden = s !== 'loading';
-  const picking = s === 'idle' || s === 'paused' || s === 'ended';
+  const picking = s === 'idle' || s === 'paused';
+  $('#picnic-summary').hidden = s !== 'ended';
   $('#pick').hidden = !picking;
   const launchButton = $<HTMLButtonElement>('#launch');
-  launchButton.hidden = s === 'loading' || s === 'idle' || s === 'paused' || s === 'ended'; // the header button resumes or plays again
+  launchButton.hidden = s === 'loading' || s === 'idle' || s === 'paused'; // the header button resumes or plays again
   if (s !== 'live') {
     rateMark = null;
     if (!revisions?.learning) $('#decision-rate').textContent = '—';
@@ -112,15 +128,17 @@ function status(s: GameState, detail?: string): void {
   $('#overlay-eyebrow').textContent =
     (
       {
-        idle: 'CHOOSE A MODEL',
+        idle: 'WELCOME TO HUGGINGDOOM',
         loading: 'PREPARING LIVE SESSION',
         error: 'SESSION UNAVAILABLE',
         paused: 'SESSION PAUSED',
-        ended: 'EPISODE COMPLETE',
+        ended: 'EVERYONE IS INVITED TO THE PICNIC',
       } as Record<string, string>
     )[s] || '';
   $('#load-detail').textContent =
-    detail || ({ loading: 'Loading the game and model…' } as Record<string, string>)[s] || '';
+    detail ||
+    ({ loading: human ? 'Opening the meadow…' : 'Loading the meadow and model…' } as Record<string, string>)[s] ||
+    '';
 }
 function activeLabel(): string {
   return activeRevision?.name || variants[variant];
@@ -132,20 +150,24 @@ function revisionArgs(): Pick<PlayRequest & { type: 'init' }, 'revision' | 'revi
     args.revision = { ops: activeRevision.ops, tactical: activeRevision.controller };
   return args;
 }
-function activateRevision(record: RevisionRecord, play?: boolean): boolean {
+export function activateRevision(record: RevisionRecord, play?: boolean): boolean {
   if (timingBusy) return false;
   const choice = record.kind === 'original' ? 'original' : 'dnp';
-  if (activeRevision?.id === record.id) {
+  if (activeRevision?.id === record.id && !(play && humanPlay())) {
     if (play && state !== 'live' && state !== 'loading') launch();
     return true;
   }
   const wasStarted = !!worker;
   leaveWorker();
+  // Every model-play action leaves keyboard mode, including the new-model congratulations dialog.
+  if (play) setHuman(false);
   variant = choice;
   activeRevision = record;
   $('#viewport').classList.remove('running');
   $('#stage-mode').textContent = 'Preview · ' + activeLabel();
-  for (const id of ['health', 'ammo', 'kills']) $('#' + id).textContent = '—';
+  for (const id of ['health', 'ammo', 'kills', 'bears-fed', 'bears-befriended', 'times-bitten'])
+    $('#' + id).textContent = '—';
+  $('#health').setAttribute('aria-label', 'No hearts yet');
   $('#game-time').textContent = '0:00';
   $('#actual-backend').textContent = 'Awaiting action';
   $('#backend-detail').textContent = '';
@@ -188,16 +210,45 @@ function showFrame(pixels: ArrayBuffer, width: number, height: number): void {
   ctx.putImageData(new ImageData(new Uint8ClampedArray(pixels), width, height), 0, 0);
   $('#viewport').classList.add('running');
 }
-function showCounters(health: number, ammo: number, kills: number, tic: number): void {
-  $('#health').textContent = String(Math.max(0, health));
+function showCounters(
+  health: number,
+  ammo: number,
+  friends: number,
+  tic: number,
+  picnic?: PicnicFrame['picnic'],
+): void {
+  const hearts = picnic?.hearts ?? Math.max(0, Math.ceil(health / 20));
+  $('#health').textContent = '♥'.repeat(hearts) + '♡'.repeat(Math.max(0, 5 - hearts));
+  $('#health').setAttribute('aria-label', hearts + ' of 5 hearts');
   $('#ammo').textContent = String(ammo);
-  $('#kills').textContent = String(kills);
-  $('#game-time').textContent = gameClock(tic);
+  $('#kills').textContent = String(friends);
+  $('#bears-fed').textContent = picnic ? String(picnic.bearsFed) : '—';
+  $('#bears-befriended').textContent = picnic ? String(picnic.bearsBefriended) : '—';
+  $('#times-bitten').textContent = picnic ? String(picnic.timesBitten) : '—';
+  $('#game-time').textContent = gameClock(picnic?.activeTics ?? tic);
+  $('#picnic-mode').textContent = picnic?.ending
+    ? ''
+    : ammo
+      ? 'Honey is safe. Make every honeycomb count.'
+      : humanPlay()
+        ? 'Hugs are unlimited. Get close, then hold Space!'
+        : 'Hugs are unlimited.';
+  if (picnic)
+    $('#picnic-summary').textContent =
+      '🍯 ' +
+      picnic.bearsFed +
+      ' bears fed · 🤗 ' +
+      picnic.bearsBefriended +
+      ' bears befriended · 😬 ' +
+      picnic.timesBitten +
+      ' times bitten.';
 }
 function draw(p: FramePacket): void {
   liveRate(p);
   showFrame(p.rgba, p.width, p.height);
-  showCounters(p.health, p.ammo, p.kills, p.tic);
+  picnicView.draw(ctx, p);
+  picnicAudio.update(p);
+  showCounters(p.health, p.ammo, p.kills, p.tic, p.picnic);
   $('#stage-mode').textContent = 'Seed ' + p.seed + ' · ' + (p.decision?.human ? 'You play · keyboard' : activeLabel());
   $('#regions')
     .querySelectorAll('i')
@@ -210,14 +261,15 @@ function draw(p: FramePacket): void {
   if (p.threat) {
     $('#range').textContent = p.threat.visible
       ? 'Nearest · ' + Math.round(p.threat.distance) + ' map units'
-      : 'No visible target';
+      : 'No bear in sight';
   }
   const move = p.decision;
-  const aimLabel = move?.action === 2 && move.weapon === 'fist' ? 'PUNCH' : names[move?.action as number];
+  const aimLabel = move?.action === 2 && move.weapon === 'fist' ? 'HUG' : names[move?.action as number];
   $('#maneuver').textContent = move
     ? (move.human ? 'YOU · ' : '') + (move.forward ? 'FORWARD + ' : move.backward ? 'BACK + ' : '') + aimLabel
     : '—';
-  $('#weapon').textContent = 'Weapon · ' + (p.weapon || '—') + (p.damage ? ' · −' + p.damage + ' HP' : '');
+  $('#weapon').textContent =
+    (p.ammo > 0 ? 'Honey thrower' : 'Enormous soft arms') + (p.damage ? ' · Oops! One heart lost' : '');
   const mem = move?.memory;
   $('#intent').textContent = mem
     ? (mem.id
@@ -233,10 +285,10 @@ function draw(p: FramePacket): void {
         : defense?.feature
           ? 'Facing guard · retreat · ' + Math.round(((defense.ageTics as number) * 1000) / 35) + ' ms facing'
           : defense?.facing
-            ? 'Facing guard · tracking enemy orientation'
+            ? 'Facing guard · tracking bear orientation'
             : p.weapon === 'fist'
               ? 'Facing guard · no qualifying target'
-              : 'Facing guard · waiting for fists';
+              : 'Facing guard · waiting for hug mode';
   const decision = p.decision;
   if (!decision) return;
   if (decision.human) {
@@ -252,7 +304,7 @@ function draw(p: FramePacket): void {
   [...document.querySelectorAll<HTMLElement>('.logit')].forEach((row, i) => {
     row.hidden = i >= z.length;
     if (row.hidden) return;
-    const actionName = i === 2 && decision.weapon === 'fist' ? 'PUNCH' : names[i];
+    const actionName = i === 2 && decision.weapon === 'fist' ? 'HUG' : names[i];
     (row.querySelector('span') as HTMLElement).textContent = actionName;
     (row.querySelector('output') as HTMLOutputElement).textContent = z[i].toFixed(2);
     (row.querySelector('i') as HTMLElement).style.width = (v[i] / sum) * 100 + '%';
@@ -292,7 +344,8 @@ function trainingView(active: boolean): void {
 function trainingFrame(m: TrainingFrame): void {
   if (!trainingPreview || state === 'live' || state === 'loading') return;
   showFrame(m.pixels, m.width, m.height);
-  showCounters(m.health, m.ammo, m.kills, m.tic);
+  picnicView.draw(ctx, m);
+  showCounters(m.health, m.ammo, m.kills, m.tic, m.picnic);
   $('#stage-mode').textContent =
     'Training · Seed ' +
     m.seed +
@@ -313,6 +366,7 @@ function leaveTrainingView(): void {
 function leaveWorker(): void {
   clearNext();
   recorder.stop();
+  picnicAudio.reset();
   if (worker) {
     worker.terminate();
     worker = null;
@@ -336,9 +390,21 @@ function onWorker({ data: p }: MessageEvent<PlayReply>): void {
     status('error', p.message);
   }
 }
+/**
+ * Fallback for model buttons: leave keyboard mode first, as activateRevision does, then launch.
+ * VERIFIED: launch() keeps the current mode, so a refused model button used to resume the visitor's keyboard game.
+ */
+function launchModel(): void {
+  if (humanPlay()) {
+    leaveWorker();
+    setHuman(false);
+  }
+  launch();
+}
 function launch(): void {
   if (timingBusy) return;
   if (state === 'loading') return;
+  void picnicAudio.unlock().catch(() => {});
   leaveTrainingView();
   if (state === 'paused') {
     postToWorker({ type: 'resume' });
@@ -356,6 +422,8 @@ function launch(): void {
     return;
   }
   currentSeed = seed;
+  picnicView.reset();
+  picnicAudio.reset();
   leaveWorker();
   status('loading');
   $<HTMLProgressElement>('#progress').value = 0;
@@ -428,6 +496,23 @@ function handleKey(e: KeyboardEvent, down: boolean): boolean {
   }
   return true;
 }
+document.querySelectorAll<HTMLButtonElement>('[data-control]').forEach((button) => {
+  const key = button.dataset.control as keyof HumanKeys;
+  const release = () => {
+    keys[key] = false;
+    sendKeys();
+  };
+  button.addEventListener('pointerdown', (e) => {
+    if (!humanPlay() || state !== 'live') return;
+    e.preventDefault();
+    button.setPointerCapture(e.pointerId);
+    keys[key] = true;
+    sendKeys();
+  });
+  button.addEventListener('pointerup', release);
+  button.addEventListener('pointercancel', release);
+  button.addEventListener('lostpointercapture', release);
+});
 // The overlay menu chooses between a model and the visitor; the choice holds until the next pick.
 function setHuman(on: boolean): void {
   if (human === on) return;
@@ -435,6 +520,7 @@ function setHuman(on: boolean): void {
   releaseKeys();
   if (worker && ['live', 'paused', 'ended'].includes(state)) postToWorker({ type: 'human', on });
   $('#keys-hint').hidden = !on;
+  $('#touch-controls').hidden = !on;
   if (on && state === 'live') $('#stage-mode').textContent = 'Seed ' + currentSeed + ' · You play · keyboard';
   else if (!on && state === 'live') $('#stage-mode').textContent = 'Seed ' + currentSeed + ' · ' + activeLabel();
 }
@@ -448,6 +534,8 @@ function restart(seed: number): void {
   recorder.stop();
   leaveTrainingView();
   currentSeed = seed;
+  picnicView.reset();
+  picnicAudio.reset();
   if (worker && ['live', 'paused', 'ended'].includes(state)) {
     postToWorker({ type: 'reset', seed });
   } else if (state !== 'loading') {
@@ -459,6 +547,11 @@ function toggle(): void {
   else if (state !== 'loading') launch();
 }
 $('#launch').onclick = async () => {
+  void picnicAudio.unlock().catch(() => {});
+  if (humanPlay() || state === 'ended') {
+    launch();
+    return;
+  }
   await revisions?.ready;
   if (!revisions?.playChoice()) launch();
 };
@@ -466,41 +559,12 @@ $('#launch').onclick = async () => {
 document.querySelectorAll<HTMLElement>('#pick [data-pick]').forEach(
   (b) =>
     (b.onclick = async () => {
-      setHuman(false);
+      void picnicAudio.unlock().catch(() => {});
       await revisions?.ready;
-      if (!revisions?.playBuiltin?.(b.dataset.pick as string)) launch();
+      if (!revisions?.playBuiltin?.(b.dataset.pick as string)) launchModel();
     }),
 );
-// Card meters: survival (tics) and kills summed over the 48 reference games. Width = share of the best card; label = change against FP32.
-(async () => {
-  try {
-    const ref = (await (await fetch(siteUrl('data/reference-v1.json'))).json()) as {
-        originalId: string;
-        revisions: Record<string, Record<string, number[]> | undefined>;
-      },
-      cards = [...document.querySelectorAll<HTMLElement>('#pick [data-ref]')];
-    const sum = (id: string | undefined, k: string) => ref.revisions[id as string]?.[k]?.reduce((a, b) => a + b, 0);
-    for (const k of ['tics', 'kills']) {
-      const max = Math.max(...cards.map((c) => sum(c.dataset.ref, k) || 0)),
-        base = sum(ref.originalId, k);
-      for (const c of cards) {
-        const v = sum(c.dataset.ref, k);
-        if (!v || !max || !base) return;
-        (c.querySelector('b[data-k="' + k + '"]') as HTMLElement).style.setProperty(
-          '--w',
-          Math.max(v / max, 0.03).toFixed(4),
-        );
-        (c.querySelector('em[data-k="' + k + '"]') as HTMLElement).textContent =
-          c.dataset.ref === ref.originalId
-            ? 'baseline'
-            : (v >= base ? '+' : '−') + Math.abs(Math.round((v / base - 1) * 100)).toLocaleString('en-US') + ' %';
-      }
-    }
-    cards.forEach((c) => ((c.querySelector('.pick-meter') as HTMLElement).hidden = false));
-  } catch {
-    /* Without the reference file the cards keep their meters hidden. */
-  }
-})();
+// Each built-in model card opens its matching weight comparison.
 document.querySelectorAll<HTMLElement>('#pick [data-explore]').forEach(
   (b) =>
     (b.onclick = async () => {
@@ -512,12 +576,13 @@ document.querySelectorAll<HTMLElement>('#pick [data-explore]').forEach(
 document.addEventListener('click', async (e) => {
   const b = (e.target as Element | null)?.closest?.('[data-own-play]');
   if (!b) return;
-  setHuman(false);
+  void picnicAudio.unlock().catch(() => {});
   await revisions?.ready;
   const id = document.querySelector<HTMLSelectElement>('#pick-own-select')?.value;
-  if (!id || !revisions?.playModel?.(id)) launch();
+  if (!id || !revisions?.playModel?.(id)) launchModel();
 });
 document.querySelector('#pick-human')?.addEventListener('click', () => {
+  void picnicAudio.unlock().catch(() => {});
   setHuman(true);
   if (state === 'ended') restart(currentSeed);
   else launch();
@@ -576,6 +641,7 @@ status('idle');
 
 function backendName(r: BackendInfo | null | undefined): string {
   if (!r) return 'awaiting backend';
+  if (r.backend === 'human') return 'Keyboard / touch · no model download';
   if (r.backend === 'webgpu-hybrid') return 'WebGPU hybrid';
   if (r.backend === 'wasm-simd-threaded') return 'WASM SIMD · ' + r.threads + ' threads';
   return 'WASM SIMD · 1 thread';
@@ -791,6 +857,43 @@ benchmark.onclick = () => {
   const request: BenchRequest = { backend: requested, policy: variant, ...revisionArgs() };
   runningBench.postMessage(request);
 };
+// Results tabs share the chart legend and show one metric at a time.
+{
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>('.res-tabs [role="tab"]')];
+  function selectResult(tab: HTMLButtonElement, focus = false): void {
+    for (const item of tabs) {
+      const selected = item === tab;
+      item.setAttribute('aria-selected', String(selected));
+      item.tabIndex = selected ? 0 : -1;
+      $('#' + item.getAttribute('aria-controls')).hidden = !selected;
+    }
+    if (focus) tab.focus();
+  }
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => selectResult(tab));
+    tab.addEventListener('keydown', (event) => {
+      let next: number;
+      switch (event.key) {
+        case 'ArrowLeft':
+          next = (index + tabs.length - 1) % tabs.length;
+          break;
+        case 'ArrowRight':
+          next = (index + 1) % tabs.length;
+          break;
+        case 'Home':
+          next = 0;
+          break;
+        case 'End':
+          next = tabs.length - 1;
+          break;
+        default:
+          return;
+      }
+      event.preventDefault();
+      selectResult(tabs[next], true);
+    });
+  });
+}
 // Bar charts that grow when they scroll into view (results chapter); without IntersectionObserver they show at once.
 for (const chart of document.querySelectorAll('[data-animate-bars]')) {
   if (typeof IntersectionObserver !== 'function') {
