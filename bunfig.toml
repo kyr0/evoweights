@@ -1,0 +1,4 @@
+[test]
+# Playwright specs live in tests/e2e and run under `playwright test`, not bun.
+root = "tests/unit"
+coverageSkipTestFiles = true

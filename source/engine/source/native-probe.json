@@ -1,0 +1,40 @@
+{
+  "fire": {
+    "buttons": [
+      "TURN_LEFT",
+      "TURN_RIGHT",
+      "ATTACK",
+      "MOVE_BACKWARD"
+    ],
+    "before": [
+      0.0,
+      0.0,
+      26.0
+    ],
+    "after": [
+      0.0,
+      0.0,
+      25.0
+    ],
+    "displacement": 0.0
+  },
+  "back_and_fire": {
+    "buttons": [
+      "TURN_LEFT",
+      "TURN_RIGHT",
+      "ATTACK",
+      "MOVE_BACKWARD"
+    ],
+    "before": [
+      0.0,
+      0.0,
+      26.0
+    ],
+    "after": [
+      -69.45335388183594,
+      0.0,
+      25.0
+    ],
+    "displacement": 69.45335388183594
+  }
+}

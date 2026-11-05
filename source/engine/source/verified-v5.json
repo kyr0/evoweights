@@ -1,0 +1,33 @@
+{
+  "initial": {
+    "id": 3,
+    "worldX": 658.403076171875,
+    "worldY": -176.5191650390625,
+    "x": 0.27051007747650146,
+    "distance": 681.6550903320312,
+    "closing": 0,
+    "aligned": false,
+    "bearingDeg": 344.9918329111199,
+    "relativeYawDeg": -15.0081670888801,
+    "screenBearingDeg": 15.136811149422432,
+    "yawDeg": 135,
+    "facingErrorDeg": 29.9918329111199,
+    "facingCos": 0.8660966662817066
+  },
+  "counts": {
+    "states": 850,
+    "actorRows": 2096,
+    "empty": 7,
+    "lookingTowardButOffCrosshair": 389,
+    "onCrosshairButLookingAside": 316
+  },
+  "absenceThenReappearance": true,
+  "longestFacingRun": {
+    "seed": 9003,
+    "id": 1,
+    "start": 10,
+    "end": 116,
+    "tics": 106
+  },
+  "farRunDefinition": "Same rendered life within 15 degrees at every two-tic sample, distance >110 at every sample, zero health lost on every intervening tic. Endpoints tics at 35 Hz."
+}

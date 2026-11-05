@@ -1,0 +1,4 @@
+#!/bin/sh
+# clang-compatible wrapper around `zig cc`: maps the wasm32 targets used by the build scripts to zig's wasm32-freestanding.
+for a in "$@"; do case "$a" in --target=wasm32|--target=wasm32-unknown-unknown) a=--target=wasm32-freestanding;; esac; set -- "$@" "$a"; shift; done
+exec zig cc "$@"

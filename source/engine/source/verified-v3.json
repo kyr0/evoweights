@@ -1,0 +1,67 @@
+{
+  "testPolicy": "sensor-driven engine diagnostics, no neural policy",
+  "initialThreat": {
+    "visible": true,
+    "x": 0.27051007747650146,
+    "distance": 681.6550903320312,
+    "closing": 0,
+    "aligned": false,
+    "backClearance": 780.762939453125,
+    "id": 3,
+    "visibleCount": 1
+  },
+  "after16Tics": {
+    "fire": {
+      "x": 0,
+      "y": 0,
+      "angle": 0,
+      "ammo": 25,
+      "health": 100,
+      "retreatDisplacement": 0
+    },
+    "fireAndBack": {
+      "x": -69.45335388183594,
+      "y": -0.0277252197265625,
+      "angle": 0,
+      "ammo": 25,
+      "health": 100,
+      "retreatDisplacement": 69.45336151123047
+    }
+  },
+  "actions": {
+    "left": {
+      "angle": 67.5,
+      "displacement": 124.2444076538086,
+      "shots": 0
+    },
+    "right": {
+      "angle": 292.5,
+      "displacement": 124.24268341064453,
+      "shots": 0
+    },
+    "fire": {
+      "angle": 0,
+      "displacement": 127.03238677978516,
+      "shots": 2
+    }
+  },
+  "observations": 2681,
+  "checkedClosing": 2038,
+  "multi": 1478,
+  "distinctSpawnIds": 40,
+  "observedWallLimited": true,
+  "actualHitscanTelemetry": {
+    "retreatSteps": 115,
+    "retreatDisplacement": 1221.9921875,
+    "shots": 26,
+    "nearestAlignedShots": 25,
+    "multiShots": 7,
+    "multiNearestAlignedShots": 7,
+    "travelDistance": 1891.769775390625,
+    "nearestTargetKills": 28,
+    "hits": 23,
+    "nearestHits": 23,
+    "multiHits": 7,
+    "multiNearestHits": 7
+  }
+}

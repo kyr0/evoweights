@@ -1,0 +1,17 @@
+{
+  "seed": 9000,
+  "firstFrame": "ba38b6b6f2524f3ccbd77751a7746de693bc3ef18eb0160f0c9adcbdac35a35f",
+  "actionReplay": "31addaa591bf41147ac6b6ebb3d570f503b7f8d447b13059e102ef9c9fb85431",
+  "leftInsteadOfRight": "e8fe515995c28eb32142436a99aba2aae28a1ace22e432d9bd159b8441e1b68e",
+  "testPolicy": "engine verification only: deterministic horizontal-region heuristic",
+  "smoke": {
+    "steps": 404,
+    "tics": 807,
+    "kills": 17,
+    "ammo": 0,
+    "health": 0
+  },
+  "sameSeedReplay": true,
+  "actionDivergence": true,
+  "seedDivergence": true
+}

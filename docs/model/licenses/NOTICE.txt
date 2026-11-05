@@ -1,0 +1,10 @@
+Kumo Small checkpoint: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES.
+This bundle is derived from nvidia/Kumo-Tabular small/classifier.pt, v1.0.0.
+The modified W4 model parameters and derived frozen-context key/value tensors
+are distributed under OpenMDW-1.1, included as Kumo-OpenMDW.txt.
+The C runtime specializes the numerical operations of NVIDIA structured-data-models 0.2.1.
+Upstream software is provided under Apache-2.0 with third-party attributions,
+including portions derived from TabICLv2 under BSD-3-Clause and TabFM under
+Apache-2.0 (Copyright 2026 Google LLC).
+https://huggingface.co/nvidia/Kumo-Tabular
+https://github.com/NVIDIA/structured-data-models

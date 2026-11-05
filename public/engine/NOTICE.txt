@@ -1,0 +1,7 @@
+AGM browser arena · PureDOOM / Freedoom
+
+Code and notices for this WASM binary are available in doom-engine-source.zip alongside this file.
+PureDOOM revision 355cfbd16fac119718879239336ee2ea408886bd.
+Upstream GPL v2 file, original id Software notices and complete instrumented build source are included.
+Freedoom artwork copyright 2001-2024 Contributors to the Freedoom project, modified BSD.
+See source/LICENSE-Freedoom.txt in the source archive.

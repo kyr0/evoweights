@@ -1,0 +1,1559 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#f8f8f6">
+    <meta name="description"
+        content="Watch a quantized Kumo Small model play DOOM, fine-tune its four-bit weights in your browser with EvoWeights, evolutionary weight-space fine-tuning on the CPU.">
+    <title>EvoWeights · Evolutionary Weight-Space Fine-Tuning</title>
+    <link rel="canonical" href="https://kyr0.github.io/evoweights/">
+    <link rel="icon" href="./assets/evoweights-logo.svg" type="image/svg+xml">
+    <script src="./theme.js"></script>
+    <link rel="stylesheet" href="./assets/defuss-shadcn/core.min.css">
+    <link rel="stylesheet" href="./assets/defuss-shadcn/all.min.css">
+    <link rel="stylesheet" href="./assets/defuss-shadcn/shapes.css">
+    <link rel="stylesheet" href="./styles/portal-lab.css">
+    <link rel="stylesheet" href="./styles/weights-explorer.css">
+    <link rel="stylesheet" href="./styles/portal.css">
+    <link rel="stylesheet" href="./styles/hero-evolution.css">
+    <link rel="stylesheet" href="./assets/defuss-shadcn/data-grid.css">
+    <link rel="stylesheet" href="./styles/revisions-panel.css">
+</head>
+
+<body class="portal-page" id="top">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="mk-header portal-header">
+        <div class="mk-header-inner">
+            <a href="#top" class="mk-header-brand" aria-label="EvoWeights home"><img src="./assets/evoweights-logo.svg"
+                    width="32" height="32" alt=""><span class="mk-header-names"><span
+                        class="mk-header-name">Evo<span>Weights</span></span><span class="mk-header-byline">by Aron
+                        Homberg</span></span></a>
+            <nav class="mk-header-nav portal-nav" aria-label="Primary">
+                <ul class="nav-menu-list">
+                    <li class="nav-menu-item"><a class="nav-menu-link" href="#arena">Browser-based CPU training</a></li>
+                    <li class="nav-menu-item"><a class="nav-menu-link" href="#model-tree">Model inheritance tree</a>
+                    </li>
+                    <li class="nav-menu-item"><a class="nav-menu-link" href="#explore-weights">Model weights
+                            explorer</a></li>
+                </ul>
+            </nav>
+            <div class="mk-header-actions"><a class="btn paper-nav repo-nav" data-variant="ghost" data-size="sm"
+                    href="https://github.com/kyr0/evoweights"><svg class="brand-icon" aria-hidden="true"
+                        viewBox="0 0 24 24">
+                        <path
+                            d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                    </svg>GitHub <span aria-hidden="true">↗</span></a><a class="btn paper-nav repo-nav"
+                    data-variant="ghost" data-size="sm"
+                    href="https://huggingface.co/kyr0/evoweights-evolutionary-weight-space-fine-tuning"><svg
+                        class="brand-icon" aria-hidden="true" viewBox="0 0 24 24">
+                        <path
+                            d="M1.4446 11.5059c0 1.1021.1673 2.1585.4847 3.1563-.0378-.0028-.0691-.0058-.1058-.0058-.4209 0-.8015.16-1.0704.4512-.3454.3737-.4984.8335-.4316 1.293a1.576 1.576 0 0 0 .2148.5978c-.2319.1864-.4018.4456-.4844.7578-.0646.2448-.131.7543.2149 1.2794a1.4552 1.4552 0 0 0-.0625.1055c-.208.3923-.2207.8372-.0371 1.25.2783.6258.9696 1.1175 2.3126 1.6467.8356.3292 1.5988.5411 1.6056.543 1.1046.2847 2.104.4277 2.969.4277 1.4173 0 2.4754-.3849 3.1525-1.1446 1.538.2651 2.791.1403 3.592.006.6773.7555 1.7332 1.1387 3.1467 1.1387.8649 0 1.8643-.143 2.969-.4278.0068-.0019.77-.2138 1.6056-.543 1.343-.5292 2.0343-1.0208 2.3126-1.6466.1836-.4129.171-.8577-.037-1.25a1.4685 1.4685 0 0 0-.0626-.1056c.346-.525.2795-1.0346.2149-1.2793-.0826-.3122-.2525-.5714-.4844-.7579.11-.1816.1831-.3788.2148-.5977.0669-.4595-.0862-.9193-.4316-1.293-.2688-.2913-.6495-.4513-1.0704-.4513-.0209 0-.0376.0008-.0588.0018.3162-.9966.4846-2.0518.4846-3.1523 0-5.807-4.7362-10.5144-10.5789-10.5144-5.8426 0-10.5788 4.7073-10.5788 10.5144Zm10.5788-9.4831c5.2727 0 9.5476 4.246 9.5476 9.483a9.4201 9.4201 0 0 1-.2696 2.2365c-.0039-.0047-.0079-.011-.0117-.0156-.274-.3255-.6679-.5059-1.1075-.5059-.352 0-.714.1155-1.0763.3438-.2403.1517-.5058.422-.7793.7598-.2534-.3492-.608-.5832-1.0137-.6465a1.5174 1.5174 0 0 0-.2344-.0176c-.9263 0-1.4828.7993-1.6935 1.5177-.1046.2426-.6065 1.3482-1.3614 2.0978-1.1681 1.1601-1.4458 2.3534-.8396 3.6382-.843.1029-1.5836.0927-2.365-.006.5906-1.212.3626-2.4388-.8426-3.6322-.755-.7496-1.2568-1.8552-1.3614-2.0978-.2107-.7184-.7673-1.5177-1.6935-1.5177-.078 0-.1568.0054-.2344.0176-.4057.0633-.7604.2973-1.0137.6465-.2735-.3379-.539-.6081-.7794-.7598-.3622-.2283-.7243-.3438-1.0762-.3438-.4266 0-.8094.171-1.0821.4786a9.4208 9.4208 0 0 1-.2598-2.1936c0-5.237 4.2749-9.483 9.5475-9.483zM8.6443 7.0036c-.4838.0043-.9503.2667-1.1934.7227-.3536.6633-.1006 1.4873.5645 1.84.351.1862.4883-.5261.836-.6485.3107-.1095.841.399 1.0078.086.3536-.6634.1025-1.4874-.5625-1.84a1.3659 1.3659 0 0 0-.6524-.1602Zm6.8403 0c-.2199-.002-.4426.05-.6504.1602-.665.3526-.9181 1.1766-.5645 1.84.1669.313.6971-.1955 1.0079-.086.3476.1224.4867.8347.838.6485.6649-.3527.916-1.1767.5624-1.84-.243-.456-.7096-.7184-1.1934-.7227Zm-9.7565 1.418a.8768.8768 0 0 0-.877.877c0 .4846.3925.877.877.877a.8768.8768 0 0 0 .877-.877.8768.8768 0 0 0-.877-.877zm12.6434 0c-.4845 0-.879.3925-.879.877 0 .4846.3945.877.879.877a.8768.8768 0 0 0 .877-.877.8768.8768 0 0 0-.877-.877zM8.7927 11.459c-.179-.003-.2793.1107-.2793.416 0 .8097.3874 2.125 1.4279 2.924.207-.7123 1.3453-1.2832 1.5079-1.2012.2315.1167.2191.4417.6074.7266.3884-.285.374-.6098.6056-.7266.1627-.082 1.3009.4889 1.5079 1.2012 1.0404-.799 1.4278-2.1144 1.4278-2.924 0-1.2212-1.583.6402-3.5413.6485-1.4686-.0061-2.7266-1.0558-3.2639-1.0645zM4.312 14.4768c.5792.365 1.6964 2.2751 2.1056 3.0177.1371.2488.371.3536.582.3536.4188 0 .7465-.4138.0391-.9395-1.0636-.791-.6914-2.0846-.1836-2.1642a.4302.4302 0 0 1 .0664-.004c.4616 0 .666.7892.666.7892s.5959 1.4898 1.6213 2.508c.942.9356 1.062 1.703.4961 2.6661-.0164-.004-.0159.0236-.1484.2149-.1853.2673-.4322.4688-.7188.6152-.5062.2269-1.1397.2696-1.7833.2696-1.037 0-2.1017-.1824-2.6975-.336-.0293-.0075-3.6505-.9567-3.1916-1.8224.0771-.1454.2033-.2031.3633-.2031.6463 0 1.823.9551 2.3283.9551.113 0 .196-.0865.2285-.2031.2249-.8045-3.2787-1.0522-2.9846-2.1642.0519-.1967.193-.2757.3907-.2754.854 0 2.7704 1.4923 3.172 1.4923.0307 0 .0525-.0085.0645-.0274.2012-.3227.1096-.5865-1.3087-1.4395-1.4182-.8533-2.4315-1.329-1.8653-1.9416.0651-.0707.1574-.1015.2695-.1015.8611.0002 2.8948 1.84 2.8948 1.84s.5487.5683.8809.5683c.0762 0 .1416-.0315.1855-.1054.2355-.3946-2.1858-2.2183-2.3224-2.971-.0926-.51.0641-.7676.3555-.7676-.0006.008.1701-.0285.4942.1759zm16.2257.5918c-.1366.7526-2.5579 2.5764-2.3224 2.9709.044.074.1092.1055.1855.1055.3321 0 .881-.5684.881-.5684s2.0336-1.8397 2.8947-1.84c.1121 0 .2044.0308.2695.1016.5662.6125-.447 1.0882-1.8653 1.9415-1.4183.853-1.51 1.1168-1.3087 1.4396.012.0188.0337.0273.0644.0273.4016 0 2.3181-1.4923 3.1721-1.4923.1977-.0002.3388.0787.3907.2754.294 1.112-3.2095 1.3597-2.9846 2.1642.0325.1166.1156.2032.2285.2032.5054 0 1.682-.9552 2.3283-.9552.16 0 .2862.0577.3633.2032.459.8656-3.1623 1.8149-3.1916 1.8224-.5958.1535-1.6605.336-2.6975.336-.6351 0-1.261-.0409-1.7638-.2599-.2949-.1472-.5488-.3516-.7383-.625-.0411-.0682-.1026-.1476-.1426-.205-.5726-.9679-.455-1.7371.4903-2.676 1.0254-1.0182 1.6212-2.508 1.6212-2.508s.2044-.7891.666-.7891a.4318.4318 0 0 1 .0665.0039c.5078.0796.88 1.3732-.1836 2.1642-.7074.5257-.3797.9395.039.9395.211 0 .445-.1047.5821-.3535.4092-.7426 1.5264-2.6527 2.1056-3.0178.5588-.3524.99-.1816.8497.5918z" />
+                    </svg>Models <span aria-hidden="true">↗</span></a>
+                <button class="btn theme-button" data-variant="ghost" data-size="icon" type="button"
+                    data-portal-theme-toggle aria-label="Toggle dark appearance" aria-pressed="false">
+                    <svg class="sun-icon" aria-hidden="true" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="4" />
+                        <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4 19 5" />
+                    </svg>
+                    <svg class="moon-icon" aria-hidden="true" viewBox="0 0 24 24">
+                        <path d="M20.4 14.6a8 8 0 0 1-11-11A8.9 8.9 0 1 0 20.4 14.6Z" />
+                    </svg></button>
+            </div>
+        </div>
+    </header>
+    <main id="main">
+        <div class="wrap">
+            <section class="mk-hero portal-hero" data-align="start" aria-labelledby="hero-title">
+                <div class="mk-hero-copy"><span class="portal-eyebrow"><span class="signal-dot"></span> A simple method
+                        for efficient AI model fine-tuning</span>
+                    <h1 class="mk-hero-title" id="hero-title">Evo<em>Weights.</em></h1>
+                    <p class="mk-hero-sub">(R-)Evolutionary Weight-Space Fine-Tuning</p>
+                    <p class="mk-hero-desc"><b>EvoWeights</b> is a novel fine-tuning method inspired by natural
+                        selection. Tell a frontier AI model capable of <a
+                            href="https://en.wikipedia.org/wiki/Weight-space_programming">Weight-Space Programming</a>
+                        what “survival” means for a measurable task. It prepares an AI model (<a
+                            href="https://huggingface.co/nvidia/Kumo-Tabular">NVIDIA Kumo-Tabular Small</a> in this
+                        experiment) weights and adapts the EvoWeights algorithm to the task. EvoWeights then evolves the
+                        model by directly (w/o an AI model) mutating selected quantized weights toward better
+                        performance.</p>
+                    <p class="mk-hero-desc pt-2">In minutes, mutated candidate models compete in thousands of simulated
+                        situations, but only statistically supported improvements survive.</p>
+                    <p class="mk-hero-desc pt-2"><b>No backpropagation, no gradients, no GPU, and no conventional
+                            training dataset required. Just CPU inference, a few examples, and task-specific selection
+                            metrics.</b></p>
+                    <p class="mk-hero-desc pt-2">Watch a 27M-parameter model evolve to play DOOM, live in your browser.
+                    </p>
+                    <div class="mk-hero-actions"><span class="aura aura-gold hero-aura"><a class="btn portal-primary"
+                                data-size="lg" href="#arena"><span aria-hidden="true">▶</span> Train this model
+                                in-browser</a></span><span class="aura aura-rainbow hero-aura"><a class="btn hero-play"
+                                data-size="lg" href="#arena"><span aria-hidden="true">▶</span> Let AI Play
+                                DOOM</a></span><a class="btn" data-variant="outline" data-size="lg"
+                            href="#architecture">How it works <span aria-hidden="true">↓</span></a><a class="btn"
+                            data-variant="outline" data-size="lg" href="#use-cases">See Use Cases <span
+                                aria-hidden="true">↓</span></a></div>
+                    <ul class="evo-not" aria-label="What EvoWeights does not need">
+                        <li class="vs-card vs-no"><span class="vs-no-icon"><svg class="evo-icon" viewBox="0 0 24 24"
+                                    aria-hidden="true">
+                                    <rect x="2" y="6" width="20" height="12" rx="2" />
+                                    <circle cx="9" cy="12" r="3" />
+                                    <path d="M15 10h3M15 14h3M5 18v3" />
+                                </svg></span>
+                            <div><s>GPU</s><small>We don’t need a GPU here. Modern CPUs with SIMD instruction sets are
+                                    fast enough for small model inference.</small></div>
+                        </li>
+                        <li class="vs-card vs-no"><span class="vs-no-icon"><svg class="evo-icon" viewBox="0 0 24 24"
+                                    aria-hidden="true">
+                                    <rect x="2" y="6" width="20" height="12" rx="2" />
+                                    <circle cx="9" cy="12" r="3" />
+                                    <path d="M15 10h3M15 14h3M5 18v3" />
+                                </svg></span>
+                            <div><s>VRAM</s><small>EvoWeights mutates model weights directly: no backprop, no gradients,
+                                    no Adam/Muon optimizer.</small></div>
+                        </li>
+                        <li class="vs-card vs-no"><span class="vs-no-icon"><svg class="evo-icon" viewBox="0 0 24 24"
+                                    aria-hidden="true">
+                                    <ellipse cx="12" cy="5" rx="8" ry="3" />
+                                    <path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5" />
+                                    <path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" />
+                                </svg></span>
+                            <div><s>Training data</s><small>We just define target metrics for survival, kills, ammo and
+                                    health. 96 example rows serve as context only.</small></div>
+                        </li>
+                        <li class="vs-card vs-no"><span class="vs-no-icon"><svg class="evo-icon" viewBox="0 0 24 24"
+                                    aria-hidden="true">
+                                    <path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5" />
+                                </svg></span>
+                            <div><s>LoRA adapter</s><small>No back-propagation-based low-rank training. No model
+                                    fusion.</small></div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="hero-visual">
+                    <div class="hero-bubble aura aura-glow">
+                        <div class="bubble-ink">
+                            <p class="shape-message">Beats Astra 6 and Opus 5.5 at <a
+                                    href="https://en.wikipedia.org/wiki/Weight-space_programming">Weight-Space
+                                    Programming</a>! <br /><br /><strong style="color:#cc0000">Runs fast on your CPU for
+                                    free!</strong></p>
+                        </div>
+                    </div><!-- evo-plate -->
+                    <figure class="patch-plate evo-plate">
+                        <div class="plate-strip"><span>Evolutionary Weight-Space Fine-Tuning in
+                                Action</span><span>SCHEMATIC</span></div>
+                        <div class="plate-heading"><span>Evolution For AI Models:</span><button data-evo="slow"
+                                class="evo-slow" type="button" aria-pressed="false">Slow motion</button></div>
+                        <div class="evo-stage"><canvas data-evo="canvas" role="img"
+                                aria-label="Schematic animation: a parent model’s four-bit weights spawn six mutants with a few weights raised or lowered. The mutants race on a metric; the three best are finalists, and the best finalist or the crossing of all three becomes the candidate. The candidate replaces the parent only when it passes validation against the parent on fresh seeds (paired t of at least 2).">A
+                                parent model spawns mutants; the best candidate replaces it only after it passes
+                                validation against the parent.</canvas><button data-evo="repeat"
+                                class="evo-slow evo-repeat" type="button" hidden>↺ Repeat the evolution</button></div>
+                        <ol data-evo="lineage" class="evo-lineage" aria-label="Line of models" aria-live="polite"></ol>
+                        <figcaption><span><i class="up"></i> Weight raised</span><span><i class="down"></i> Weight
+                                lowered</span><span>Mutants <b data-evo="tried">0</b></span><span>Kept <b
+                                    data-evo="kept">0</b></span></figcaption>
+                    </figure><!-- /evo-plate -->
+                    <ul class="evo-vs" aria-label="What EvoWeights needs, and what it does not">
+                        <li class="vs-card">
+                            <div class="vs-yes"><svg class="evo-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <rect x="6" y="6" width="12" height="12" rx="1.5" />
+                                    <rect x="9.5" y="9.5" width="5" height="5" />
+                                    <path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3" />
+                                </svg>
+                                <div><b>Runs On CPU</b><small>Every CPU core runs AI model evolution simulations in
+                                        parallel.</small></div>
+                            </div>
+                        </li>
+                        <li class="vs-card">
+                            <div class="vs-yes"><svg class="evo-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <rect x="2" y="7" width="20" height="9" rx="1" />
+                                    <path d="M6 10v3M10 10v3M14 10v3M18 10v3M5 16v3M19 16v3" />
+                                </svg>
+                                <div><b>Uses System RAM</b><small>About 140 MB per parallel game for this model.
+                                        Training doesn't need more RAM than inference.</small></div>
+                            </div>
+                        </li>
+                        <li class="vs-card">
+                            <div class="vs-yes"><svg class="evo-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 14l4-4" />
+                                    <path d="M3.3 19a9 9 0 1 1 17.4 0" />
+                                </svg>
+                                <div><b>AI-Engineered Metric</b><small>Agentically engineered by a frontier AI model, a
+                                        metric is defined from goals stated by a human in plain language.</small></div>
+                            </div>
+                        </li>
+                        <li class="vs-card">
+                            <div class="vs-yes"><svg class="evo-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                                    <path d="M14 17.5h7M17.5 14v7" />
+                                </svg>
+                                <div><b><a href="https://en.wikipedia.org/wiki/Weight-space_programming">Weight-Space
+                                            Programming</a></b><small>An AI agent’s direct edit sets the start;
+                                        evolution mutates the AI model’s weights into a local optimum.</small></div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+            <section class="evo-steps" aria-labelledby="evo-steps-title">
+                <h2 class="evo-steps-title portal-eyebrow" id="evo-steps-title"><b>00</b> EvoWeights in three steps</h2>
+                <ol class="evo-flow">
+                    <li><span class="evo-num">1</span><svg class="evo-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 14l4-4" />
+                            <path d="M3.3 19a9 9 0 1 1 17.4 0" />
+                        </svg><b>Define survival</b>
+                        <p>A metric decides what “survival” means for a decidable task, plus a second goal that may not
+                            get worse.</p>
+                    </li>
+                    <li><span class="evo-num">2</span><svg class="evo-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <rect x="8" y="8" width="13" height="13" rx="2" />
+                            <path d="M4 16V5a1 1 0 0 1 1-1h11" />
+                        </svg><b>Mutate and compete</b>
+                        <p>Thousands of slightly mutated copies compete on your CPU; the metric scores their
+                            forward-pass results.</p>
+                    </li>
+                    <li><span class="evo-num">3</span><svg class="evo-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="m8 12 3 3 5-6" />
+                        </svg><b>Select and inherit</b>
+                        <p>A new generation is kept only when it is clearly better than the current one, by a margin
+                            that luck alone rarely produces. Then the cycle repeats.</p>
+                    </li>
+                </ol>
+            </section>
+            <section id="arena" class="portal-section" aria-labelledby="arena-title">
+                <div class="chapter-heading">
+                    <div>
+                        <div class="portal-eyebrow"><b>01</b> Live experiment</div>
+                        <h2 id="arena-title">Adapting An AI Model To Become Good At Playing DOOM</h2>
+                    </div><span class="chapter-meta"><i class="signal-dot"></i> BROWSER INFERENCE</span>
+                </div>
+                <p class="section-lead"><a href="https://huggingface.co/nvidia/Kumo-Tabular">NVIDIA Kumo-Tabular
+                        Small</a> is a general-purpose tabular classifier, not made for games: the original FP32 model
+                    plays poorly. EvoWeights turns it into a decent DOOM player by mutating it thousands of times and
+                    keeping only clearly better generations, live in your browser.</p>
+                <div class="lab-ui arena-instrument">
+                    <div class="arena-layout">
+                        <div class="stage-col">
+                            <div class="stage">
+                                <div class="stage-head">STATUS:<span class="status" id="status"><i></i>
+                                        STANDBY</span><span class="stage-transport"><button id="toggle" disabled
+                                            class="playback" aria-label="Pause or resume run"><span
+                                                class="symbol">Ⅱ</span> <span
+                                                id="toggle-text">Pause</span></button><button id="restart" disabled
+                                            title="Stop this game and return to the model menu">↺
+                                            <span>Restart</span></button></span><span class="wasm"><a
+                                            href="https://github.com/Daivuk/PureDOOM" target="_blank"
+                                            rel="noopener">PUREDOOM</a></span></div>
+                                <div class="stage-toolbar">
+                                    <div class="segmented" role="radiogroup" aria-label="Inference backend">
+                                        <label><input type="radio" name="backend" id="wasm" value="wasm"
+                                                checked><span>WASM / CPU</span></label><label><input type="radio"
+                                                name="backend" id="gpu" value="gpu"><span>WebGPU</span></label></div>
+                                    <label class="lane-label" for="vcpus" hidden>CPU inference vCPUs<select id="vcpus">
+                                            <option value="1">1</option>
+                                        </select></label>
+                                    <p class="runtime-info"><b id="backend-label">Active</b> <output
+                                            id="actual-backend">Awaiting action</output><small
+                                            id="backend-detail"></small><span class="rate-label">Decisions/sec</span>
+                                        <output id="decision-rate"
+                                            title="Model decisions per second: the live game, or all training games together">—</output>
+                                    </p><button id="download-recording" class="tool-button" disabled
+                                        title="Every game is recorded; only the latest game is kept, in memory">⤓
+                                        Download<span class="tb-long"> recording</span></button><button id="full"
+                                        class="tool-button" title="Fullscreen" aria-label="Fullscreen">⛶<span
+                                            class="tb-long"> Fullscreen</span></button>
+                                </div>
+                                <div class="viewport" id="viewport"><canvas width="320" height="200" id="screen"
+                                        aria-label="First-person view of the live DOOM arena"></canvas>
+                                    <div class="overlay" id="overlay">
+                                        <div class="overlay-inner"><span class="overline" id="overlay-eyebrow">CHOOSE A
+                                                MODEL</span>
+                                            <div class="pick" id="pick">
+                                                <div class="pick-grid">
+                                                    <article class="pick-card"
+                                                        data-ref="0fe39052668a65c27f2170fb67a73e8fd93fbb6b12ca7ac16bac75a566b8b2a0">
+                                                        <h3>Base Model FP32</h3>
+                                                        <p>Received no training: the original classifier, guided only by
+                                                            96 demonstration rows.</p>
+                                                        <div class="pick-meter" hidden
+                                                            title="48 fixed reference games: full bar = best of these five models; % = change against Base Model FP32">
+                                                            <div><span>Survival</span><i><b data-k="tics"></b></i><em
+                                                                    data-k="tics"></em></div>
+                                                            <div><span>Kills</span><i><b data-k="kills"></b></i><em
+                                                                    data-k="kills"></em></div>
+                                                        </div><button class="launch" data-pick="original"><span
+                                                                aria-hidden="true">▶</span> Let it play</button><button
+                                                            type="button" class="pick-explore" disabled
+                                                            title="The weight explorer compares 4-bit models; this is the unquantized FP32 original.">Explore
+                                                            Weights</button>
+                                                    </article>
+                                                    <article class="pick-card"
+                                                        data-ref="4155d4d47c55fee231ca021b15fe4b1a347858642b5409b19292eba7ad0647aa">
+                                                        <h3>EvoWeights Terminator</h3>
+                                                        <p>Trained in-browser using EvoWeights and on CPU to terminate as many monsters as
+                                                            possible.</p>
+                                                        <div class="pick-meter" hidden
+                                                            title="48 fixed reference games: full bar = best of these five models; % = change against Base Model FP32">
+                                                            <div><span>Survival</span><i><b data-k="tics"></b></i><em
+                                                                    data-k="tics"></em></div>
+                                                            <div><span>Kills</span><i><b data-k="kills"></b></i><em
+                                                                    data-k="kills"></em></div>
+                                                        </div><span class="aura aura-rainbow pick-aura"><button
+                                                                class="launch" data-pick="terminator"><span
+                                                                    aria-hidden="true">▶</span> Let it
+                                                                play</button></span><button type="button"
+                                                            class="pick-explore" data-explore="terminator">Explore
+                                                            Weights</button>
+                                                    </article>
+                                                    <article class="pick-card"
+                                                        data-ref="35cee4df42e2fbde0aac21008cf0e870b016218003a59e91cb7ff772f8a618f1">
+                                                        <h3>EvoWeights Survivor</h3>
+                                                        <p>Trained in-browser using EvoWeights and on CPU to survive as long as possible.</p>
+                                                        <div class="pick-meter" hidden
+                                                            title="48 fixed reference games: full bar = best of these five models; % = change against Base Model FP32">
+                                                            <div><span>Survival</span><i><b data-k="tics"></b></i><em
+                                                                    data-k="tics"></em></div>
+                                                            <div><span>Kills</span><i><b data-k="kills"></b></i><em
+                                                                    data-k="kills"></em></div>
+                                                        </div><span class="aura aura-rainbow pick-aura"><button
+                                                                class="launch" data-pick="survivor"><span
+                                                                    aria-hidden="true">▶</span> Let it
+                                                                play</button></span><button type="button"
+                                                            class="pick-explore" data-explore="survivor">Explore
+                                                            Weights</button>
+                                                    </article>
+                                                    <article class="pick-card"
+                                                        data-ref="872fc5e5a5c106fd04032024d1efa292f1b6aa00ab5e7f185743180cf871476f">
+                                                        <h3>Opus 5.5 Weight-Space Programming</h3>
+                                                        <p>A fresh Claude Opus 5.5 agent wrote the sensor weights
+                                                            directly, without seeing earlier values.</p>
+                                                        <div class="pick-meter" hidden
+                                                            title="48 fixed reference games: full bar = best of these five models; % = change against Base Model FP32">
+                                                            <div><span>Survival</span><i><b data-k="tics"></b></i><em
+                                                                    data-k="tics"></em></div>
+                                                            <div><span>Kills</span><i><b data-k="kills"></b></i><em
+                                                                    data-k="kills"></em></div>
+                                                        </div><button class="launch" data-pick="opus"><span
+                                                                aria-hidden="true">▶</span> Let it play</button><button
+                                                            type="button" class="pick-explore"
+                                                            data-explore="opus">Explore Weights</button>
+                                                    </article>
+                                                    <article class="pick-card"
+                                                        data-ref="6fb55175e0733867df890e035ce92b0edb20ae2b5f7e75fc11f04b0c34d321ae">
+                                                        <h3>Astra 6 Weight-Space Programming</h3>
+                                                        <p>OpenAI Astra 6 edited 256 FIRE-row weights and wrote the
+                                                            sensor weights directly, without training.</p>
+                                                        <div class="pick-meter" hidden
+                                                            title="48 fixed reference games: full bar = best of these five models; % = change against Base Model FP32">
+                                                            <div><span>Survival</span><i><b data-k="tics"></b></i><em
+                                                                    data-k="tics"></em></div>
+                                                            <div><span>Kills</span><i><b data-k="kills"></b></i><em
+                                                                    data-k="kills"></em></div>
+                                                        </div><button class="launch" data-pick="shipped"><span
+                                                                aria-hidden="true">▶</span> Let it play</button><button
+                                                            type="button" class="pick-explore"
+                                                            data-explore="shipped">Explore Weights</button>
+                                                    </article>
+                                                </div>
+                                                <hr>
+                                                <div class="pick-bottom">
+                                                    <article class="pick-card pick-you">
+                                                        <h3>Play yourself</h3>
+                                                        <p>Can you beat The Terminator AI at playing DOOM?</p><button
+                                                            id="pick-human" class="launch"><span
+                                                                aria-hidden="true">▶</span> Play yourself</button>
+                                                    </article>
+                                                    <article class="pick-card pick-own" id="pick-own"
+                                                        aria-live="polite">
+                                                        <h3>Your own models</h3>
+                                                        <p>Loading your models …</p>
+                                                    </article>
+                                                </div>
+                                            </div><button id="launch" class="launch"><span aria-hidden="true">▶</span>
+                                                Start live run</button><small id="load-detail"></small><progress
+                                                id="progress" max="100" value="0" hidden></progress>
+                                        </div>
+                                    </div>
+                                    <div class="overlay-tag" id="stage-mode">Preview frame</div>
+                                </div>
+                                <p class="keys-hint" id="keys-hint" hidden>Keyboard: ← → or A D turn · ↑ ↓ or W S move ·
+                                    Space, Alt or Ctrl attack. Episodes are not time-limited; only training games have a
+                                    time cap.</p>
+                                <div class="stats">
+                                    <div><small>HEALTH</small><strong id="health">—</strong></div>
+                                    <div><small>AMMO</small><strong id="ammo">—</strong></div>
+                                    <div><small>KILLS</small><strong id="kills">—</strong></div>
+                                    <div><small>GAME TIME</small><strong id="game-time">0:00</strong></div>
+                                </div>
+                            </div>
+                            <div class="telemetry-row">
+                                <section class="logits-card" aria-labelledby="logits-title">
+                                    <h3 id="logits-title">Action logits</h3>
+                                    <div id="logits" class="logits"></div><small class="caption" id="timing">Awaiting
+                                        first inference</small>
+                                    <div class="maneuver"><span id="maneuver">—</span><small id="range">No threat
+                                            telemetry yet</small></div>
+                                </section>
+                                <section class="tele-card mask-card" aria-label="Monster mask">
+                                    <div class="sensor">
+                                        <div><span>MONSTER MASK</span><span>9 REGIONS</span></div>
+                                        <div id="regions" aria-label="Horizontal monster occupancy"></div>
+                                    </div>
+                                </section>
+                                <section class="tele-card state-card" aria-labelledby="state-title">
+                                    <h3 id="state-title">Combat state</h3>
+                                    <div class="combat-sensor"><span id="weapon">Weapon · —</span><span
+                                            id="intent">Memory · —</span></div>
+                                    <div id="guard-status" class="guard-read">Facing guard · awaiting first decision
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                        <aside class="panel">
+                            <div class="panel-head">
+                                <div class="kicker minor">TRAINING</div><span class="tiny-blocks"
+                                    aria-hidden="true">▮▮▮</span>
+                            </div>
+                            <section class="live-revisions" id="choices" lang="en" aria-labelledby="revision-title">
+                                <h2 id="revision-title"><label for="revision-select">Parent model</label></h2>
+                                <small class="revision-sub">Used as training base</small>
+                                <select id="revision-select" aria-describedby="revision-lineage" disabled>
+                                    <option>Loading model list …</option>
+                                </select>
+                                <p id="revision-lineage" class="revision-lineage">Reading local and built-in models.</p>
+                                <input id="revision-file" type="file" accept=".agmweights,.bin,application/octet-stream"
+                                    hidden>
+                                <dl class="revision-facts" hidden>
+                                    <div>
+                                        <dt>Playing</dt>
+                                        <dd id="revision-active">Built-in DNP</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Training base</dt>
+                                        <dd id="revision-tip">Determining …</dd>
+                                    </div>
+                                </dl>
+                                <button id="revision-adopt" type="button" hidden>Use as training base</button>
+                                <p id="revision-notice" class="revision-notice" role="status"></p>
+                                <a id="revision-save-file" class="revision-save-file" hidden>Save weight file</a>
+                                <div class="revision-setup">
+                                    <div class="training-setup"><label for="revision-lanes">Parallel CPU cores <select
+                                                id="revision-lanes"></select></label><small id="revision-lanes-hint">One
+                                            game per logical CPU core · ≈ 140 MB memory per core</small></div>
+                                    <div class="training-setup"><label for="revision-search">Method <select
+                                                id="revision-search">
+                                                <option value="edno-race" selected>Race (recommended)</option>
+                                                <option value="edno-adaptive">Adaptive strategy</option>
+                                                <option value="edno-evidence">Evidence per block</option>
+                                            </select></label><small id="revision-search-hint" class="method-hint">Each
+                                            generation plays 48 mirrored directions. The best ones race against the
+                                            parent on shared seeds, their crossing races with them, and the winner is
+                                            validated on fresh seeds.</small><label for="revision-mutation">Mutation
+                                            size <select id="revision-mutation">
+                                                <option value="broad" selected>large (recommended)</option>
+                                                <option value="auto">automatic</option>
+                                                <option value="uniform">small</option>
+                                            </select></label><small id="revision-mutation-hint"></small></div>
+                                    <div class="training-setup"><label for="revision-priority">Main goal <select
+                                                id="revision-priority">
+                                                <option value="survival" selected>Survival</option>
+                                                <option value="kills">Kills</option>
+                                            </select></label><small id="revision-priority-hint"></small></div>
+                                    <details class="revision-details">
+                                        <summary>Details</summary>
+                                        <p class="revision-hint">Plays from the parent model without a real-time limit.
+                                            Each generation changes parameter blocks in 48 directions, following the
+                                            chosen mutation size, and plays each direction mirrored, plus and minus, on
+                                            its own seed. The best directions play against the parent on shared seeds.
+                                            The crossing of the best directions competes too, and the final choice is
+                                            made on seeds that did not count in the preselection. The winner must beat
+                                            the parent on fresh seeds by two standard errors, must not be worse by two
+                                            standard errors in the other goal (kills or survival time) and must be ahead
+                                            of every ancestor in its line. Only then is it saved, and the run ends.
+                                            Without this check the search found a strategy that stops fighting and so
+                                            survives every game without a kill. Check games last one minute at first;
+                                            when most of them survive the full time, the game time grows by one minute.
+                                            The run remembers the three candidates with the strongest evidence against
+                                            the parent. The first click on “Stop” makes them play against the parent on
+                                            fresh seeds (without candidates, the generation continues until its race).
+                                            The best one is validated the same way and saved as the new training base
+                                            only if it passes. If it is ahead but not clearly (0 < t < 2), it is saved
+                                                as “unconfirmed” without becoming the training base.</p>
+                                    </details>
+                                </div>
+                                <div class="seed"><label for="seed">Arena seed</label>
+                                    <div><input id="seed" type="number" min="0" max="4294967295" step="1" value="9000"
+                                            aria-label="Arena seed"><button id="new-seed"
+                                            aria-label="Start a new random seed" title="New random seed">⤨</button>
+                                    </div>
+                                </div>
+                                <div class="revision-training"><span class="aura aura-fire learn-aura"><button
+                                            id="revision-learn" type="button" disabled><b>Start
+                                                Evolution</b><small>Trains a new model based on the selected parent
+                                                model.</small></button></span>
+                                    <div id="revision-progress" class="training-progress" hidden>
+                                        <div class="training-heading"><span class="training-light"></span><b
+                                                id="revision-phase">Training run</b><span
+                                                id="revision-clock">0:00</span></div>
+                                        <p id="revision-progress-text" role="status">Training run starting …</p>
+                                        <dl>
+                                            <div>
+                                                <dt>Generation</dt>
+                                                <dd id="revision-round">—</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Games</dt>
+                                                <dd id="revision-games">—</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Decisions</dt>
+                                                <dd id="revision-decisions">—</dd>
+                                            </div>
+                                            <div>
+                                                <dt>CPU cores</dt>
+                                                <dd id="revision-lanes-active">—</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Speed</dt>
+                                                <dd id="revision-rate">—</dd>
+                                            </div>
+                                            <div
+                                                title="EvoWeights remembers the strongest candidates against the parent; “Stop” checks them in a final round">
+                                                <dt>Best candidates</dt>
+                                                <dd id="revision-kept">—</dd>
+                                            </div>
+                                        </dl>
+                                        <label class="training-watch"><input type="checkbox" id="revision-watch"
+                                                checked> Show training in the game view</label>
+                                        <button id="revision-stop" type="button" hidden>Stop training</button>
+                                    </div>
+                                    <details id="revision-receipt" hidden>
+                                        <summary>Training run result</summary>
+                                        <pre id="revision-receipt-text"></pre>
+                                    </details>
+                                </div>
+                            </section>
+                            <small class="message" id="session-message" role="status"></small>
+                        </aside>
+                    </div>
+                    <section class="mk-cta portal-cta" aria-labelledby="consult-title">
+                        <div class="mk-cta-inner">
+                            <div class="mk-cta-copy">
+                                <div class="vs-cta-head">
+                                    <div class="aura aura-glow aura-gold vs-cta-portrait" style="--shape-round:1.25rem">
+                                        <img class="shape-squircle" src="assets/aron-homberg.jpg" width="400"
+                                            height="400" alt="Portrait of Aron Homberg" loading="lazy"></div>
+                                    <h2 class="mk-cta-title" id="consult-title">Want a small model that learns your
+                                        task?</h2>
+                                </div>
+                                <p class="mk-cta-desc">Aron Homberg is an independent AI researcher, formally trained Computer Science Expert (C.S.E.), and software engineer with over 20 years of professional experience. He created <strong>EvoWeights</strong>, an evolutionary, gradient-free method for direct neural network weight optimization.</p>
+                                <p class="mk-cta-desc">His research focuses on small, quantized, and on-device AI models, evolutionary optimization, gradient-free fine-tuning, efficient inference engines, and agentic AI systems.</p>
+                                <p class="mk-cta-desc">His technical interests and expertise span custom embedding and reranking models, hybrid and vector search (including late interaction), image similarity search, knowledge graphs and graph-based retrieval, speech recognition (ASR) and synthesis (TTS), multimodal image and video understanding and generation, and high-performance, cross-platform AI inference.</p>
+                                <p class="mk-cta-desc">He actively develops open-source AI systems, with particular emphasis on efficient CPU and browser-based execution, and welcomes international research collaborations and professional consulting engagements.</p>
+                            </div>
+                            <div class="mk-cta-actions">
+                                <a class="btn" data-size="lg" href="https://www.linkedin.com/in/aronhomberg/"
+                                    target="_blank" rel="noopener"><svg class="vs-icon vs-icon-fill" aria-hidden="true"
+                                        viewBox="0 0 24 24">
+                                        <path
+                                            d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z" />
+                                        <circle cx="4" cy="4" r="2" />
+                                    </svg>Talk to Aron on LinkedIn<svg class="vs-icon vs-ext" aria-hidden="true"
+                                        viewBox="0 0 24 24">
+                                        <path d="M7 17 17 7M8 7h9v9" />
+                                    </svg><span class="sr-only"> (opens in a new tab)</span></a>
+                                <div class="cta-more"><a class="btn cta-secondary" href="https://github.com/kyr0"
+                                        target="_blank" rel="noopener"><svg class="vs-icon vs-icon-fill"
+                                            aria-hidden="true" viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                                        </svg>Aron on GitHub<svg class="vs-icon vs-ext" aria-hidden="true"
+                                            viewBox="0 0 24 24">
+                                            <path d="M7 17 17 7M8 7h9v9" />
+                                        </svg><span class="sr-only"> (opens in a new tab)</span></a><a
+                                        class="btn cta-secondary" href="https://huggingface.co/kyr0" target="_blank"
+                                        rel="noopener"><svg class="vs-icon vs-icon-fill" aria-hidden="true"
+                                            viewBox="0 0 24 24">
+                                            <path
+                                                d="M1.4446 11.5059c0 1.1021.1673 2.1585.4847 3.1563-.0378-.0028-.0691-.0058-.1058-.0058-.4209 0-.8015.16-1.0704.4512-.3454.3737-.4984.8335-.4316 1.293a1.576 1.576 0 0 0 .2148.5978c-.2319.1864-.4018.4456-.4844.7578-.0646.2448-.131.7543.2149 1.2794a1.4552 1.4552 0 0 0-.0625.1055c-.208.3923-.2207.8372-.0371 1.25.2783.6258.9696 1.1175 2.3126 1.6467.8356.3292 1.5988.5411 1.6056.543 1.1046.2847 2.104.4277 2.969.4277 1.4173 0 2.4754-.3849 3.1525-1.1446 1.538.2651 2.791.1403 3.592.006.6773.7555 1.7332 1.1387 3.1467 1.1387.8649 0 1.8643-.143 2.969-.4278.0068-.0019.77-.2138 1.6056-.543 1.343-.5292 2.0343-1.0208 2.3126-1.6466.1836-.4129.171-.8577-.037-1.25a1.4685 1.4685 0 0 0-.0626-.1056c.346-.525.2795-1.0346.2149-1.2793-.0826-.3122-.2525-.5714-.4844-.7579.11-.1816.1831-.3788.2148-.5977.0669-.4595-.0862-.9193-.4316-1.293-.2688-.2913-.6495-.4513-1.0704-.4513-.0209 0-.0376.0008-.0588.0018.3162-.9966.4846-2.0518.4846-3.1523 0-5.807-4.7362-10.5144-10.5789-10.5144-5.8426 0-10.5788 4.7073-10.5788 10.5144Zm10.5788-9.4831c5.2727 0 9.5476 4.246 9.5476 9.483a9.4201 9.4201 0 0 1-.2696 2.2365c-.0039-.0047-.0079-.011-.0117-.0156-.274-.3255-.6679-.5059-1.1075-.5059-.352 0-.714.1155-1.0763.3438-.2403.1517-.5058.422-.7793.7598-.2534-.3492-.608-.5832-1.0137-.6465a1.5174 1.5174 0 0 0-.2344-.0176c-.9263 0-1.4828.7993-1.6935 1.5177-.1046.2426-.6065 1.3482-1.3614 2.0978-1.1681 1.1601-1.4458 2.3534-.8396 3.6382-.843.1029-1.5836.0927-2.365-.006.5906-1.212.3626-2.4388-.8426-3.6322-.755-.7496-1.2568-1.8552-1.3614-2.0978-.2107-.7184-.7673-1.5177-1.6935-1.5177-.078 0-.1568.0054-.2344.0176-.4057.0633-.7604.2973-1.0137.6465-.2735-.3379-.539-.6081-.7794-.7598-.3622-.2283-.7243-.3438-1.0762-.3438-.4266 0-.8094.171-1.0821.4786a9.4208 9.4208 0 0 1-.2598-2.1936c0-5.237 4.2749-9.483 9.5475-9.483zM8.6443 7.0036c-.4838.0043-.9503.2667-1.1934.7227-.3536.6633-.1006 1.4873.5645 1.84.351.1862.4883-.5261.836-.6485.3107-.1095.841.399 1.0078.086.3536-.6634.1025-1.4874-.5625-1.84a1.3659 1.3659 0 0 0-.6524-.1602Zm6.8403 0c-.2199-.002-.4426.05-.6504.1602-.665.3526-.9181 1.1766-.5645 1.84.1669.313.6971-.1955 1.0079-.086.3476.1224.4867.8347.838.6485.6649-.3527.916-1.1767.5624-1.84-.243-.456-.7096-.7184-1.1934-.7227Zm-9.7565 1.418a.8768.8768 0 0 0-.877.877c0 .4846.3925.877.877.877a.8768.8768 0 0 0 .877-.877.8768.8768 0 0 0-.877-.877zm12.6434 0c-.4845 0-.879.3925-.879.877 0 .4846.3945.877.879.877a.8768.8768 0 0 0 .877-.877.8768.8768 0 0 0-.877-.877zM8.7927 11.459c-.179-.003-.2793.1107-.2793.416 0 .8097.3874 2.125 1.4279 2.924.207-.7123 1.3453-1.2832 1.5079-1.2012.2315.1167.2191.4417.6074.7266.3884-.285.374-.6098.6056-.7266.1627-.082 1.3009.4889 1.5079 1.2012 1.0404-.799 1.4278-2.1144 1.4278-2.924 0-1.2212-1.583.6402-3.5413.6485-1.4686-.0061-2.7266-1.0558-3.2639-1.0645zM4.312 14.4768c.5792.365 1.6964 2.2751 2.1056 3.0177.1371.2488.371.3536.582.3536.4188 0 .7465-.4138.0391-.9395-1.0636-.791-.6914-2.0846-.1836-2.1642a.4302.4302 0 0 1 .0664-.004c.4616 0 .666.7892.666.7892s.5959 1.4898 1.6213 2.508c.942.9356 1.062 1.703.4961 2.6661-.0164-.004-.0159.0236-.1484.2149-.1853.2673-.4322.4688-.7188.6152-.5062.2269-1.1397.2696-1.7833.2696-1.037 0-2.1017-.1824-2.6975-.336-.0293-.0075-3.6505-.9567-3.1916-1.8224.0771-.1454.2033-.2031.3633-.2031.6463 0 1.823.9551 2.3283.9551.113 0 .196-.0865.2285-.2031.2249-.8045-3.2787-1.0522-2.9846-2.1642.0519-.1967.193-.2757.3907-.2754.854 0 2.7704 1.4923 3.172 1.4923.0307 0 .0525-.0085.0645-.0274.2012-.3227.1096-.5865-1.3087-1.4395-1.4182-.8533-2.4315-1.329-1.8653-1.9416.0651-.0707.1574-.1015.2695-.1015.8611.0002 2.8948 1.84 2.8948 1.84s.5487.5683.8809.5683c.0762 0 .1416-.0315.1855-.1054.2355-.3946-2.1858-2.2183-2.3224-2.971-.0926-.51.0641-.7676.3555-.7676-.0006.008.1701-.0285.4942.1759zm16.2257.5918c-.1366.7526-2.5579 2.5764-2.3224 2.9709.044.074.1092.1055.1855.1055.3321 0 .881-.5684.881-.5684s2.0336-1.8397 2.8947-1.84c.1121 0 .2044.0308.2695.1016.5662.6125-.447 1.0882-1.8653 1.9415-1.4183.853-1.51 1.1168-1.3087 1.4396.012.0188.0337.0273.0644.0273.4016 0 2.3181-1.4923 3.1721-1.4923.1977-.0002.3388.0787.3907.2754.294 1.112-3.2095 1.3597-2.9846 2.1642.0325.1166.1156.2032.2285.2032.5054 0 1.682-.9552 2.3283-.9552.16 0 .2862.0577.3633.2032.459.8656-3.1623 1.8149-3.1916 1.8224-.5958.1535-1.6605.336-2.6975.336-.6351 0-1.261-.0409-1.7638-.2599-.2949-.1472-.5488-.3516-.7383-.625-.0411-.0682-.1026-.1476-.1426-.205-.5726-.9679-.455-1.7371.4903-2.676 1.0254-1.0182 1.6212-2.508 1.6212-2.508s.2044-.7891.666-.7891a.4318.4318 0 0 1 .0665.0039c.5078.0796.88 1.3732-.1836 2.1642-.7074.5257-.3797.9395.039.9395.211 0 .445-.1047.5821-.3535.4092-.7426 1.5264-2.6527 2.1056-3.0178.5588-.3524.99-.1816.8497.5918z" />
+                                        </svg>Aron on Hugging Face<svg class="vs-icon vs-ext" aria-hidden="true"
+                                            viewBox="0 0 24 24">
+                                            <path d="M7 17 17 7M8 7h9v9" />
+                                        </svg><span class="sr-only"> (opens in a new tab)</span></a></div>
+                            </div>
+                            <div class="cta-projects-wrap">
+                                <h3 class="cta-projects-title" id="projects-title">Other AI Open-Source Projects by the
+                                    Author</h3>
+                                <nav class="cta-projects" aria-labelledby="projects-title"><a class="proj"
+                                        href="https://vae.defuss.org/" target="_blank" rel="noopener"><span
+                                            class="proj-icon"><svg class="proj-svg vae" viewBox="0 0 24 24"
+                                                aria-hidden="true">
+                                                <path
+                                                    d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+                                                <path d="m9 12 2 2 4-4" />
+                                            </svg></span><span class="proj-text"><b>defuss-vae</b><small>Make your AI
+                                                agents stop the slop: Deterministic Verified Agentic Engineering (VAE)
+                                                in agent harnesses.</small></span><span class="sr-only"> (opens in a new
+                                            tab)</span></a><a class="proj" href="https://shadcn.defuss.org/"
+                                        target="_blank" rel="noopener"><span class="proj-icon"><img
+                                                src="assets/projects/defuss-shadcn.webp" width="28" height="28" alt=""
+                                                loading="lazy"></span><span
+                                            class="proj-text"><b>defuss-shadcn</b><small>250+ Agent-first UI components
+                                                from semantic HTML, shadcn tokens and plain CSS with novel DOM morphing
+                                                - scaled using VAE.</small></span><span class="sr-only"> (opens in a new
+                                            tab)</span></a><a class="proj" href="https://vectorsearch.defuss.org/"
+                                        target="_blank" rel="noopener"><span class="proj-icon"><svg class="proj-svg"
+                                                viewBox="0 0 24 24" aria-hidden="true">
+                                                <circle cx="5" cy="6" r="2.5" />
+                                                <circle cx="19" cy="5" r="2.5" />
+                                                <circle cx="12" cy="18" r="2.5" />
+                                                <path d="M7.3 7.1 10.6 16M17.6 7.2 13.3 16M7.5 6h9" />
+                                            </svg></span><span
+                                            class="proj-text"><b>defuss-vectorsearch</b><small>Multilingual AI semantic
+                                                search models that runs entirely in the browser on CPU +
+                                                WebGPU.</small></span><span class="sr-only"> (opens in a new
+                                            tab)</span></a><a class="proj" href="https://lid.defuss.org/"
+                                        target="_blank" rel="noopener"><span class="proj-icon"><img
+                                                src="assets/projects/defuss-lid.svg" width="28" height="28" alt=""
+                                                loading="lazy"></span><span
+                                            class="proj-text"><b>defuss-lid</b><small>Smallest SoTA Language
+                                                identification models. Beats Facebook fastText and Google CLD3 in size
+                                                and quality.</small></span><span class="sr-only"> (opens in a new
+                                            tab)</span></a><a class="proj"
+                                        href="https://github.com/kim-bayern-dev/KI-Video-Analyse-Tool-Archivar"
+                                        target="_blank" rel="noopener"><span class="proj-icon"><svg
+                                                class="proj-svg fill" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path
+                                                    d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                                            </svg></span><span class="proj-text"><b>KI-Video-Analyse
+                                                Archivar</b><small>Semantic AI video analysis (ASR, VLM) w/ 9 optimized
+                                                inference engines (Gemma, Qwen, Whisper, Parakeet) + scene cutting and
+                                                VAD models.</small></span><span class="sr-only"> (opens in a new
+                                            tab)</span></a><a class="proj"
+                                        href="https://github.com/kyr0/Bonsai-Llama-Jev" target="_blank"
+                                        rel="noopener"><span class="proj-icon"><svg class="proj-svg fill"
+                                                viewBox="0 0 24 24" aria-hidden="true">
+                                                <path
+                                                    d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                                            </svg></span><span class="proj-text"><b>Bonsai-Llama-Jev</b><small>Bonsai 2
+                                                27B (Qwen3.8-27B) Jev-like Typed Decision inference engine with vision
+                                                support and novel calibration method.</small></span><span
+                                            class="sr-only"> (opens in a new tab)</span></a><a class="proj"
+                                        href="https://github.com/kyr0/typed-decision-bench" target="_blank"
+                                        rel="noopener"><span class="proj-icon"><svg class="proj-svg fill"
+                                                viewBox="0 0 24 24" aria-hidden="true">
+                                                <path
+                                                    d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                                            </svg></span><span
+                                            class="proj-text"><b>typed-decision-bench</b><small>Benchmark and
+                                                calibration standard for typed decision models.</small></span><span
+                                            class="sr-only"> (opens in a new tab)</span></a><a class="proj"
+                                        href="https://search.defuss.org/" target="_blank" rel="noopener"><span
+                                            class="proj-icon"><svg class="proj-svg search" viewBox="0 0 24 24"
+                                                aria-hidden="true">
+                                                <path d="M3 5h7M3 12h5M3 19h7" />
+                                                <circle cx="16" cy="12" r="4" />
+                                                <path d="m19 15 2.5 2.5" />
+                                            </svg></span><span class="proj-text"><b>defuss-search</b><small>Hybrid
+                                                lexical and vector search for JavaScript and
+                                                browsers.</small></span><span class="sr-only"> (opens in a new
+                                            tab)</span></a><a class="proj"
+                                        href="https://huggingface.co/kyr0/redeschrift-1.0" target="_blank"
+                                        rel="noopener"><span class="proj-icon"><svg class="proj-svg fill"
+                                                viewBox="0 0 24 24" aria-hidden="true">
+                                                <path
+                                                    d="M1.4446 11.5059c0 1.1021.1673 2.1585.4847 3.1563-.0378-.0028-.0691-.0058-.1058-.0058-.4209 0-.8015.16-1.0704.4512-.3454.3737-.4984.8335-.4316 1.293a1.576 1.576 0 0 0 .2148.5978c-.2319.1864-.4018.4456-.4844.7578-.0646.2448-.131.7543.2149 1.2794a1.4552 1.4552 0 0 0-.0625.1055c-.208.3923-.2207.8372-.0371 1.25.2783.6258.9696 1.1175 2.3126 1.6467.8356.3292 1.5988.5411 1.6056.543 1.1046.2847 2.104.4277 2.969.4277 1.4173 0 2.4754-.3849 3.1525-1.1446 1.538.2651 2.791.1403 3.592.006.6773.7555 1.7332 1.1387 3.1467 1.1387.8649 0 1.8643-.143 2.969-.4278.0068-.0019.77-.2138 1.6056-.543 1.343-.5292 2.0343-1.0208 2.3126-1.6466.1836-.4129.171-.8577-.037-1.25a1.4685 1.4685 0 0 0-.0626-.1056c.346-.525.2795-1.0346.2149-1.2793-.0826-.3122-.2525-.5714-.4844-.7579.11-.1816.1831-.3788.2148-.5977.0669-.4595-.0862-.9193-.4316-1.293-.2688-.2913-.6495-.4513-1.0704-.4513-.0209 0-.0376.0008-.0588.0018.3162-.9966.4846-2.0518.4846-3.1523 0-5.807-4.7362-10.5144-10.5789-10.5144-5.8426 0-10.5788 4.7073-10.5788 10.5144Zm10.5788-9.4831c5.2727 0 9.5476 4.246 9.5476 9.483a9.4201 9.4201 0 0 1-.2696 2.2365c-.0039-.0047-.0079-.011-.0117-.0156-.274-.3255-.6679-.5059-1.1075-.5059-.352 0-.714.1155-1.0763.3438-.2403.1517-.5058.422-.7793.7598-.2534-.3492-.608-.5832-1.0137-.6465a1.5174 1.5174 0 0 0-.2344-.0176c-.9263 0-1.4828.7993-1.6935 1.5177-.1046.2426-.6065 1.3482-1.3614 2.0978-1.1681 1.1601-1.4458 2.3534-.8396 3.6382-.843.1029-1.5836.0927-2.365-.006.5906-1.212.3626-2.4388-.8426-3.6322-.755-.7496-1.2568-1.8552-1.3614-2.0978-.2107-.7184-.7673-1.5177-1.6935-1.5177-.078 0-.1568.0054-.2344.0176-.4057.0633-.7604.2973-1.0137.6465-.2735-.3379-.539-.6081-.7794-.7598-.3622-.2283-.7243-.3438-1.0762-.3438-.4266 0-.8094.171-1.0821.4786a9.4208 9.4208 0 0 1-.2598-2.1936c0-5.237 4.2749-9.483 9.5475-9.483zM8.6443 7.0036c-.4838.0043-.9503.2667-1.1934.7227-.3536.6633-.1006 1.4873.5645 1.84.351.1862.4883-.5261.836-.6485.3107-.1095.841.399 1.0078.086.3536-.6634.1025-1.4874-.5625-1.84a1.3659 1.3659 0 0 0-.6524-.1602Zm6.8403 0c-.2199-.002-.4426.05-.6504.1602-.665.3526-.9181 1.1766-.5645 1.84.1669.313.6971-.1955 1.0079-.086.3476.1224.4867.8347.838.6485.6649-.3527.916-1.1767.5624-1.84-.243-.456-.7096-.7184-1.1934-.7227Zm-9.7565 1.418a.8768.8768 0 0 0-.877.877c0 .4846.3925.877.877.877a.8768.8768 0 0 0 .877-.877.8768.8768 0 0 0-.877-.877zm12.6434 0c-.4845 0-.879.3925-.879.877 0 .4846.3945.877.879.877a.8768.8768 0 0 0 .877-.877.8768.8768 0 0 0-.877-.877zM8.7927 11.459c-.179-.003-.2793.1107-.2793.416 0 .8097.3874 2.125 1.4279 2.924.207-.7123 1.3453-1.2832 1.5079-1.2012.2315.1167.2191.4417.6074.7266.3884-.285.374-.6098.6056-.7266.1627-.082 1.3009.4889 1.5079 1.2012 1.0404-.799 1.4278-2.1144 1.4278-2.924 0-1.2212-1.583.6402-3.5413.6485-1.4686-.0061-2.7266-1.0558-3.2639-1.0645zM4.312 14.4768c.5792.365 1.6964 2.2751 2.1056 3.0177.1371.2488.371.3536.582.3536.4188 0 .7465-.4138.0391-.9395-1.0636-.791-.6914-2.0846-.1836-2.1642a.4302.4302 0 0 1 .0664-.004c.4616 0 .666.7892.666.7892s.5959 1.4898 1.6213 2.508c.942.9356 1.062 1.703.4961 2.6661-.0164-.004-.0159.0236-.1484.2149-.1853.2673-.4322.4688-.7188.6152-.5062.2269-1.1397.2696-1.7833.2696-1.037 0-2.1017-.1824-2.6975-.336-.0293-.0075-3.6505-.9567-3.1916-1.8224.0771-.1454.2033-.2031.3633-.2031.6463 0 1.823.9551 2.3283.9551.113 0 .196-.0865.2285-.2031.2249-.8045-3.2787-1.0522-2.9846-2.1642.0519-.1967.193-.2757.3907-.2754.854 0 2.7704 1.4923 3.172 1.4923.0307 0 .0525-.0085.0645-.0274.2012-.3227.1096-.5865-1.3087-1.4395-1.4182-.8533-2.4315-1.329-1.8653-1.9416.0651-.0707.1574-.1015.2695-.1015.8611.0002 2.8948 1.84 2.8948 1.84s.5487.5683.8809.5683c.0762 0 .1416-.0315.1855-.1054.2355-.3946-2.1858-2.2183-2.3224-2.971-.0926-.51.0641-.7676.3555-.7676-.0006.008.1701-.0285.4942.1759zm16.2257.5918c-.1366.7526-2.5579 2.5764-2.3224 2.9709.044.074.1092.1055.1855.1055.3321 0 .881-.5684.881-.5684s2.0336-1.8397 2.8947-1.84c.1121 0 .2044.0308.2695.1016.5662.6125-.447 1.0882-1.8653 1.9415-1.4183.853-1.51 1.1168-1.3087 1.4396.012.0188.0337.0273.0644.0273.4016 0 2.3181-1.4923 3.1721-1.4923.1977-.0002.3388.0787.3907.2754.294 1.112-3.2095 1.3597-2.9846 2.1642.0325.1166.1156.2032.2285.2032.5054 0 1.682-.9552 2.3283-.9552.16 0 .2862.0577.3633.2032.459.8656-3.1623 1.8149-3.1916 1.8224-.5958.1535-1.6605.336-2.6975.336-.6351 0-1.261-.0409-1.7638-.2599-.2949-.1472-.5488-.3516-.7383-.625-.0411-.0682-.1026-.1476-.1426-.205-.5726-.9679-.455-1.7371.4903-2.676 1.0254-1.0182 1.6212-2.508 1.6212-2.508s.2044-.7891.666-.7891a.4318.4318 0 0 1 .0665.0039c.5078.0796.88 1.3732-.1836 2.1642-.7074.5257-.3797.9395.039.9395.211 0 .445-.1047.5821-.3535.4092-.7426 1.5264-2.6527 2.1056-3.0178.5588-.3524.99-.1816.8497.5918z" />
+                                            </svg></span><span class="proj-text"><b>Redeschrift 1.0</b><small>German
+                                                speech recognition that runs locally on the CPU.</small></span><span
+                                            class="sr-only"> (opens in a new tab)</span></a></nav>
+                            </div>
+
+                        </div>
+                    </section>
+                    <div class="revision-tree-block" lang="en" aria-labelledby="revision-tree-title">
+                        <div class="chapter-heading tree-chapter" id="model-tree">
+                            <div>
+                                <div class="portal-eyebrow"><b>02</b> Evolution history</div>
+                                <h2 id="revision-tree-title">Model Inheritance Tree</h2>
+                            </div><span class="chapter-meta"><i class="signal-dot"></i> STORED IN THIS BROWSER</span>
+                        </div>
+                        <p class="section-lead tree-lead">Every model sits under the parent it was trained or edited
+                            from. ★ marks the parent of the next training run, ▶ the model in play. Models trained in
+                            this browser appear here and stay stored only in this browser.</p>
+                        <div class="tree-heading">
+                            <div class="tree-status"><span class="tree-meta" id="revision-tree-meta">Loading
+                                    …</span><button type="button" class="reference-measure" id="revision-import"
+                                    title="Load a complete model file (.agmweights) from this device" disabled>Load
+                                    model file</button><button type="button" class="reference-measure"
+                                    id="reference-measure" hidden>Measure total</button><button type="button"
+                                    class="reference-measure tree-clear" id="revision-clear" hidden disabled>Clear all
+                                    local models</button></div>
+                        </div>
+                        <div class="data-grid revision-tree" id="revision-tree" role="treegrid" aria-label="Model tree">
+                            <div class="data-grid-viewport">
+                                <div class="data-grid-head">
+                                    <div class="data-grid-row" role="row">
+                                        <div class="data-grid-header" data-locked>Model</div>
+                                        <div class="data-grid-header">Parent</div>
+                                        <div class="data-grid-header" data-type="number"
+                                            title="Native 4-bit codes plus sensor weights changed relative to the parent">
+                                            Δ Parameters</div>
+                                        <div class="data-grid-header" data-type="number"
+                                            title="Survival time relative to the Original FP32 on the 48 fixed reference seeds; the tooltip adds the change relative to the parent">
+                                            Total</div>
+                                        <div class="data-grid-header">Actions</div>
+                                    </div>
+                                </div>
+                                <div class="data-grid-body" id="revision-tree-body"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="section-caption"><a href="https://github.com/Daivuk/PureDOOM" target="_blank"
+                        rel="noopener">PureDOOM</a> runs locally with <a href="https://freedoom.github.io/"
+                        target="_blank" rel="noopener">Freedoom</a> artwork and a custom center-defense arena. Browser
+                    and native <a href="https://github.com/Farama-Foundation/ViZDoom" target="_blank"
+                        rel="noopener">ViZDoom</a> scores use separate seed sets.</p>
+            </section>
+            <section id="architecture" class="portal-section" aria-labelledby="architecture-title">
+                <div class="chapter-heading">
+                    <div>
+                        <div class="portal-eyebrow"><b>03</b> Architecture</div>
+                        <h2 id="architecture-title">Understanding the Weight-Space Edited Architecture</h2>
+                    </div><span class="chapter-meta">TWO PATHS · ONE ACTION</span>
+                </div>
+                <figure class="arch-compare" aria-labelledby="arch-title">
+                    <figcaption id="arch-title">Original Kumo vs. the model after Weight-Space Programming</figcaption>
+                    <div class="arch-grid">
+                        <section class="arch-panel" aria-label="Original Kumo-Tabular Small">
+                            <h3>Original <a href="https://huggingface.co/nvidia/Kumo-Tabular">Kumo-Tabular Small</a>
+                                <small>FP32 · as published</small></h3>
+                            <ol class="arch-flow">
+                                <li class="mm-box mm-io"><small>Input</small><b>14 game numbers + 96 labelled
+                                        examples</b></li>
+                                <li class="mm-box mm-frozen"><small>Transformer</small><b>12 in-context
+                                        layers</b><span>reads the game state against the examples</span></li>
+                                <li class="mm-box"><small>Head</small><b>10 rows × 1,024 weights → 10
+                                        scores</b><span>rows 0, 1, 2 are used as LEFT, RIGHT, FIRE</span></li>
+                                <li class="mm-box mm-io"><small>Action</small><b>Highest score wins</b><span>turn left,
+                                        turn right or fire; never moves</span></li>
+                            </ol>
+                        </section>
+                        <section class="arch-panel arch-wsp" aria-label="After Weight-Space Programming">
+                            <h3>After Weight-Space Programming <small>4-bit · Astra 6, then evolution</small></h3>
+                            <div class="arch-lanes">
+                                <ol class="arch-flow arch-lane">
+                                    <li class="arch-lane-label">Kumo path</li>
+                                    <li class="mm-box mm-io"><small>Input</small><b>14 game numbers + 96 labelled
+                                            examples</b></li>
+                                    <li class="mm-box mm-frozen"><small>Transformer · frozen</small><b>12 in-context
+                                            layers, 4-bit</b></li>
+                                    <li class="mm-box mm-live"><small>Head rows 0–2</small><b>3 scores: LEFT, RIGHT,
+                                            FIRE</b><span>Astra 6 edited 256 FIRE weights; evolution mutates all
+                                            3,072</span></li>
+                                </ol>
+                                <ol class="arch-flow arch-lane">
+                                    <li class="arch-lane-label">Controller path</li>
+                                    <li class="mm-box mm-io"><small>Input</small><b>Game state</b></li>
+                                    <li class="mm-box arch-code"><small>Controller code · hand-written</small><b>Named
+                                            sensors</b><span>aim error, proximity, closing in, enemy memory, rear
+                                            blocked, …</span></li>
+                                    <li class="mm-box mm-live arch-sw"><small>Sensor weights · 119
+                                            values</small><b>Weigh sensors into action scores</b><span
+                                            class="sw-formula">Every decision, each action gets
+                                            <code>score = scale × Σ (weight × sensor)</code> from the current sensor
+                                            values; the weights stay fixed during play.</span>
+                                        <ul class="sw-list">
+                                            <li><b>Aim</b><span>13 sensors → LEFT, RIGHT, FIRE, BACKWARD</span><i
+                                                    title="4 actions × 13 sensors">52 weights</i></li>
+                                            <li><b>Combat</b><span>11 sensors → LEFT, RIGHT, FIRE, HOLD, BACKWARD,
+                                                    FORWARD</span><i title="6 actions × 11 sensors">66 weights</i></li>
+                                            <li><b>Facing guard</b><span>1 sensor → back vs. forward</span><i>1
+                                                    weight</i></li>
+                                        </ul><span class="sw-evo">Evolution mutates all 119 weights</span>
+                                    </li>
+                                </ol>
+                            </div>
+                            <div class="arch-merge"><span class="arch-sum" aria-hidden="true">+</span>
+                                <div class="mm-box mm-io"><small>Action</small><b>Highest score wins</b><span>LEFT,
+                                        RIGHT, FIRE: transformer score + sensor-weight score. HOLD, BACKWARD, FORWARD:
+                                        sensor-weight score only.</span></div>
+                            </div>
+                        </section>
+                    </div>
+                </figure>
+            </section>
+            <section id="model-diff" class="portal-section" aria-labelledby="model-diff-title">
+                <div class="chapter-heading">
+                    <div>
+                        <div class="portal-eyebrow"><b>04</b> Model mutations</div>
+                        <h2 id="model-diff-title">Understanding EvoWeights’ Model Mutations</h2>
+                    </div><span class="chapter-meta">167 MUTABLE BLOCKS</span>
+                </div>
+                <p class="section-lead">The pretrained model itself stays frozen. A mutation only nudges weights at the
+                    very end: the three output rows that decide LEFT, RIGHT or FIRE, and 119 small extra weights that
+                    read named game sensors. Everything before that, including all 12 transformer layers, is never
+                    touched.</p>
+                <figure class="mutation-map" aria-labelledby="mutation-map-title">
+                    <figcaption id="mutation-map-title">Where each step changes the model</figcaption>
+                    <div class="mm-flow2">
+                        <div class="mm-box mm-io"><small>Input</small><b>Game state</b><span>14 numbers: enemy bands,
+                                ammo, health, last action</span></div><span class="mm-arrow" aria-hidden="true"></span>
+                        <div class="mm-box mm-frozen"><small>Backbone · frozen</small><b><a
+                                    href="https://huggingface.co/nvidia/Kumo-Tabular">Kumo-Tabular
+                                    Small</a></b><span>27.45 M weights, mostly 4-bit, incl. 12 transformer
+                                layers</span><em class="mm-chip mm-chip-frozen">never mutated</em></div><span
+                            class="mm-arrow" aria-hidden="true"></span>
+                        <div class="mm-zone">
+                            <div class="mm-zone-label"><em class="mm-chip mm-chip-evo">evolution mutates only
+                                    here</em><span>167 blocks</span></div>
+                            <div class="mm-box mm-live"><small>Output rows</small><b>LEFT · RIGHT · FIRE</b><span>3 ×
+                                    1,024 weights of the model’s own final layer</span><span class="mm-who">Astra 6
+                                    selected rows 0, 1 and 2 of 10, labeled them LEFT, RIGHT and FIRE, and edited 256
+                                    weights in FIRE via Weight-Space Programming</span></div>
+                            <div class="mm-plus" aria-hidden="true">+</div>
+                            <div class="mm-box mm-live"><small>Sensor weights</small><b>3 small extra
+                                    matrices</b><span>119 weights on named game sensors, added to the action
+                                    scores</span><span class="mm-who">Astra 6 added them directly via Weight-Space
+                                    Programming</span></div>
+                        </div><span class="mm-arrow" aria-hidden="true"></span>
+                        <div class="mm-box mm-io"><small>Output</small><b>Action</b><span>17.5 times per game second the
+                                highest of the three scores wins: LEFT or RIGHT turns the player, FIRE shoots or
+                                punches. The sensor weights can add a step forward or back, e.g. to close in for a punch
+                                and retreat.</span></div>
+                    </div>
+                    <p class="mm-note">One mutation moves about half of 167 blocks by ±2 levels: 48 blocks of 64
+                        output-row weights and the 119 sensor weights, one block each. The browser lineage started
+                        without Astra 6’s game optimization Weight Space Programming edit but kept Astra 6’s
+                        sensor-weight matrices and sensors, with every sensor weight at zero. The row meanings were
+                        assigned, not found in the model: LEFT = 0, RIGHT = 1, FIRE = 2, conditioned by 96 labelled
+                        examples.</p>
+                </figure>
+            </section>
+            <section id="statistics" class="portal-section" aria-labelledby="statistics-title">
+                <div class="chapter-heading">
+                    <div>
+                        <div class="portal-eyebrow"><b>05</b> Statistics</div>
+                        <h2 id="statistics-title">One game proves nothing</h2>
+                    </div><span class="chapter-meta">PAIRED t ≥ 2</span>
+                </div>
+                <p class="section-lead">Two games on the same seed drift apart once one action differs, so a single game
+                    mostly measures luck. EvoWeights therefore keeps a new model generation only when its improvement is
+                    safeguarded by a statistical check: the child and its parent play the same fresh seeds in pairs, and
+                    the child is kept only when the average difference lies at least two standard errors above zero
+                    (paired t ≥ 2).</p>
+                <figure class="luck-figure" data-animate-bars><!-- luck-chart --><svg class="luck-chart"
+                        viewBox="0 0 1000 345" role="img"
+                        aria-label="Survival difference per paired game for 48 games, with the running average and its uncertainty band narrowing as games accumulate.">
+                        <line class="luck-grid" x1="84" x2="985" y1="267.1" y2="267.1" /><text class="luck-axis" x="74"
+                            y="272.1" text-anchor="end">-40 s</text>
+                        <line class="luck-grid" x1="84" x2="985" y1="217.3" y2="217.3" /><text class="luck-axis" x="74"
+                            y="222.3" text-anchor="end">-20 s</text>
+                        <line class="luck-grid" x1="84" x2="985" y1="167.5" y2="167.5" /><text class="luck-axis" x="74"
+                            y="172.5" text-anchor="end">0 s</text>
+                        <line class="luck-grid" x1="84" x2="985" y1="117.6" y2="117.6" /><text class="luck-axis" x="74"
+                            y="122.6" text-anchor="end">+20 s</text>
+                        <line class="luck-grid" x1="84" x2="985" y1="67.8" y2="67.8" /><text class="luck-axis" x="74"
+                            y="72.8" text-anchor="end">+40 s</text>
+                        <line class="luck-grid" x1="84" x2="985" y1="18.0" y2="18.0" /><text class="luck-axis" x="74"
+                            y="23.0" text-anchor="end">+60 s</text>
+                        <line class="luck-zero" x1="84" x2="985" y1="167.5" y2="167.5" /><text class="luck-axis"
+                            x="84.0" y="314" text-anchor="middle">1</text><text class="luck-axis" x="179.9" y="314"
+                            text-anchor="middle">6</text><text class="luck-axis" x="294.9" y="314"
+                            text-anchor="middle">12</text><text class="luck-axis" x="524.9" y="314"
+                            text-anchor="middle">24</text><text class="luck-axis" x="755.0" y="314"
+                            text-anchor="middle">36</text><text class="luck-axis" x="985.0" y="314"
+                            text-anchor="middle">48</text>
+                        <clipPath id="luck-clip">
+                            <rect class="luck-reveal" x="0" y="0" width="1000" height="345" />
+                        </clipPath>
+                        <g clip-path="url(#luck-clip)">
+                            <polygon class="luck-band"
+                                points="103.2,86.4 122.3,107.7 141.5,117.7 160.7,124.2 179.9,125.8 199.0,127.5 218.2,122.0 237.4,127.3 256.5,126.8 275.7,127.9 294.9,121.5 314.0,118.8 333.2,121.6 352.4,124.6 371.6,127.0 390.7,127.5 409.9,126.1 429.1,127.3 448.2,129.2 467.4,132.0 486.6,132.0 505.7,134.6 524.9,134.7 544.1,137.3 563.3,135.5 582.4,137.7 601.6,139.0 620.8,136.2 639.9,134.4 659.1,136.5 678.3,134.2 697.4,136.7 716.6,137.4 735.8,134.7 755.0,135.8 774.1,136.9 793.3,138.1 812.5,139.3 831.6,139.9 850.8,139.0 870.0,138.1 889.1,137.4 908.3,134.0 927.5,135.1 946.7,134.7 965.8,134.0 985.0,133.2 985.0,162.2 965.8,163.4 946.7,164.5 927.5,165.5 908.3,164.8 889.1,166.9 870.0,168.0 850.8,169.3 831.6,170.6 812.5,170.9 793.3,170.3 774.1,169.8 755.0,169.4 735.8,169.2 716.6,171.5 697.4,171.8 678.3,168.1 659.1,170.2 639.9,168.2 620.8,170.3 601.6,172.7 582.4,172.6 563.3,170.8 544.1,173.0 524.9,170.5 505.7,171.9 486.6,169.5 467.4,171.2 448.2,169.1 429.1,156.7 409.9,157.0 390.7,159.3 371.6,160.8 352.4,160.1 333.2,158.7 314.0,158.1 294.9,161.8 275.7,165.8 256.5,168.5 237.4,172.7 218.2,171.0 199.0,177.2 179.9,183.6 160.7,160.3 141.5,157.4 122.3,160.9 103.2,175.4" />
+                            <circle class="luck-dot" cx="84.0" cy="153.1" r="4.5" />
+                            <circle class="luck-dot" cx="103.2" cy="108.7" r="4.5" />
+                            <circle class="luck-dot" cx="122.3" cy="141.1" r="4.5" />
+                            <circle class="luck-dot" cx="141.5" cy="147.3" r="4.5" />
+                            <circle class="luck-dot" cx="160.7" cy="161.0" r="4.5" />
+                            <circle class="luck-dot" cx="179.9" cy="216.8" r="4.5" />
+                            <circle class="luck-dot" cx="199.0" cy="138.6" r="4.5" />
+                            <circle class="luck-dot" cx="218.2" cy="105.5" r="4.5" />
+                            <circle class="luck-dot" cx="237.4" cy="178.1" r="4.5" />
+                            <circle class="luck-dot" cx="256.5" cy="126.6" r="4.5" />
+                            <circle class="luck-dot" cx="275.7" cy="138.8" r="4.5" />
+                            <circle class="luck-dot" cx="294.9" cy="84.5" r="4.5" />
+                            <circle class="luck-dot" cx="314.0" cy="99.7" r="4.5" />
+                            <circle class="luck-dot" cx="333.2" cy="162.3" r="4.5" />
+                            <circle class="luck-dot" cx="352.4" cy="173.0" r="4.5" />
+                            <circle class="luck-dot" cx="371.6" cy="167.1" r="4.5" />
+                            <circle class="luck-dot" cx="390.7" cy="136.1" r="4.5" />
+                            <circle class="luck-dot" cx="409.9" cy="109.6" r="4.5" />
+                            <circle class="luck-dot" cx="429.1" cy="150.1" r="4.5" />
+                            <circle class="luck-dot" cx="448.2" cy="285.0" r="4.5" />
+                            <circle class="luck-dot" cx="467.4" cy="201.0" r="4.5" />
+                            <circle class="luck-dot" cx="486.6" cy="132.6" r="4.5" />
+                            <circle class="luck-dot" cx="505.7" cy="208.2" r="4.5" />
+                            <circle class="luck-dot" cx="524.9" cy="137.8" r="4.5" />
+                            <circle class="luck-dot" cx="544.1" cy="216.2" r="4.5" />
+                            <circle class="luck-dot" cx="563.3" cy="103.5" r="4.5" />
+                            <circle class="luck-dot" cx="582.4" cy="207.0" r="4.5" />
+                            <circle class="luck-dot" cx="601.6" cy="174.3" r="4.5" />
+                            <circle class="luck-dot" cx="620.8" cy="81.3" r="4.5" />
+                            <circle class="luck-dot" cx="639.9" cy="94.6" r="4.5" />
+                            <circle class="luck-dot" cx="659.1" cy="214.2" r="4.5" />
+                            <circle class="luck-dot" cx="678.3" cy="82.6" r="4.5" />
+                            <circle class="luck-dot" cx="697.4" cy="253.9" r="4.5" />
+                            <circle class="luck-dot" cx="716.6" cy="161.5" r="4.5" />
+                            <circle class="luck-dot" cx="735.8" cy="66.8" r="4.5" />
+                            <circle class="luck-dot" cx="755.0" cy="175.5" r="4.5" />
+                            <circle class="luck-dot" cx="774.1" cy="179.7" r="4.5" />
+                            <circle class="luck-dot" cx="793.3" cy="184.8" r="4.5" />
+                            <circle class="luck-dot" cx="812.5" cy="191.1" r="4.5" />
+                            <circle class="luck-dot" cx="831.6" cy="160.3" r="4.5" />
+                            <circle class="luck-dot" cx="850.8" cy="111.6" r="4.5" />
+                            <circle class="luck-dot" cx="870.0" cy="108.7" r="4.5" />
+                            <circle class="luck-dot" cx="889.1" cy="112.2" r="4.5" />
+                            <circle class="luck-dot" cx="908.3" cy="30.5" r="4.5" />
+                            <circle class="luck-dot" cx="927.5" cy="190.9" r="4.5" />
+                            <circle class="luck-dot" cx="946.7" cy="120.1" r="4.5" />
+                            <circle class="luck-dot" cx="965.8" cy="106.7" r="4.5" />
+                            <circle class="luck-dot" cx="985.0" cy="98.8" r="4.5" />
+                            <polyline class="luck-mean"
+                                points="103.2,130.9 122.3,134.3 141.5,137.6 160.7,142.2 179.9,154.7 199.0,152.4 218.2,146.5 237.4,150.0 256.5,147.7 275.7,146.9 294.9,141.7 314.0,138.4 333.2,140.2 352.4,142.3 371.6,143.9 390.7,143.4 409.9,141.6 429.1,142.0 448.2,149.1 467.4,151.6 486.6,150.8 505.7,153.2 524.9,152.6 544.1,155.2 563.3,153.2 582.4,155.2 601.6,155.8 620.8,153.3 639.9,151.3 659.1,153.3 678.3,151.1 697.4,154.2 716.6,154.5 735.8,152.0 755.0,152.6 774.1,153.3 793.3,154.2 812.5,155.1 831.6,155.2 850.8,154.2 870.0,153.1 889.1,152.1 908.3,149.4 927.5,150.3 946.7,149.6 965.8,148.7 985.0,147.7" />
+                            <line class="luck-mark" x1="294.9" x2="294.9" y1="18" y2="292"
+                                style="stroke-dasharray:1.5 5;stroke-linecap:round;stroke-width:2" />
+                            <line class="luck-mark" x1="524.9" x2="524.9" y1="18" y2="292"
+                                style="stroke-dasharray:12 5 2 5" />
+                            <line class="luck-mark" x1="889.1" x2="889.1" y1="18" y2="292" /><text class="luck-label"
+                                x="881.1" y="32" text-anchor="end">from game 43: certain</text>
+                            <text class="luck-label" x="294.9" y="32.0" text-anchor="middle">game 12: looks
+                                certain</text>
+                            <text class="luck-label" x="524.9" y="284.0" text-anchor="middle">game 24: not
+                                anymore</text>
+                        </g>
+                        <text class="luck-axis" x="534" y="332" text-anchor="middle">games played</text>
+                        <text class="luck-axis" transform="rotate(-90)" x="-155" y="14" text-anchor="middle">metric:
+                            survival difference</text>
+                    </svg><!-- /luck-chart -->
+                    <figcaption>Each dot: EvoWeights Terminator vs. Astra 6’s model.<br>Line: the average survival so
+                        far. Band: ±2 standard errors, how far luck could still move it.</figcaption>
+                </figure>
+                <ol class="loop-steps luck-steps">
+                    <li><b>Pair</b><span>Child and parent play the same fresh seeds, so the luck both games share
+                            cancels.</span></li>
+                    <li><b>Measure</b><span>In batches of 16 seeds, up to 64: the paired t of the primary metric,
+                            survival or kills.</span></li>
+                    <li><b>Stop or accept early</b><span>t ≤ -1 stops the check; t ≥ 3 after 32 seeds accepts the child
+                            at once.</span></li>
+                    <li><b>Keep</b><span>Otherwise the child needs t ≥ 2 and a positive utility gain, and must match
+                            every ancestor of its line on the same seeds.</span></li>
+                </ol>
+            </section>
+            <section id="results" class="portal-section" aria-labelledby="results-title">
+                <div class="chapter-heading">
+                    <div>
+                        <div class="portal-eyebrow"><b>06</b> Results</div>
+                        <h2 id="results-title">Evolution beats Astra 6 and outscores Opus 5.5 in Weight-Space
+                            Programming</h2>
+                    </div><span class="chapter-meta">EvoWeights vs.<br />Frontier AI Models</span>
+                </div>
+                <p class="section-lead">Evaluated via 48 games played with reserved held-out seeds - each ten-minutes
+                    maximum length. Opus 5.5 and EvoWeights models started from the same sensor weights at zero (Astra 6
+                    designed those sensor weights initially via Weight-Space Programming).</p>
+                <div class="res-chart" data-animate-bars>
+                    <div class="res-group">
+                        <h3>Survival per game<small>mean over 48 held-out 10-minute games</small></h3>
+                        <ul class="res-bars">
+                            <li class="agent" style="--k:0"><span class="res-name">Astra 6 Weight-Space
+                                    Programming<small>parent: Original FP32</small></span><span class="res-bar"><i
+                                        style="--w:30.9%"></i></span><span class="res-val"><b>40.6 s</b> ·
+                                    baseline</span></li>
+                            <li class="agent" style="--k:1"><span class="res-name">Opus 5.5 Weight-Space
+                                    Programming<small>parent: 4-bit base + Astra 6’s sensors, all sensor weights
+                                        0</small></span><span class="res-bar"><i style="--w:38.8%"></i></span><span
+                                    class="res-val"><b>50.9 s</b> · +25.4 % (t 0.8)</span></li>
+                            <li class="evo" style="--k:2"><span class="res-name">EvoWeights Terminator<small>parent:
+                                        4-bit base + Astra 6’s sensors, all sensor weights 0</small></span><span
+                                    class="res-bar"><i style="--w:37.0%"></i></span><span class="res-val"><b>48.5 s</b>
+                                    · +19.5 % (t 2.7)</span></li>
+                            <li class="evo best" style="--k:3"><span class="res-name">EvoWeights Survivor<small>parent:
+                                        4-bit base + Astra 6’s sensors, all sensor weights 0</small></span><span
+                                    class="res-bar"><i style="--w:100.0%"></i></span><span class="res-val"><b>131.4
+                                        s</b> · +223.5 % (t 3.6)</span></li>
+                        </ul>
+                    </div>
+                    <div class="res-group">
+                        <h3>Kills per game<small>mean over the same games</small></h3>
+                        <ul class="res-bars">
+                            <li class="agent" style="--k:0"><span class="res-name">Astra 6 Weight-Space
+                                    Programming<small>parent: Original FP32</small></span><span class="res-bar"><i
+                                        style="--w:82.5%"></i></span><span class="res-val"><b>27.5</b> · baseline</span>
+                            </li>
+                            <li class="agent" style="--k:1"><span class="res-name">Opus 5.5 Weight-Space
+                                    Programming<small>parent: 4-bit base + Astra 6’s sensors, all sensor weights
+                                        0</small></span><span class="res-bar"><i style="--w:82.4%"></i></span><span
+                                    class="res-val"><b>27.4</b> · -0.2 % (t -0.0)</span></li>
+                            <li class="evo best" style="--k:2"><span class="res-name">EvoWeights
+                                    Terminator<small>parent: 4-bit base + Astra 6’s sensors, all sensor weights
+                                        0</small></span><span class="res-bar"><i style="--w:100.0%"></i></span><span
+                                    class="res-val"><b>33.3</b> · +21.2 % (t 4.8)</span></li>
+                            <li class="evo" style="--k:3"><span class="res-name">EvoWeights Survivor<small>parent: 4-bit
+                                        base + Astra 6’s sensors, all sensor weights 0</small></span><span
+                                    class="res-bar"><i style="--w:73.9%"></i></span><span class="res-val"><b>24.6</b> ·
+                                    -10.5 % (t -3.1)</span></li>
+                        </ul>
+                    </div>
+                    <div class="res-group">
+                        <h3>Time to candidate<small>wall time, lower is better</small></h3>
+                        <ul class="res-bars">
+                            <li class="agent" style="--k:0"><span class="res-name">Astra 6 Weight-Space
+                                    Programming<small>parent: Original FP32</small></span><span class="res-bar"><i
+                                        style="--w:61.2%"></i></span><span class="res-val"><b>16 min 59 s</b></span>
+                            </li>
+                            <li class="agent" style="--k:1"><span class="res-name">Opus 5.5 Weight-Space
+                                    Programming<small>parent: 4-bit base + Astra 6’s sensors, all sensor weights
+                                        0</small></span><span class="res-bar"><i style="--w:100.0%"></i></span><span
+                                    class="res-val"><b>27 min 44 s</b></span></li>
+                            <li class="evo best" style="--k:2"><span class="res-name">EvoWeights
+                                    Terminator<small>parent: 4-bit base + Astra 6’s sensors, all sensor weights
+                                        0</small></span><span class="res-bar"><i style="--w:38.9%"></i></span><span
+                                    class="res-val"><b>10 min 47 s</b></span></li>
+                            <li class="evo" style="--k:3"><span class="res-name">EvoWeights Survivor<small>parent: 4-bit
+                                        base + Astra 6’s sensors, all sensor weights 0</small></span><span
+                                    class="res-bar"><i style="--w:87.1%"></i></span><span class="res-val"><b>24 min 10
+                                        s</b></span></li>
+                        </ul>
+                    </div>
+                    <div class="res-legend"><span><i class="agent"></i> Agentic weight-space programming</span><span><i
+                                class="evo"></i> EvoWeights, trained in the browser</span></div>
+                </div>
+            </section>
+            <section id="transformer-contribution" class="portal-section tf-matters" aria-labelledby="tf-title">
+                <div class="chapter-heading">
+                    <div>
+                        <div class="portal-eyebrow"><b>07</b> Ablation</div>
+                        <h2 id="tf-title">How much do Transformer weight mutations contribute to the overall results?
+                        </h2>
+                    </div><span class="chapter-meta">48 FRESH GAMES</span>
+                </div>
+                <p class="tf-answer"><b>Both shipped EvoWeights models heavily depend on base model transformer
+                        mutations.</b> When the transformer’s three scores (head rows 0,1,2 set to zero, everything else
+                    unchanged) are frozen and each model plays the same 48 fresh 10-minute games twice, then without the
+                    transformer, both models collapse:</p>
+                <div class="tf-cards">
+                    <div class="tf-card">
+                        <h4>EvoWeights Survivor</h4>
+                        <div class="tf-metric"><span>Survival per game</span>
+                            <div class="tf-pair"><i class="tf-full" style="width:100%"></i><b>121.0 s</b></div>
+                            <div class="tf-pair"><i class="tf-frozen" style="width:20%"></i><b>23.7 s</b></div><em>-80
+                                %</em>
+                        </div>
+                        <div class="tf-metric"><span>Kills per game</span>
+                            <div class="tf-pair"><i class="tf-full" style="width:73%"></i><b>24.8</b></div>
+                            <div class="tf-pair"><i class="tf-frozen" style="width:37%"></i><b>12.5</b></div><em>-50
+                                %</em>
+                        </div><small>43 of 48 games shorter without the transformer · paired t -4.9 (survival), -12.1
+                            (kills)</small>
+                    </div>
+                    <div class="tf-card">
+                        <h4>EvoWeights Terminator</h4>
+                        <div class="tf-metric"><span>Survival per game</span>
+                            <div class="tf-pair"><i class="tf-full" style="width:41%"></i><b>49.2 s</b></div>
+                            <div class="tf-pair"><i class="tf-frozen" style="width:11%"></i><b>12.9 s</b></div><em>-74
+                                %</em>
+                        </div>
+                        <div class="tf-metric"><span>Kills per game</span>
+                            <div class="tf-pair"><i class="tf-full" style="width:100%"></i><b>34.1</b></div>
+                            <div class="tf-pair"><i class="tf-frozen" style="width:21%"></i><b>7.1</b></div><em>-79
+                                %</em>
+                        </div><small>48 of 48 games shorter without the transformer · paired t -13.4 (survival), -20.7
+                            (kills)</small>
+                    </div>
+                </div>
+                <p class="tf-legend"><i class="tf-full"></i> with the transformer <i class="tf-frozen"></i> transformer
+                    scores frozen</p>
+                <p class="tf-note">Both lineages evolved from sensor weights set to zero, so evolution had to build on
+                    what the transformer computes. Models built on Astra 6’s hand-set sensor weights lose nothing
+                    measurable in the same test.</p>
+            </section>
+            <section id="inference" class="portal-section" aria-labelledby="inference-title">
+                <div class="chapter-heading">
+                    <div>
+                        <div class="portal-eyebrow"><b>08</b> Running the model</div>
+                        <h2 id="inference-title">From Game State To Action</h2>
+                    </div><span class="chapter-meta">17.5 DECISIONS PER GAME SECOND</span>
+                </div>
+                <p class="section-lead">Every decision runs the same loop, 17.5 times per game second:</p>
+                <ol class="loop-steps">
+                    <li><b>Measure</b><span>The game state gives 14 numbers for the transformer and 25 sensor values for
+                            the controller.</span></li>
+                    <li><b>Forward pass</b><span>The 14 numbers run through the frozen transformer against the 96 cached
+                            examples; head rows 0–2 give the LEFT, RIGHT and FIRE scores.</span></li>
+                    <li><b>Weigh</b><span>Each sensor-weight matrix multiplies its sensors by its fixed weights:
+                            <code>scale × Σ (weight × sensor)</code>, one score per action.</span></li>
+                    <li><b>Decide</b><span>LEFT, RIGHT and FIRE add both scores; HOLD, BACKWARD and FORWARD have only
+                            their sensor-weight score. The highest action wins, and the game advances two tics. Then the
+                            loop starts again.</span></li>
+                </ol>
+                <div class="arch-explain"><b>How sensor weights work.</b> Each weight is a signed 4-bit integer (-7 …
+                    +7) stored in the model file, with one scale per action. Astra 6 wrote them once, the neutral base
+                    sets them all to 0, and evolution mutates them only between generations; during a game they never
+                    change. At every decision, 17.5 times per game second, the code measures the sensors again and each
+                    action gets the score <code>scale × Σ (weight × sensor)</code>. The aim scores are added to the
+                    transformer’s LEFT, RIGHT and FIRE scores; the combat matrix then adds its own (only when it has a
+                    target: a punchable enemy, a remembered attacker or a damage scan), and the facing guard can shift
+                    the choice between stepping back and forward. In the aim and combat matrices one sensor is the
+                    constant 1, so 10 of the 119 weights act as fixed biases.</div>
+                <details class="sensor-ref" open>
+                    <summary>Sensor reference</summary>
+                    <div class="sensor-ref-grid">
+                        <div class="sr-block">
+                            <h5>Aim</h5><small>13 sensors → LEFT, RIGHT, FIRE, BACKWARD · 4 × 13 = 52 weights</small>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>constant one: the bias</td>
+                                    </tr>
+                                    <tr>
+                                        <td>visible</td>
+                                        <td>an enemy is in view</td>
+                                    </tr>
+                                    <tr>
+                                        <td>blind</td>
+                                        <td>no enemy in view</td>
+                                    </tr>
+                                    <tr>
+                                        <td>blind × previous left</td>
+                                        <td>no enemy in view and the last turn was left</td>
+                                    </tr>
+                                    <tr>
+                                        <td>blind × previous right</td>
+                                        <td>no enemy in view and the last turn was right</td>
+                                    </tr>
+                                    <tr>
+                                        <td>aim error left</td>
+                                        <td>the nearest enemy is left of the crosshair, scaled 0 - 1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>aim error right</td>
+                                        <td>the nearest enemy is right of the crosshair, scaled 0 - 1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>nearest aligned</td>
+                                        <td>the nearest enemy is on the crosshair</td>
+                                    </tr>
+                                    <tr>
+                                        <td>near and aligned</td>
+                                        <td>close and on the crosshair</td>
+                                    </tr>
+                                    <tr>
+                                        <td>proximity</td>
+                                        <td>how close the nearest visible enemy is, 0 - 1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>closing in</td>
+                                        <td>how fast it approaches, 0 - 1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>rear blocked</td>
+                                        <td>how little room is behind the player, 0 - 1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>fine aim</td>
+                                        <td>how exactly the enemy is centred, 0 - 1</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="sr-block">
+                            <h5>Combat</h5><small>11 sensors → LEFT, RIGHT, FIRE, HOLD, BACKWARD, FORWARD · 6 × 11 = 66
+                                weights</small>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>constant one: the bias</td>
+                                    </tr>
+                                    <tr>
+                                        <td>target left</td>
+                                        <td>the chosen target is to the left, 0 - 1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>target right</td>
+                                        <td>the chosen target is to the right, 0 - 1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>aimed</td>
+                                        <td>the target is inside the punch cone</td>
+                                    </tr>
+                                    <tr>
+                                        <td>strike ready</td>
+                                        <td>fists ready and a punch would hit</td>
+                                    </tr>
+                                    <tr>
+                                        <td>winding up</td>
+                                        <td>a punch was just thrown</td>
+                                    </tr>
+                                    <tr>
+                                        <td>recovering near</td>
+                                        <td>fists not ready, target close</td>
+                                    </tr>
+                                    <tr>
+                                        <td>approach</td>
+                                        <td>fists ready, target in front but out of reach</td>
+                                    </tr>
+                                    <tr>
+                                        <td>rear blocked</td>
+                                        <td>how little room is behind the player, 0 - 1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>remembered left</td>
+                                        <td>an attacker no longer in view was last seen left</td>
+                                    </tr>
+                                    <tr>
+                                        <td>remembered right</td>
+                                        <td>an attacker no longer in view was last seen right</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="sr-block">
+                            <h5>Facing guard</h5><small>1 sensor → back vs. forward · 1 weight</small>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>facing threat</td>
+                                        <td>an enemy in view is turned toward the player, there is room behind, and the
+                                            player is not mid-punch</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <p>Each sensor is computed by code from the game state at every decision. The weight count of a
+                        matrix is its actions × its sensors.</p>
+                </details>
+            </section>
+            <section id="explore-weights" class="portal-section" aria-labelledby="explore-weights-title">
+                <div class="chapter-heading">
+                    <div>
+                        <div class="portal-eyebrow"><b>09</b> Weight explorer</div>
+                        <h2 id="explore-weights-title">Explore Actual Model Weights</h2>
+                    </div>
+                </div>
+                <p class="section-lead">Pick a Base and a model to Compare. Each tile holds 64 output weights; select
+                    one to see its value in both models. “Extra weights added” shows the sensor weights.</p>
+                <div class="explore-bar" id="explore-bar" lang="en" aria-label="Model comparison"><label
+                        for="explore-base">Base <select id="explore-base" disabled></select></label><label
+                        for="explore-candidate">Compare <select id="explore-candidate">
+                            <option value="">Release comparison (FP32 → 4-bit → DNP)</option>
+                        </select></label><label for="explore-row">Row <select id="explore-row" disabled>
+                            <option value="0">0 · LEFT</option>
+                            <option value="1">1 · RIGHT</option>
+                            <option value="2" selected>2 · FIRE</option>
+                        </select></label><small id="explore-note" hidden>Default: the model with the highest total
+                        against Shipped DNP 4-bit. The release comparison shows the built-in FIRE edit.</small></div>
+                <div class="lab-ui diff-instrument">
+                    <div data-weights-explorer data-src="./data/weights-explorer.json">
+                        <p class="wx-load">Loading the model comparison…</p>
+                    </div>
+                </div>
+                <section class="explore-causes" id="explore-causes" lang="en" hidden aria-labelledby="causes-title">
+                    <figure class="causes-viz" aria-label="How the cause-and-effect test works"><svg
+                            viewBox="0 0 310 190" role="img" aria-labelledby="ce-title">
+                            <title id="ce-title">Each change group is removed from the candidate and added to the base,
+                                and both play the same games</title><text x="0" y="19" class="ce-label">Candidate</text>
+                            <rect x="96" y="6" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="113" y="6" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="130" y="6" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="147" y="6" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="164" y="6" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="181" y="6" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="198" y="6" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="215" y="6" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="232" y="6" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="249" y="6" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="266" y="6" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="283" y="6" width="13" height="18" rx="3" class="ce-on" /><text x="96" y="39"
+                                class="ce-sub">12 groups of mutated weights</text><text x="0" y="79"
+                                class="ce-label">Knock-out</text>
+                            <rect x="96" y="66" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="113" y="66" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="130" y="66" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="147" y="66" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="164" y="66" width="13" height="18" rx="3" class="ce-hole" />
+                            <rect x="181" y="66" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="198" y="66" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="215" y="66" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="232" y="66" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="249" y="66" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="266" y="66" width="13" height="18" rx="3" class="ce-on" />
+                            <rect x="283" y="66" width="13" height="18" rx="3" class="ce-on" /><text x="96" y="99"
+                                class="ce-sub">without group 5 · 24 games</text><text x="0" y="139"
+                                class="ce-label">Knock-in</text>
+                            <rect x="96" y="126" width="13" height="18" rx="3" class="ce-off" />
+                            <rect x="113" y="126" width="13" height="18" rx="3" class="ce-off" />
+                            <rect x="130" y="126" width="13" height="18" rx="3" class="ce-off" />
+                            <rect x="147" y="126" width="13" height="18" rx="3" class="ce-off" />
+                            <rect x="164" y="126" width="13" height="18" rx="3" class="ce-hit" />
+                            <rect x="181" y="126" width="13" height="18" rx="3" class="ce-off" />
+                            <rect x="198" y="126" width="13" height="18" rx="3" class="ce-off" />
+                            <rect x="215" y="126" width="13" height="18" rx="3" class="ce-off" />
+                            <rect x="232" y="126" width="13" height="18" rx="3" class="ce-off" />
+                            <rect x="249" y="126" width="13" height="18" rx="3" class="ce-off" />
+                            <rect x="266" y="126" width="13" height="18" rx="3" class="ce-off" />
+                            <rect x="283" y="126" width="13" height="18" rx="3" class="ce-off" /><text x="96" y="159"
+                                class="ce-sub">base + group 5 only · 24 games</text>
+                        </svg>
+                        <figcaption>Repeated for every group: the score lost without it and gained with it is its
+                            effect. Bold results stand out from seed noise (|t| ≥ 2).</figcaption>
+                    </figure>
+                    <div class="causes-head">
+                        <h3 id="causes-title"><svg class="causes-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 2.5 18.5 9 12 15.5 5.5 9z" />
+                                <path d="M12 15.5V21.5M5.5 9H2M18.5 9H22" />
+                                <path d="M10.4 9.2l1.1 1.1 2.2-2.6" />
+                            </svg>Which mutation changes have effects?</h3>
+                    </div>
+                    <p class="causes-note" id="causes-note"></p><button id="causes-measure" type="button">Approximate
+                        cause and effect</button>
+                    <div class="causes-table" id="causes-table"></div>
+                    <p class="causes-credit" id="causes-credit" hidden></p>
+                </section>
+            </section>
+            <section id="performance" class="section">
+                <div class="section-head">
+                    <div>
+                        <div class="portal-eyebrow"><b>10</b> Fine-tuning in-browser on CPU</div>
+                        <h2>Performance Benchmark</h2>
+                    </div>
+                    <div class="bench-actions"><button id="benchmark" class="launch"
+                            title="Times the model on this device with the backend and CPU cores selected in the arena, and checks its decisions against PyTorch.">Run
+                            Benchmark</button><button id="cancel-bench" hidden>Cancel</button></div>
+                </div>
+                <p class="perf-lead"><b>Optimizing a small model using EvoWeights needs no GPU.</b> EvoWeights judges
+                    every candidate by playing games, so it needs only forward passes on the CPU cores that also run the
+                    game. There are no gradients and no backward pass. Each logical CPU core runs its own WASM engine
+                    and 4-bit model. A run replays bit for bit on any number of cores, so more cores only shorten the
+                    wait.</p>
+                <div class="perf-tabs" role="tablist" aria-label="Benchmark machine"><button type="button" role="tab"
+                        id="perf-tab-research" aria-selected="true" aria-controls="perf-research">Researcher’s
+                        machine</button><button type="button" role="tab" id="perf-tab-yours" aria-selected="false"
+                        aria-controls="perf-yours" tabindex="-1">Your machine</button></div>
+                <div class="perf-panel" id="perf-research" role="tabpanel" aria-labelledby="perf-tab-research">
+                    <div class="table-wrap" id="optimize-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Model<br><small>(name in the tree)</small></th>
+                                    <th scope="col">Scenario<br><small>(start · runs · metric)</small></th>
+                                    <th scope="col">Hardware<br><small>(Apple M5 Max)</small></th>
+                                    <th scope="col" class="num">Wall time<br><small>(mins)</small></th>
+                                    <th scope="col" class="num">Games<br><small>(sum)</small></th>
+                                    <th scope="col" class="num">Decisions<br><small>(million)</small></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row">EvoWeights Survivor · R3</th>
+                                    <td>Four browser runs from sensor weights set to zero, survival metric (one kills
+                                        run without a child included)</td>
+                                    <td>VS Code browser (Chrome 150), 18 CPU cores</td>
+                                    <td class="num">24.2</td>
+                                    <td class="num">7,179</td>
+                                    <td class="num">4.18</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">EvoWeights Terminator · R4 · Kills</th>
+                                    <td>Four browser runs from sensor weights set to zero, kills metric</td>
+                                    <td>VS Code browser (Chrome 150), 18 CPU cores</td>
+                                    <td class="num">10.8</td>
+                                    <td class="num">3,926</td>
+                                    <td class="num">1.98</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Browser test child · final round</th>
+                                    <td>“Start Evolution” → stop → final round, from the 4-bit base, in an automated
+                                        test</td>
+                                    <td>Chrome, 8 CPU cores</td>
+                                    <td class="num">2.9</td>
+                                    <td class="num">–</td>
+                                    <td class="num">–</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="perf-panel" id="perf-yours" role="tabpanel" aria-labelledby="perf-tab-yours" hidden>
+                    <p class="bench-empty">No benchmark on this machine yet. Press <b>Run Benchmark</b> to time the
+                        model here.</p>
+                    <p class="bench-status" id="bench-status" role="status"></p>
+                    <div class="table-wrap" id="bench-table" hidden>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Model</th>
+                                    <th>Actual backend</th>
+                                    <th>p50<br><small>median model time per decision</small></th>
+                                    <th>p95<br><small>95th percentile per decision</small></th>
+                                    <th>Actions matched</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bench-results"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <section id="use-cases" class="portal-section" aria-labelledby="use-cases-title">
+                <div class="chapter-heading">
+                    <div>
+                        <div class="portal-eyebrow"><b>11</b> Beyond research</div>
+                        <h2 id="use-cases-title">Use Cases Outside Research</h2>
+                    </div><span class="chapter-meta">FUTURE RESEARCH</span>
+                </div>
+                <p class="section-lead">If a small model runs on a device and its goal can be measured and tried out
+                    safely, the device itself could adapt the model: no data center, no gradients, and the data stays
+                    local. Each example names what would mutate, what defines survival and what must not get worse.</p>
+                <!-- use-cases -->
+                <div class="transfer">
+                    <div class="uc-row"><span class="uc-group">Personalized AI models</span>
+                        <div class="uc-tabs" role="tablist" aria-label="Personalized AI models"><button type="button"
+                                class="uc-tab" id="uc-tab-0" role="tab" aria-controls="uc-panel-0"
+                                aria-selected="true">Writing style</button><button type="button" class="uc-tab"
+                                id="uc-tab-1" role="tab" aria-controls="uc-panel-1" aria-selected="false">Personal
+                                preferences</button><button type="button" class="uc-tab" id="uc-tab-2" role="tab"
+                                aria-controls="uc-panel-2" aria-selected="false">Speech recognition</button><button
+                                type="button" class="uc-tab" id="uc-tab-3" role="tab" aria-controls="uc-panel-3"
+                                aria-selected="false">Medical vision</button></div>
+                    </div>
+                    <div class="uc-row"><span class="uc-group">Other uses</span>
+                        <div class="uc-tabs" role="tablist" aria-label="Other uses"><button type="button" class="uc-tab"
+                                id="uc-tab-4" role="tab" aria-controls="uc-panel-4" aria-selected="false">Game
+                                characters</button><button type="button" class="uc-tab" id="uc-tab-5" role="tab"
+                                aria-controls="uc-panel-5" aria-selected="false">Edge devices</button><button
+                                type="button" class="uc-tab" id="uc-tab-6" role="tab" aria-controls="uc-panel-6"
+                                aria-selected="false">Frozen backbones</button><button type="button" class="uc-tab"
+                                id="uc-tab-7" role="tab" aria-controls="uc-panel-7" aria-selected="false">Decision
+                                models</button><button type="button" class="uc-tab" id="uc-tab-8" role="tab"
+                                aria-controls="uc-panel-8" aria-selected="false">Guarded KPIs</button><button
+                                type="button" class="uc-tab" id="uc-tab-9" role="tab" aria-controls="uc-panel-9"
+                                aria-selected="false">Robotics</button><button type="button" class="uc-tab"
+                                id="uc-tab-10" role="tab" aria-controls="uc-panel-10" aria-selected="false">Auditable
+                                patches</button></div>
+                    </div>
+                    <div class="uc-panel" id="uc-panel-0" role="tabpanel" aria-labelledby="uc-tab-0">
+                        <h3>A language model that writes like its user</h3>
+                        <p><b>Mutate</b> The output rows or a small adapter of an on-device language model, in their
+                            stored 4-bit format.</p>
+                        <p><b>Survival</b> How often the user keeps a suggestion unedited, on fresh drafts.</p>
+                        <p><b>Must not get worse</b> Factual accuracy and safety answers on a frozen reference set may
+                            not drop.</p>
+                    </div>
+                    <div class="uc-panel" id="uc-panel-1" role="tabpanel" aria-labelledby="uc-tab-1" hidden>
+                        <h3>A model of what one person prefers</h3>
+                        <p><b>Mutate</b> The scoring rows of a small preference model on top of a frozen language or
+                            vision backbone.</p>
+                        <p><b>Survival</b> Agreement with the user’s own choices on items the search has not seen.</p>
+                        <p><b>Must not get worse</b> Safety filters and a shared reference set stay within an agreed
+                            band.</p>
+                    </div>
+                    <div class="uc-panel" id="uc-panel-2" role="tabpanel" aria-labelledby="uc-tab-2" hidden>
+                        <h3>A speech model that understands its user better</h3>
+                        <p><b>Mutate</b> The output layer of a small on-device speech recognition model, adapting to one
+                            voice, accent and vocabulary.</p>
+                        <p><b>Survival</b> Word error rate on the user’s own corrected transcripts.</p>
+                        <p><b>Must not get worse</b> Word error rate on other speakers’ reference recordings stays
+                            within a band.</p>
+                    </div>
+                    <div class="uc-panel" id="uc-panel-3" role="tabpanel" aria-labelledby="uc-tab-3" hidden>
+                        <h3>A vision model adapted to one clinic’s images</h3>
+                        <p><b>Mutate</b> The decision rows on top of a frozen vision encoder, for the clinic’s devices
+                            and patients.</p>
+                        <p><b>Survival</b> Agreement with clinician-confirmed findings on fresh cases.</p>
+                        <p><b>Must not get worse</b> Sensitivity for critical findings may not fall; every decision
+                            stays under clinician review.</p>
+                    </div>
+                    <div class="uc-panel" id="uc-panel-4" role="tabpanel" aria-labelledby="uc-tab-4" hidden>
+                        <h3>Tune an NPC to a design goal</h3>
+                        <p><b>Mutate</b> A game agent’s sensor weights and stored head parameters, as in the DOOM
+                            experiment.</p>
+                        <p><b>Survival</b> The designer’s plain-language goal, written as a metric, on fresh levels and
+                            seeds.</p>
+                        <p><b>Must not get worse</b> A second goal, such as kills under a survival goal, may not drop by
+                            two standard errors.</p>
+                    </div>
+                    <div class="uc-panel" id="uc-panel-5" role="tabpanel" aria-labelledby="uc-tab-5" hidden>
+                        <h3>Fine-tune where the model already runs</h3>
+                        <p><b>Mutate</b> Stored 4-bit levels of a deployed language, vision or audio model, in the
+                            deployed format, on the device’s own CPU.</p>
+                        <p><b>Survival</b> The task metric on fresh inputs from the device.</p>
+                        <p><b>Must not get worse</b> Held-out reference inputs; every step stays revertible.</p>
+                    </div>
+                    <div class="uc-panel" id="uc-panel-6" role="tabpanel" aria-labelledby="uc-tab-6" hidden>
+                        <h3>Small decision weights on a frozen backbone</h3>
+                        <p><b>Mutate</b> The small matrices that turn a frozen language, vision or audio backbone’s
+                            features into decisions, as EvoWeights did with Astra 6’s sensor weights.</p>
+                        <p><b>Survival</b> The decision quality the task defines.</p>
+                        <p><b>Must not get worse</b> Safety-relevant behavior measured separately, for example
+                            collisions, damage taken or refusals.</p>
+                    </div>
+                    <div class="uc-panel" id="uc-panel-7" role="tabpanel" aria-labelledby="uc-tab-7" hidden>
+                        <h3>A tiny expert model instead of long rule code</h3>
+                        <p><b>Mutate</b> The output rows of a small tabular model that takes the place of long, nested
+                            if/else and switch/case rules, seeded with examples of the decisions those rules make.</p>
+                        <p><b>Survival</b> Agreement with expert-confirmed decisions on fresh cases, or the business
+                            metric the rules were written for.</p>
+                        <p><b>Must not get worse</b> Known reference cases may not change their decision without review;
+                            every kept change ships as a reviewable diff.</p>
+                    </div>
+                    <div class="uc-panel" id="uc-panel-8" role="tabpanel" aria-labelledby="uc-tab-8" hidden>
+                        <h3>Raise one metric, hold another</h3>
+                        <p><b>Mutate</b> The classification rows of a small language-model spam filter.</p>
+                        <p><b>Survival</b> Catch rate on fresh mail.</p>
+                        <p><b>Must not get worse</b> False positives, with a hard limit.</p>
+                    </div>
+                    <div class="uc-panel" id="uc-panel-9" role="tabpanel" aria-labelledby="uc-tab-9" hidden>
+                        <h3>Tune a control model where the simulator is the metric</h3>
+                        <p><b>Mutate</b> The action rows on top of a frozen vision encoder that sees the scene.</p>
+                        <p><b>Survival</b> Task success in simulation on shared seeds, CPU cores in parallel.</p>
+                        <p><b>Must not get worse</b> Transfer checks on held-out scenarios before any hardware run.</p>
+                    </div>
+                    <div class="uc-panel" id="uc-panel-10" role="tabpanel" aria-labelledby="uc-tab-10" hidden>
+                        <h3>Ship a change as a reviewable diff</h3>
+                        <p><b>Mutate</b> Any of the above: each kept child is its parent plus a short list of moved
+                            weights.</p>
+                        <p><b>Survival</b> The validated metric, recorded in the child’s receipt.</p>
+                        <p><b>Must not get worse</b> Rollback to the parent fingerprint; the receipt replays bit for
+                            bit.</p>
+                    </div>
+                </div><!-- /use-cases -->
+                <p class="perf-note"><b>FUTURE RESEARCH NEEDED.</b> Only the DOOM player is measured here. Whether
+                    EvoWeights generalizes, and whether it works with other model backbones such as language models,
+                    vision encoders or speech models, is still unknown and requires further research. Each use needs its
+                    own metric, control and held-out test, and gains are bounded by what the mutable weights can
+                    express.</p>
+            </section>
+
+
+        </div>
+    </main>
+    <footer class="portal-footer" style="margin-top: 4rem">
+        <div class="wrap"><a href="#top" class="footer-brand" aria-label="EvoWeights, back to top"><img
+                    src="./assets/evoweights-logo.svg" width="32" height="32" alt=""><span class="mk-header-names"><span
+                        class="mk-header-name">Evo<span>Weights</span></span><span class="mk-header-byline">by Aron
+                        Homberg</span></span></a><span>Evolutionary Weight-Space Fine-Tuning</span><a
+                href="https://github.com/kyr0/evoweights">GitHub ↗</a><a
+                href="https://huggingface.co/kyr0/evoweights-evolutionary-weight-space-fine-tuning">Models on
+                Hugging Face ↗</a><a href="#top">Back to top ↑</a></div>
+    </footer>
+    <script type="module" src="./app/hero-evolution.js"></script>
+    <script type="module" src="./app/main.js"></script>
+    <script type="module" src="./app/weights-explorer.js"></script>
+</body>
+
+</html>

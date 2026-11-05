@@ -1,0 +1,17 @@
+.env
+var/*
+tmp/*
+output/*
+input/*
+.DS_Store
+dist/
+.vae/SWARM_STATUS.yaml
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.coverage
+node_modules/
+coverage/
+.cache/

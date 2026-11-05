@@ -1,0 +1,8 @@
+{
+ "format":"agm.dnp.combat/1","outputs":["LEFT","RIGHT","FIRE","HOLD","BACKWARD","FORWARD"],
+ "inputs":["one","targetLeft","targetRight","aimed","strikeReady","winding","recoverNear","approach","rearBlocked","memoryLeft","memoryRight"],
+ "codes":[[-1,7,-6,-2,0,0,0,0,0,7,-7],[-1,-6,7,-2,0,0,0,0,0,-7,7],[-3,-1,-1,0,7,0,0,0,0,-1,-1],[0,-3,-3,1,-1,1,0,0,0,-3,-3],[-2,0,0,0,0,-4,6,0,-7,0,0],[-2,0,0,0,0,0,-5,6,0,0,0]],
+ "scales":[1,1,1,1,1,1],"priorLogitGain":0.19,
+ "reach":90,"foeHalfWidth":21,"turnScaleDeg":15,"windupTics":6,"recoverRange":180,"approachFrom":113,"approachMaxBearingDeg":21,
+ "noTrackScanTics":14,"memoryTTL":56,"damageMemoryRange":240,"damageMinBearingDeg":12,"damageTurnTics":34,"rearStop":38,"rearMargin":48
+}

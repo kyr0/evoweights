@@ -1,0 +1,36 @@
+{
+  "counts": {
+    "steps": 1421,
+    "damage": 1200,
+    "resolvedBites": 85,
+    "hits": 59,
+    "misses": 26,
+    "sourcesHiddenAtStartOfPreviousDecision": 48
+  },
+  "windupTics": [
+    16
+  ],
+  "examples": {
+    "hit": {
+      "seed": 9000,
+      "actorId": 2,
+      "start": 126,
+      "tic": 142,
+      "startRange": 59.02626037597656,
+      "strikeRange": 59.02626037597656,
+      "damage": 4,
+      "wasVisible": false
+    },
+    "miss": {
+      "seed": 9001,
+      "actorId": 2,
+      "start": 104,
+      "tic": 120,
+      "startRange": 59.55961608886719,
+      "strikeRange": 94.91893005371094,
+      "damage": 0,
+      "wasVisible": false
+    }
+  },
+  "scope": "Twelve fixed scripted diagnostic seeds; compare visible demo against separately compiled bite-hook WASM on each step. Damage is actual health removed, capped at remaining health; range is P_AproxDistance. No diagnostic exports or attacker IDs in public damage observations."
+}

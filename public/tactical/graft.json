@@ -1,0 +1,13 @@
+{
+  "format": "agm.dnp.tactical-graft/1",
+  "inputs": ["bias", "visible", "blind", "blindPrevLeft", "blindPrevRight", "aimErrorLeft", "aimErrorRight", "nearestAligned", "nearAligned", "proximity", "closing", "rearBlocked", "fineAim"],
+  "outputs": ["LEFT", "RIGHT", "FIRE", "BACKWARD"],
+  "scales": [1,1,1,1],
+  "codes": [
+    [0,0,-1,6,-3,7,-7,-5,-2,0,0,0,-2],
+    [0,0,2,-4,4,-7,7,-5,-2,0,0,0,-2],
+    [0,-3,-6,0,0,-4,-4,7,3,0,0,0,3],
+    [-3,0,0,0,0,0,0,0,0,7,2,-7,0]
+  ],
+  "transform": {"maxDistance":260,"closeWidth":210,"closingScale":3,"rearStop":40,"rearMargin":48,"angleScale":0.18,"fineWidth":0.055}
+}

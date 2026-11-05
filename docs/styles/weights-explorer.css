@@ -1,0 +1,617 @@
+/* All styles are scoped to the weights-explorer component. No framework or font fetch. */
+[data-weights-explorer] {
+  --wx-bg: var(--bg, #101310);
+  --wx-panel: var(--panel, #191d19);
+  --wx-line: var(--line, #343a32);
+  --wx-muted: var(--muted, #a7afa4);
+  --wx-text: var(--fg, #edf0e9);
+  --wx-acid: var(--acid, #cef887);
+  --wx-cool: #a4d8ec;
+  --wx-zero: #51594f;
+  --wx-mono: var(--mono, ui-monospace, Consolas, monospace);
+  color: var(--wx-text);
+  min-width: 0;
+}
+[data-weights-explorer] * {
+  box-sizing: border-box;
+}
+[data-weights-explorer] :is(h4, p, dl, dd) {
+  margin: 0;
+}
+[data-weights-explorer] :is(button, select, input) {
+  font-family: var(--wx-mono);
+  font-variant-numeric: tabular-nums;
+}
+[data-weights-explorer] :is(button, select, input, summary):focus-visible {
+  outline: 2px solid var(--wx-text);
+  outline-offset: 2px;
+  position: relative;
+  z-index: 1;
+}
+.wx-load,
+.wx-intro,
+.wx-hint,
+.wx-empty {
+  color: var(--wx-muted);
+  font:
+    13px/1.5 Arial,
+    sans-serif;
+  overflow-wrap: anywhere;
+}
+.wx-load {
+  padding: 20px 0;
+}
+.wx-content {
+  padding-top: 20px;
+}
+.wx-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--wx-line);
+  border-radius: 5px;
+  background: var(--wx-panel);
+}
+.wx-metric {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  min-width: 0;
+  padding: 13px 17px;
+}
+.wx-metric + .wx-metric {
+  border-left: 1px solid var(--wx-line);
+}
+.wx-eyebrow {
+  font: 650 10px/1.35 var(--wx-mono);
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--wx-muted);
+}
+.wx-metric strong {
+  font: 500 clamp(19px, 3.6vw, 31px)/1.08 var(--wx-mono);
+  letter-spacing: -0.06em;
+  overflow-wrap: anywhere;
+}
+.wx-metric:nth-child(2) strong {
+  color: var(--wx-acid);
+}
+.wx-metric small {
+  color: var(--wx-muted);
+  font:
+    12px/1.4 Arial,
+    sans-serif;
+}
+[data-weights-explorer] .wx-content > .wx-intro {
+  margin: 10px 0 16px;
+}
+.wx-viewer {
+  border: 1px solid var(--wx-line);
+  border-radius: 5px;
+  background: var(--wx-panel);
+}
+.wx-toolbar,
+.wx-zoom-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.wx-toolbar {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--wx-line);
+  background: #20251e;
+}
+.wx-modes {
+  display: flex;
+  gap: 4px;
+}
+.wx-mode {
+  background: transparent;
+  color: var(--wx-muted);
+  border: 1px solid var(--wx-line);
+  border-radius: 3px;
+  padding: 7px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.wx-mode[aria-pressed='true'] {
+  border-color: #849c69;
+  background: #2d3825;
+  color: var(--wx-acid);
+}
+.wx-body {
+  padding: 14px;
+}
+.wx-filters {
+  display: flex;
+  gap: 9px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin: 12px 0 7px;
+}
+.wx-field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+  font: 600 11px/1.3 var(--wx-mono);
+  color: var(--wx-muted);
+}
+.wx-field :is(select, input) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 6px 8px;
+  color: var(--wx-text);
+  background: var(--wx-bg);
+  border: 1px solid var(--wx-line);
+  border-radius: 3px;
+  font-size: 12px;
+}
+.wx-field input[type='number'] {
+  width: 90px;
+}
+.wx-hint {
+  font-size: 12px;
+}
+.wx-status {
+  font-family: var(--wx-mono);
+  font-size: 11px;
+}
+.wx-panes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  margin-top: 13px;
+}
+.wx-pane {
+  min-width: 0;
+}
+.wx-pane + .wx-pane {
+  border-left: 1px solid var(--wx-line);
+  padding-left: 17px;
+}
+[data-weights-explorer] h4 {
+  font:
+    650 16px/1.3 Arial,
+    sans-serif;
+  color: var(--wx-text);
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+}
+[data-weights-explorer] h4 + .wx-hint {
+  margin-top: 4px;
+}
+.wx-groups {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  margin: 9px 0 7px;
+}
+.wx-group {
+  display: grid;
+  grid-template-columns: minmax(15px, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 0 5px;
+  min-width: 0;
+  padding: 5px;
+  background: #181d17;
+  color: var(--wx-text);
+  border: 1px solid var(--wx-line);
+  border-radius: 3px;
+  cursor: pointer;
+  text-align: left;
+}
+.wx-group svg {
+  grid-row: span 2;
+  max-height: 36px;
+  display: block;
+  width: 100%;
+  justify-self: center;
+}
+.wx-group b {
+  font: 600 10px/1.25 var(--wx-mono);
+}
+.wx-group small {
+  font: 9px/1.3 var(--wx-mono);
+  color: var(--wx-muted);
+}
+.wx-group[aria-pressed='true'] {
+  background: #2c3427;
+  border-color: var(--wx-acid);
+}
+.wx-group:disabled {
+  opacity: 0.52;
+  cursor: default;
+}
+.wx-fill-up {
+  fill: var(--wx-acid);
+}
+.wx-fill-down {
+  fill: var(--wx-cool);
+}
+.wx-fill-same {
+  fill: var(--wx-zero);
+}
+.wx-fill-dim {
+  fill: #282e26;
+}
+.wx-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 13px;
+  margin: 9px 0;
+  color: var(--wx-muted);
+  font:
+    11px/1.3 Arial,
+    sans-serif;
+}
+.wx-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.wx-swatch {
+  display: inline-grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
+  font: 700 10px/1 var(--wx-mono);
+  border-radius: 2px;
+}
+.wx-up {
+  background: #394b28;
+  color: #dcffa9;
+}
+.wx-down {
+  background: #29454e;
+  color: #c4f1ff;
+}
+.wx-same {
+  background: #252a24;
+  color: #bdc8b8;
+}
+.wx-dim {
+  background: #181c17;
+  border: 1px dashed #596154;
+}
+.wx-swatch.wx-up {
+  background: var(--wx-acid);
+  color: #182010;
+}
+.wx-swatch.wx-down {
+  background: var(--wx-cool);
+  color: #101e25;
+}
+.wx-swatch.wx-same {
+  background: var(--wx-zero);
+  color: #edf1e8;
+}
+.wx-tag {
+  font: 10px/1.35 var(--wx-mono);
+  color: var(--wx-muted);
+}
+.wx-grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 3px;
+  margin: 8px 0 5px;
+}
+.wx-cell,
+.wx-matrix-cell {
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 4px 0;
+  min-width: 0;
+  height: 25px;
+  font: 600 11px/1.05 var(--wx-mono);
+  cursor: pointer;
+}
+.wx-cell[aria-pressed='true'],
+.wx-matrix-cell[aria-pressed='true'] {
+  outline: 2px solid #f7fbf6;
+  outline-offset: -2px;
+}
+.wx-cell:disabled {
+  background: #1c201c;
+  color: #737c70;
+  opacity: 0.6;
+  cursor: default;
+}
+.wx-readout,
+.wx-controller-reading {
+  border-top: 1px solid var(--wx-line);
+  padding-top: 10px;
+  margin-top: 11px;
+}
+[data-weights-explorer] table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 6px 0 4px;
+  font: 11px/1.4 var(--wx-mono);
+}
+[data-weights-explorer] .wx-values :is(th, td) {
+  padding: 4px 3px;
+  border-bottom: 1px solid var(--wx-line);
+  text-align: right;
+  color: var(--wx-text);
+}
+[data-weights-explorer] .wx-values th:first-child {
+  text-align: left;
+  font:
+    500 11px/1.4 Arial,
+    sans-serif;
+}
+[data-weights-explorer] .wx-values thead th {
+  color: var(--wx-muted);
+  font-weight: 500;
+}
+.wx-facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px 8px;
+  align-items: baseline;
+  padding: 4px 0;
+  max-width: 100%;
+  font: 11px/1.4 var(--wx-mono);
+}
+.wx-facts dt {
+  color: var(--wx-muted);
+  font-family: Arial, sans-serif;
+}
+.wx-facts dd {
+  text-align: right;
+  color: var(--wx-text);
+  overflow-wrap: anywhere;
+}
+.wx-inventory {
+  margin-top: 9px;
+  border-bottom: 1px solid var(--wx-line);
+}
+.wx-inventory summary {
+  cursor: pointer;
+  padding: 8px 0;
+  color: var(--wx-muted);
+  font: 12px/1.4 var(--wx-mono);
+}
+.wx-inventory-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+  padding: 2px 0 9px;
+}
+.wx-controller-view {
+  margin-top: 14px;
+}
+.wx-matrix-scroll {
+  max-width: 100%;
+  overflow: auto;
+  padding: 3px;
+}
+[data-weights-explorer] .wx-matrix {
+  width: 100%;
+  min-width: max-content;
+}
+[data-weights-explorer] .wx-matrix :is(th, td) {
+  border: 0;
+  padding: 2px;
+  text-align: center;
+  font: 10px/1.25 var(--wx-mono);
+  color: var(--wx-muted);
+}
+[data-weights-explorer] .wx-matrix th:first-child {
+  text-align: left;
+  max-width: 15ch;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.wx-matrix-cell {
+  display: block;
+  width: 100%;
+  min-width: 26px;
+}
+.wx-controller-reading {
+  max-width: 600px;
+}
+.wx-empty {
+  padding: 15px;
+  background: #20251e;
+  border-radius: 3px;
+}
+@media (max-width: 960px) {
+  .wx-group {
+    grid-template-columns: minmax(0, 1fr);
+    text-align: center;
+    justify-items: center;
+    gap: 2px;
+  }
+  .wx-group svg {
+    grid-row: auto;
+    height: 32px;
+  }
+  .wx-panes {
+    gap: 13px;
+  }
+  .wx-pane + .wx-pane {
+    padding-left: 12px;
+  }
+}
+@media (max-width: 680px) {
+  .wx-panes,
+  .wx-inventory-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .wx-pane + .wx-pane {
+    border-left: 0;
+    border-top: 1px solid var(--wx-line);
+    padding: 12px 0 0;
+  }
+  .wx-groups {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .wx-group {
+    grid-template-columns: minmax(17px, 1fr) auto;
+    text-align: left;
+    justify-items: start;
+    gap: 0 4px;
+  }
+  .wx-group svg {
+    grid-row: span 2;
+    width: 100%;
+    max-height: 32px;
+  }
+  .wx-cell {
+    height: 31px;
+  }
+  .wx-filters,
+  .wx-toolbar {
+    gap: 7px;
+  }
+  .wx-body,
+  .wx-toolbar {
+    padding: 10px;
+  }
+  .wx-metric {
+    padding: 9px;
+  }
+  .wx-metric small {
+    font-size: 11px;
+  }
+}
+.wx-matrix-cell.wx-changed {
+  outline: 2px solid var(--wx-accent, #7bbf2a);
+  outline-offset: -2px;
+}
+.wx-swatch.wx-changed {
+  outline: 2px solid var(--wx-accent, #7bbf2a);
+  outline-offset: -2px;
+}
+@media (max-width: 440px) {
+  .wx-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .wx-metric {
+    display: grid;
+    grid-template-columns: minmax(80px, 0.9fr) minmax(0, 1fr);
+    gap: 2px 10px;
+    align-items: center;
+  }
+  .wx-metric + .wx-metric {
+    border-left: 0;
+    border-top: 1px solid var(--wx-line);
+  }
+  .wx-metric strong {
+    grid-row: span 2;
+    text-align: right;
+    font-size: 24px;
+  }
+  .wx-metric small {
+    grid-column: 1;
+  }
+  .wx-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+  }
+  .wx-group svg {
+    height: 30px;
+  }
+  .wx-modes {
+    flex-wrap: wrap;
+  }
+  .wx-controllers .wx-field {
+    width: 100%;
+  }
+  .wx-field :is(input, select) {
+    font-size: 16px;
+  }
+  .wx-field input[type='number'] {
+    width: 78px;
+  }
+  .wx-matrix-cell {
+    min-width: 27px;
+    height: 30px;
+  }
+}
+@media (forced-colors: active) {
+  .wx-swatch,
+  .wx-cell,
+  .wx-matrix-cell,
+  .wx-group {
+    border: 1px solid ButtonText;
+  }
+  .wx-group[aria-pressed='true'],
+  .wx-cell[aria-pressed='true'],
+  .wx-matrix-cell[aria-pressed='true'] {
+    outline: 3px solid Highlight;
+  }
+  .wx-fill-up {
+    fill: Highlight;
+  }
+  .wx-fill-down {
+    fill: LinkText;
+  }
+  .wx-fill-same {
+    fill: GrayText;
+  }
+  .wx-fill-dim {
+    fill: Canvas;
+  }
+}
+/* Tabs inside the views: one per edited channel (base classifier) or per added matrix (controllers). */
+.wx-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 2px 0 8px;
+  margin: 4px 0 6px;
+  scrollbar-width: thin;
+  max-width: 100%;
+}
+.wx-cluster-tabs {
+  flex-wrap: wrap;
+}
+.wx-tab {
+  flex: 0 0 auto;
+  background: transparent;
+  color: var(--wx-muted);
+  border: 1px solid var(--wx-line);
+  border-radius: 3px;
+  padding: 5px 9px;
+  font: 500 11px/1.2 var(--wx-mono);
+  cursor: pointer;
+}
+.wx-tab:hover {
+  color: var(--wx-text);
+}
+.wx-tab[aria-selected='true'] {
+  border-color: #849c69;
+  background: #2d3825;
+  color: var(--wx-acid);
+}
+.wx-tab:focus-visible {
+  outline: 2px solid var(--wx-acid);
+  outline-offset: 1px;
+}
+.wx-matrix-tabs {
+  margin-top: 10px;
+}
+.wx-fixed {
+  font: 600 11px/1.3 var(--wx-mono);
+  color: var(--wx-muted);
+  padding: 6px 0;
+}
+.wx-readout-off {
+  margin: 8px 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--wx-accent, #7bbf2a);
+  background: color-mix(in srgb, var(--wx-accent, #7bbf2a) 12%, transparent);
+  font:
+    13px/1.45 Arial,
+    sans-serif;
+  color: inherit;
+}

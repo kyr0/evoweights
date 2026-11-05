@@ -1,0 +1,27 @@
+{
+  "name": "evoweights",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static browser lab where a 4-bit Kumo policy plays a WASM DOOM arena and visitors evolve its weights on their own CPU.",
+  "license": "UNLICENSED",
+  "author": "Aron Homberg <info@aron-homberg.de>",
+  "type": "module",
+  "packageManager": "bun@1.4.3",
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "serve": "bun scripts/serve.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.tools.json",
+    "lint": "oxlint --deny-warnings && prettier --check .",
+    "format": "prettier --write .",
+    "test": "bun test tests/unit",
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/bun": "1.4.4",
+    "@webgpu/types": "0.1.74",
+    "oxlint": "1.91.0",
+    "prettier": "3.9.10",
+    "typescript": "7.0.2"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["bun", "@webgpu/types"],
+    "rootDir": ".",
+    "noEmit": true
+  },
+  "include": ["tests", "scripts", "source/**/*.ts", "playwright.config.ts"]
+}

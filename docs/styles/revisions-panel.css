@@ -1,0 +1,663 @@
+/* Revision controls are scoped to the arena's dark instrument panel. */
+.arena-instrument .live-revisions {
+  margin: 0;
+  padding: 0;
+  color: var(--fg);
+}
+.arena-instrument .live-revisions h2 {
+  margin: 7px 0 8px;
+}
+.live-revisions select {
+  width: 100%;
+  min-width: 0;
+  font: 550 12px/1.4 var(--mono);
+  border: 1px solid #606b59;
+  background: #232920;
+  color: #f0f4ea;
+  min-height: 36px;
+  padding: 6px 7px;
+  border-radius: 5px;
+}
+.live-revisions button {
+  font: 600 11px/1.35 var(--mono);
+  min-height: 32px;
+  border: 1px solid #535d4d;
+  background: #242b22;
+  color: #d4dfce;
+  padding: 4px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.live-revisions button:not(:disabled):hover {
+  border-color: var(--acid);
+  color: #eefadf;
+  background: #34402d;
+}
+.live-revisions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.live-revisions :is(button, select, input, summary):focus-visible {
+  outline: 2px solid var(--acid);
+  outline-offset: 2px;
+}
+.live-revisions .revision-lineage,
+.live-revisions .revision-hint,
+.live-revisions .revision-notice,
+.live-revisions .training-progress p {
+  color: #b4c0ac;
+  font: 11px/1.48 var(--mono);
+  margin: 6px 0;
+  overflow-wrap: anywhere;
+}
+.live-revisions .revision-lineage {
+  font-size: 10px;
+  color: #a4b19d;
+}
+.revision-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.revision-actions button {
+  flex: 1 1 auto;
+}
+.live-revisions #revision-play {
+  color: #e0f5cc;
+  border-color: #799762;
+}
+.revision-facts {
+  margin: 9px 0 7px;
+  display: grid;
+  gap: 2px;
+}
+.revision-facts > div {
+  display: grid;
+  grid-template-columns: 4.75rem minmax(0, 1fr);
+  gap: 5px;
+  align-items: baseline;
+  font: 11px/1.4 var(--mono);
+}
+.revision-facts dt {
+  color: #9eac97;
+}
+.revision-facts dd {
+  margin: 0;
+  color: #e1e9dc;
+  overflow-wrap: anywhere;
+}
+.revision-facts > div:last-child dd {
+  color: var(--acid);
+}
+.live-revisions #revision-adopt {
+  width: 100%;
+  margin: 3px 0 5px;
+}
+.live-revisions .revision-notice:empty {
+  display: none;
+}
+.live-revisions .revision-notice[data-error='true'] {
+  color: #f8b3a6;
+}
+.revision-training {
+  border-block: 1px solid var(--line);
+  padding: 9px 0 5px;
+  margin-top: 7px;
+}
+.live-revisions #revision-learn,
+.live-revisions #revision-stop {
+  width: 100%;
+  min-height: 35px;
+}
+.live-revisions #revision-learn {
+  font: 650 12px/1.35 var(--mono);
+  background: var(--acid);
+  color: #1e2916;
+  border-color: var(--acid);
+}
+.live-revisions #revision-learn:not(:disabled):hover {
+  background: #e0ffb8;
+  color: #192214;
+}
+.live-revisions #revision-stop {
+  background: #352921;
+  border-color: #8a705d;
+  color: #f4d7b6;
+}
+.live-revisions .revision-hint {
+  font-size: 10px;
+}
+.training-progress {
+  padding: 7px 0;
+}
+.training-progress dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 6px 0;
+}
+.training-progress dt,
+.training-progress dd {
+  font: 10px/1.4 var(--mono);
+  margin: 0;
+}
+.training-progress dt {
+  color: #a0b096;
+}
+.training-progress dd {
+  font-size: 13px;
+  color: #e8f3df;
+}
+.training-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 10px/1.4 var(--mono);
+  color: var(--acid);
+}
+.training-heading > span:last-child {
+  margin-left: auto;
+  color: #b9c5b1;
+}
+.training-light {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--acid);
+}
+.training-watch {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #c1cbbd;
+  font: 11px/1.4 var(--mono);
+  cursor: pointer;
+}
+.training-watch input {
+  accent-color: var(--acid);
+  margin: 0;
+}
+.training-progress figure {
+  margin: 7px 0 0;
+}
+.training-progress canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1.6;
+  background: #0d100d;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  image-rendering: pixelated;
+}
+.training-progress figcaption,
+.live-revisions summary {
+  color: #bdc9b6;
+  font: 10px/1.4 var(--mono);
+  margin-top: 4px;
+}
+.live-revisions details {
+  margin: 6px 0;
+}
+.live-revisions summary {
+  cursor: pointer;
+}
+.live-revisions pre {
+  max-height: 180px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #c7d8bc;
+  font: 10px/1.4 var(--mono);
+  margin: 5px 0;
+}
+@media (max-width: 800px) and (min-width: 651px) {
+  .live-revisions .revision-actions {
+    gap: 3px;
+  }
+  .live-revisions button {
+    padding-inline: 4px;
+  }
+}
+
+.live-revisions .revision-save-file {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 0.75rem;
+  color: #c5efad;
+  padding: 0.35rem 0;
+}
+.live-revisions .revision-save-file[hidden] {
+  display: none;
+}
+
+/* Parallel training controls */
+.training-setup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin: 7px 0 0;
+  flex-wrap: wrap;
+}
+.training-setup label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #c1cbbd;
+  font: 11px/1.4 var(--mono);
+  cursor: pointer;
+}
+.training-setup select {
+  min-width: 4.25rem;
+  font: 550 12px/1.4 var(--mono);
+  border: 1px solid #606b59;
+  background: #232920;
+  color: #f0f4ea;
+  min-height: 30px;
+  padding: 3px 6px;
+  border-radius: 5px;
+}
+.training-setup select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.training-setup small {
+  color: #9eac97;
+  font: 10px/1.4 var(--mono);
+}
+.training-progress dl {
+  row-gap: 4px;
+}
+
+/* Lineage tree (defuss-shadcn data-grid markup, rendered statically) */
+.training-autodiff {
+  margin-top: 6px;
+}
+.revision-tree-block {
+  margin: 16px 0 4px;
+  color: var(--fg);
+}
+.tree-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.tree-heading h3 {
+  margin: 2px 0 0;
+  font: 600 17px/1.2 var(--sans, inherit);
+}
+.tree-meta,
+.tree-lead {
+  color: #b4c0ac;
+  font: 11px/1.5 var(--mono);
+}
+.tree-lead {
+  margin: 0 0 10px;
+  max-width: 72rem;
+}
+.revision-tree {
+  --data-grid-template: var(--col-model, 15rem) var(--col-parent, 13rem) var(--col-delta, 8rem) var(--col-total, 7rem)
+    minmax(var(--col-actions, max-content), 1fr);
+  --data-grid-row-height: 38px;
+  min-height: 0;
+  max-height: 28rem;
+  font: 12px/1.4 var(--mono);
+  --card: #171b16;
+  --card-foreground: #e8f0e2;
+  --muted: #222922;
+  --muted-foreground: #a7b5a0;
+  --border: #3a443a;
+  --accent: #2d3a2b;
+  --accent-foreground: #eefadf;
+  --primary: #b7f05a;
+  --ring: #b7f05a;
+  --radius-lg: 8px;
+  --radius-sm: 4px;
+}
+.revision-tree .data-grid-header {
+  cursor: default;
+  font: 600 10px/1.3 var(--mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.revision-tree .data-grid-cell {
+  font-variant-numeric: tabular-nums;
+}
+.revision-tree .data-grid-cell small {
+  color: var(--muted-foreground);
+  margin-left: 4px;
+}
+.revision-tree .tree-name {
+  font-weight: 600;
+}
+.revision-tree .tree-flag {
+  margin-left: 6px;
+  font-size: 11px;
+}
+.revision-tree .tree-flag-tip {
+  color: #b7f05a;
+}
+.revision-tree .tree-flag-active {
+  color: #f4d7b6;
+}
+.revision-tree .data-grid-row[data-tip] .tree-name {
+  color: #dff5bf;
+}
+.revision-tree .tree-id {
+  color: var(--muted-foreground);
+}
+.revision-tree .tree-actions {
+  gap: 4px;
+}
+.revision-tree .tree-actions button {
+  font: 600 10px/1.3 var(--mono);
+  min-height: 24px;
+  padding: 2px 7px;
+  border: 1px solid #535d4d;
+  border-radius: 4px;
+  background: #242b22;
+  color: #d4dfce;
+  cursor: pointer;
+}
+.revision-tree .tree-actions button:hover {
+  border-color: #b7f05a;
+  color: #eefadf;
+  background: #34402d;
+}
+.revision-tree .data-grid-toggle:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+/* Revision explorer selectors above the weight explorer */
+.explore-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 14px;
+  margin: 0 0 12px;
+}
+.explore-bar label {
+  display: grid;
+  gap: 4px;
+  font: 600 11px/1.3 var(--mono);
+  color: var(--muted-foreground, #6b7280);
+  min-width: 12rem;
+  flex: 1 1 16rem;
+  max-width: 28rem;
+}
+.explore-bar select {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 8px;
+  font: 500 12px/1.4 var(--mono);
+  color: inherit;
+  background: var(--background, #fff);
+  border: 1px solid var(--border, #d4d4d8);
+  border-radius: 4px;
+  white-space: pre;
+}
+.explore-bar select:disabled {
+  opacity: 0.55;
+}
+.explore-bar button {
+  font: 600 11px/1.3 var(--mono);
+  padding: 7px 10px;
+  border: 1px solid var(--border, #d4d4d8);
+  border-radius: 4px;
+  background: var(--background, #fff);
+  color: inherit;
+  cursor: pointer;
+}
+.explore-bar small {
+  flex: 1 1 100%;
+  font: 11px/1.5 var(--mono);
+  color: var(--muted-foreground, #6b7280);
+}
+#revision-select,
+.explore-bar select {
+  white-space: pre;
+}
+
+.revision-tree .tree-gain {
+  color: #dff5bf;
+}
+.revision-tree .tree-gain small {
+  display: block;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  line-height: 1.2;
+}
+.keys-hint {
+  margin: 6px 0 0;
+  font: 11px/1.5 var(--mono);
+  color: var(--muted-foreground, #6b7280);
+}
+
+.revision-tree .tree-actions button.tree-delete {
+  border-color: #6b3a36;
+  color: #f1c9c4;
+  background: #2b2120;
+}
+.revision-tree .tree-actions button.tree-delete:hover {
+  border-color: #e2705f;
+  color: #ffe3de;
+  background: #3d2522;
+}
+.revision-tree .tree-actions button.tree-delete-armed {
+  border-color: #e2705f;
+  background: #5a2a24;
+  color: #fff1ee;
+}
+.revision-tree .tree-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Change attribution beside the weight explorer */
+.explore-causes {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border, #d4d4d8);
+  border-radius: 6px;
+  background: var(--background, #fff);
+}
+.causes-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.causes-head h3 {
+  margin: 0;
+  font: 650 14px/1.3 var(--mono);
+}
+.causes-head button {
+  font: 600 11px/1.3 var(--mono);
+  padding: 7px 10px;
+  border: 1px solid var(--border, #d4d4d8);
+  border-radius: 4px;
+  background: var(--background, #fff);
+  color: inherit;
+  cursor: pointer;
+}
+.causes-head button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.causes-note,
+.causes-credit {
+  margin: 8px 0 0;
+  font: 11px/1.55 var(--mono);
+  color: var(--muted-foreground, #6b7280);
+}
+.causes-table {
+  overflow-x: auto;
+}
+.causes-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font: 11px/1.45 var(--mono);
+}
+.causes-table th,
+.causes-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border, #e4e4e7);
+  text-align: left;
+  vertical-align: top;
+}
+.causes-table td.num {
+  text-align: right;
+  white-space: nowrap;
+}
+.causes-table .up {
+  color: #3f8f1f;
+}
+.causes-table .down {
+  color: #c2412d;
+}
+.causes-table .flat {
+  color: var(--muted-foreground, #6b7280);
+}
+.causes-table small {
+  display: block;
+  color: var(--muted-foreground, #6b7280);
+}
+.causes-table tfoot td {
+  font-weight: 650;
+  border-bottom: 0;
+}
+.causes-table td.sig {
+  font-weight: 700;
+}
+/* EDNO training block: method title and the crossing bar. */
+.training-title {
+  margin: 12px 0 2px;
+  color: #f0f4ea;
+  font: 650 12px/1.3 var(--mono);
+  letter-spacing: 0.02em;
+}
+.training-setup select {
+  max-width: 100%;
+}
+.cross-setup {
+  border-top: 1px solid #3a4335;
+  padding-top: 8px;
+  margin-top: 10px;
+}
+.cross-setup button {
+  min-height: 30px;
+}
+.cross-setup button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.training-setup label:has(select) {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+.training-setup label:has(select) select {
+  flex: 1;
+  min-width: 0;
+  margin-left: 6px;
+}
+
+.tree-root-gain {
+  font-weight: 650;
+}
+
+.cross-toggle {
+  width: 100%;
+}
+.cross-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+}
+.cross-result {
+  width: 100%;
+  margin: 2px 0 0;
+  padding: 6px 8px;
+  border-left: 3px solid #606b59;
+  font: 11px/1.45 var(--mono);
+  color: #e4eadc;
+  background: #232920;
+}
+.cross-result[data-level='good'] {
+  border-left-color: #b6d36a;
+}
+.cross-result[data-level='maybe'] {
+  border-left-color: #d8b85a;
+}
+.cross-result[data-level='bad'] {
+  border-left-color: #c76b5a;
+}
+.tree-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.reference-measure {
+  font: 600 10px/1.3 var(--mono);
+  min-height: 24px;
+  padding: 2px 9px;
+  border: 1px solid #7d9a4a;
+  border-radius: 4px;
+  background: #2a3322;
+  color: #e3f3c8;
+  cursor: pointer;
+}
+.reference-measure:hover {
+  border-color: #b7f05a;
+  color: #f4ffe6;
+  background: #35422b;
+}
+.reference-measure[data-running] {
+  border-color: #d8b85a;
+  background: #33301f;
+  color: #f5e8bf;
+}
+.reference-measure:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.method-hint {
+  flex-basis: 100%;
+  margin: -2px 0 2px;
+}
+.revision-tree .tree-actions {
+  padding-inline: 0.5rem 0.75rem;
+  justify-content: flex-start;
+}
+.reference-measure.tree-clear {
+  border-color: #8a3a33;
+  background: #3a1f1c;
+  color: #ffd9d3;
+}
+.reference-measure.tree-clear:hover:not(:disabled) {
+  border-color: #e2705f;
+  background: #5a2a24;
+  color: #fff1ee;
+}
+.reference-measure.tree-clear[data-armed] {
+  border-color: #ff7a66;
+  background: #a3352a;
+  color: #fff;
+}
+/* Header and rows share the full scroll width, so the header background runs to the end of the Actions column. */
+.revision-tree .data-grid-head,
+.revision-tree .data-grid-body {
+  width: max-content;
+  min-width: 100%;
+}

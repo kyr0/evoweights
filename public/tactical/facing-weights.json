@@ -1,0 +1,16 @@
+{
+  "format": "agm.dnp.facing-guard/1",
+  "input": "sameVisibleFacingNearPulseWithRearRoom",
+  "output": "signedBackMinusForward",
+  "code": 7,
+  "scale": 1.25,
+  "facingDeg": 32,
+  "trackRange": 210,
+  "triggerRange": 108,
+  "durationTics": 20,
+  "pulseTics": 14,
+  "repeatTics": 18,
+  "maxGapTics": 2,
+  "minBackClearance": 84,
+  "protectStrike": true
+}

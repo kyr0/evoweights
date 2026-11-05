@@ -1,0 +1,103 @@
+{
+  "purpose": "engine sensing/actuation test; scripted diagnostic, not a Kumo gameplay result",
+  "movements": {
+    "forward": {
+      "x": 69.4508056640625,
+      "y": 0.025054931640625,
+      "yaw": 0,
+      "ammo": 26,
+      "prev": [
+        0,
+        0,
+        0
+      ],
+      "shots": 0
+    },
+    "back": {
+      "x": -69.45335388183594,
+      "y": -0.0277252197265625,
+      "yaw": 0,
+      "ammo": 26,
+      "prev": [
+        0,
+        0,
+        0
+      ],
+      "shots": 0
+    },
+    "idle": {
+      "x": 0,
+      "y": 0,
+      "yaw": 0,
+      "ammo": 26,
+      "prev": [
+        0,
+        0,
+        0
+      ],
+      "shots": 0
+    },
+    "left": {
+      "x": 0,
+      "y": 0,
+      "yaw": 45,
+      "ammo": 26,
+      "prev": [
+        1,
+        0,
+        0
+      ],
+      "shots": 0
+    },
+    "right": {
+      "x": 0,
+      "y": 0,
+      "yaw": 315,
+      "ammo": 26,
+      "prev": [
+        0,
+        1,
+        0
+      ],
+      "shots": 0
+    }
+  },
+  "totals": {
+    "observations": 2219,
+    "visibleActorObservations": 3024,
+    "damage": 200,
+    "damageWhileNoVisibleActor": 0,
+    "pistolEvents": 78,
+    "shotsHit": 71,
+    "punchEvents": 115,
+    "punchHits": 18,
+    "punchMisses": 97,
+    "laggedAttacks": 14,
+    "firstSubticEvents": 137,
+    "secondSubticEvents": 56,
+    "fistStates": 1053,
+    "weaponSwitching": 53
+  },
+  "examples": {
+    "punchMiss": {
+      "seed": 9000,
+      "tic": 819,
+      "targetId": 0,
+      "hit": false
+    },
+    "delayed": {
+      "seed": 9000,
+      "requestedAction": 1,
+      "kind": "punch",
+      "tic": 853,
+      "targetId": 0,
+      "hit": false
+    },
+    "punchHit": {
+      "seed": 9000,
+      "tic": 945,
+      "targetId": 29,
+      "hit": true
+    }
+  }
+}
