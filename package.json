@@ -2,7 +2,7 @@
   "name": "evoweights",
   "version": "0.2.0",
   "private": true,
-  "description": "HuggingDOOM — Honey & Hugs: a child-friendly WASM meadow game and EvoWeights browser training lab.",
+  "description": "Evolutionary Weight-Space Fine-Tuning uses evolutionary algorithms to optimize model weights directly on the CPU.",
   "license": "UNLICENSED",
   "author": "Aron Homberg <info@aron-homberg.de>",
   "type": "module",
