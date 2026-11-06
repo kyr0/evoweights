@@ -278,7 +278,7 @@
                                                             updates, guided by 96 demonstration rows.</p>
                                                         <div class="pick-meter" hidden
                                                             title="48 fixed HuggingDOOM games: full bar = best measured model; % = change against Original FP32">
-                                                            <div><span>Survival</span><i><b data-k="tics"></b></i><em
+                                                            <div><span>Game time</span><i><b data-k="tics"></b></i><em
                                                                     data-k="tics"></em></div>
                                                             <div><span>Hugs</span><i><b data-k="kills"></b></i><em
                                                                     data-k="kills"></em></div>
@@ -294,7 +294,7 @@
                                                         <p>A model trained for most feeding + hugging via direct evolutionary weight updates. See its measured HuggingDOOM performance below.</p>
                                                         <div class="pick-meter" hidden
                                                             title="48 fixed HuggingDOOM games: full bar = best measured model; % = change against Original FP32">
-                                                            <div><span>Survival</span><i><b data-k="tics"></b></i><em
+                                                            <div><span>Game time</span><i><b data-k="tics"></b></i><em
                                                                     data-k="tics"></em></div>
                                                             <div><span>Hugs</span><i><b data-k="kills"></b></i><em
                                                                     data-k="kills"></em></div>
@@ -310,7 +310,7 @@
                                                         <p>A model trained for longest game time via direct evolutionary weight updates. Try transferring its learned behavior to this meadow.</p>
                                                         <div class="pick-meter" hidden
                                                             title="48 fixed HuggingDOOM games: full bar = best measured model; % = change against Original FP32">
-                                                            <div><span>Survival</span><i><b data-k="tics"></b></i><em
+                                                            <div><span>Game time</span><i><b data-k="tics"></b></i><em
                                                                     data-k="tics"></em></div>
                                                             <div><span>Hugs</span><i><b data-k="kills"></b></i><em
                                                                     data-k="kills"></em></div>
@@ -327,7 +327,7 @@
                                                             directly, without seeing earlier values.</p>
                                                         <div class="pick-meter" hidden
                                                             title="48 fixed HuggingDOOM games: full bar = best measured model; % = change against Original FP32">
-                                                            <div><span>Survival</span><i><b data-k="tics"></b></i><em
+                                                            <div><span>Game time</span><i><b data-k="tics"></b></i><em
                                                                     data-k="tics"></em></div>
                                                             <div><span>Hugs</span><i><b data-k="kills"></b></i><em
                                                                     data-k="kills"></em></div>
@@ -343,7 +343,7 @@
                                                             sensor weights directly, without training.</p>
                                                         <div class="pick-meter" hidden
                                                             title="48 fixed HuggingDOOM games: full bar = best measured model; % = change against Original FP32">
-                                                            <div><span>Survival</span><i><b data-k="tics"></b></i><em
+                                                            <div><span>Game time</span><i><b data-k="tics"></b></i><em
                                                                     data-k="tics"></em></div>
                                                             <div><span>Hugs</span><i><b data-k="kills"></b></i><em
                                                                     data-k="kills"></em></div>
@@ -461,7 +461,7 @@
                                             </select></label><small id="revision-mutation-hint"></small></div>
                                     <div class="training-setup"><label for="revision-priority">Main goal <select
                                                 id="revision-priority">
-                                                <option value="survival" selected>Survival</option>
+                                                <option value="survival" selected>Game time</option>
                                                 <option value="kills">Hugs</option>
                                             </select></label><small id="revision-priority-hint"></small></div>
                                 </div>
@@ -709,7 +709,7 @@
                                         <div class="data-grid-header" data-type="number"
                                             title="Rank by survival across all measured models; equal survival totals share a rank">Rank</div>
                                         <div class="data-grid-header"
-                                            title="Survival and hugs on 48 fixed HuggingDOOM games; percentages compare with Original FP32">Performance</div>
+                                            title="Game time and hugs on 48 fixed HuggingDOOM games; percentages compare with Original FP32">Performance</div>
                                         <div class="data-grid-header">Parent</div>
                                         <div class="data-grid-header" data-type="number"
                                             title="Native 4-bit codes plus sensor weights changed relative to the parent">
@@ -861,10 +861,10 @@
                 <figure class="luck-figure bear-decorated" data-animate-bars>
                     <img class="section-bear section-bear-right" src="assets/huggingdoom/bear-I.png" width="96" height="96"
                         alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false" style="--bear-angle:12deg"><!-- luck-chart -->
-                    <div class="luck-chart-scroll" tabindex="0" aria-label="Survival comparison chart">
+                    <div class="luck-chart-scroll" tabindex="0" aria-label="Game time comparison chart">
                     <svg class="luck-chart"
                         viewBox="0 0 1000 345" role="img"
-                        aria-label="Survival difference across 48 paired games. Dashed lines outline the average plus or minus two standard errors. Game 20 has a large loss; at game 24 the band includes zero, so the average gain no longer clears the threshold.">
+                        aria-label="Game time difference across 48 paired games. Dashed lines outline the average plus or minus two standard errors. Game 20 has a large loss; at game 24 the band includes zero, so the average gain no longer clears the threshold.">
                         <line class="luck-grid" x1="84" x2="985" y1="267.1" y2="267.1" /><text class="luck-axis" x="74"
                             y="272.1" text-anchor="end">-40 s</text>
                         <line class="luck-grid" x1="84" x2="985" y1="217.3" y2="217.3" /><text class="luck-axis" x="74"
@@ -996,11 +996,11 @@
                             in this DOOM arena</h2>
                     </div><span class="chapter-meta">EvoWeights vs.<br />Frontier AI Models</span>
                 </div>
-                <p class="section-lead">Across 48 held-out games per model, EvoWeights Terminator averaged more kills,
+                <p class="section-lead">Across 48 held-out games per model, EvoWeights Terminator averaged more Honey+Hugs,
                     and EvoWeights Survivor averaged longer survival, than either tested frontier-model direct edit.</p>
-                <p class="section-lead">Terminator achieved 33.3 kills per game, versus 27.5 for Astra 6 and 27.4 for
+                <p class="section-lead">Terminator achieved 33.3 honey+Hugs per game, versus 27.5 for Astra 6 and 27.4 for
                     Opus 5.5. Survivor averaged 131.4 seconds of survival, versus 40.6 and 50.9 seconds respectively,
-                    with fewer kills.</p>
+                    with fewer Honey+Hugs.</p>
                 <p class="section-lead">These comparisons evaluate the resulting policies on their target metrics.
                     The displayed percentage changes and paired t-statistics use Astra 6 as the reference.</p>
                 <div class="res-chart bear-decorated" data-animate-bars>
@@ -1008,9 +1008,9 @@
                         alt="" aria-hidden="true" loading="lazy" decoding="async" draggable="false" style="--bear-angle:-10deg">
                     <div class="res-tabs" role="tablist" aria-label="Result metric">
                         <button type="button" id="res-tab-survival" role="tab" aria-controls="res-survival"
-                            aria-selected="true">Survival per game</button>
+                            aria-selected="true">Time per game</button>
                         <button type="button" id="res-tab-hugs" role="tab" aria-controls="res-hugs"
-                            aria-selected="false" tabindex="-1">Kills per game</button>
+                            aria-selected="false" tabindex="-1">Honey+Hugs per game</button>
                         <button type="button" id="res-tab-time" role="tab" aria-controls="res-time"
                             aria-selected="false" tabindex="-1">Time to candidate</button>
                     </div>
@@ -1097,12 +1097,12 @@
                 <div class="tf-cards">
                     <div class="tf-card">
                         <h4>EvoWeights Survivor</h4>
-                        <div class="tf-metric"><span>Survival per game</span>
+                        <div class="tf-metric"><span>Time per game</span>
                             <div class="tf-pair"><i class="tf-full" style="width:100%"></i><b>121.0 s</b></div>
                             <div class="tf-pair"><i class="tf-zeroed" style="width:20%"></i><b>23.7 s</b></div><em>-80
                                 %</em>
                         </div>
-                        <div class="tf-metric"><span>Kills per game</span>
+                        <div class="tf-metric"><span>Honey+Hugs per game</span>
                             <div class="tf-pair"><i class="tf-full" style="width:73%"></i><b>24.8</b></div>
                             <div class="tf-pair"><i class="tf-zeroed" style="width:37%"></i><b>12.5</b></div><em>-50
                                 %</em>
@@ -1111,12 +1111,12 @@
                     </div>
                     <div class="tf-card">
                         <h4>EvoWeights Terminator</h4>
-                        <div class="tf-metric"><span>Survival per game</span>
+                        <div class="tf-metric"><span>Time per game</span>
                             <div class="tf-pair"><i class="tf-full" style="width:41%"></i><b>49.2 s</b></div>
                             <div class="tf-pair"><i class="tf-zeroed" style="width:11%"></i><b>12.9 s</b></div><em>-74
                                 %</em>
                         </div>
-                        <div class="tf-metric"><span>Kills per game</span>
+                        <div class="tf-metric"><span>Honey+Hugs per game</span>
                             <div class="tf-pair"><i class="tf-full" style="width:100%"></i><b>34.1</b></div>
                             <div class="tf-pair"><i class="tf-zeroed" style="width:21%"></i><b>7.1</b></div><em>-79
                                 %</em>
@@ -1509,7 +1509,7 @@
                         <h3>A language model that writes like its user</h3>
                         <p><b>Mutate</b> The output rows or a small adapter of an on-device language model, in their
                             stored 4-bit format.</p>
-                        <p><b>Survival</b> How often the user keeps a suggestion unedited, on fresh drafts.</p>
+                        <p><b>Game time</b> How often the user keeps a suggestion unedited, on fresh drafts.</p>
                         <p><b>Must not get worse</b> Factual accuracy and safety answers on a frozen reference set may
                             not drop.</p>
                     </div>
@@ -1517,7 +1517,7 @@
                         <h3>A model of what one person prefers</h3>
                         <p><b>Mutate</b> The scoring rows of a small preference model on top of a frozen language or
                             vision backbone.</p>
-                        <p><b>Survival</b> Agreement with the user’s own choices on items the search has not seen.</p>
+                        <p><b>Game time</b> Agreement with the user’s own choices on items the search has not seen.</p>
                         <p><b>Must not get worse</b> Safety filters and a shared reference set stay within an agreed
                             band.</p>
                     </div>
@@ -1525,7 +1525,7 @@
                         <h3>A speech model that understands its user better</h3>
                         <p><b>Mutate</b> The output layer of a small on-device speech recognition model, adapting to one
                             voice, accent and vocabulary.</p>
-                        <p><b>Survival</b> Word error rate on the user’s own corrected transcripts.</p>
+                        <p><b>Game time</b> Word error rate on the user’s own corrected transcripts.</p>
                         <p><b>Must not get worse</b> Word error rate on other speakers’ reference recordings stays
                             within a band.</p>
                     </div>
@@ -1533,7 +1533,7 @@
                         <h3>A vision model adapted to one clinic’s images</h3>
                         <p><b>Mutate</b> The decision rows on top of a frozen vision encoder, for the clinic’s devices
                             and patients.</p>
-                        <p><b>Survival</b> Agreement with clinician-confirmed findings on fresh cases.</p>
+                        <p><b>Game time</b> Agreement with clinician-confirmed findings on fresh cases.</p>
                         <p><b>Must not get worse</b> Sensitivity for critical findings may not fall; every decision
                             stays under clinician review.</p>
                     </div>
@@ -1541,7 +1541,7 @@
                         <h3>Tune an NPC to a design goal</h3>
                         <p><b>Mutate</b> A game agent’s sensor weights and stored head parameters, as in the DOOM
                             experiment.</p>
-                        <p><b>Survival</b> The designer’s plain-language goal, written as a metric, on fresh levels and
+                        <p><b>Game time</b> The designer’s plain-language goal, written as a metric, on fresh levels and
                             seeds.</p>
                         <p><b>Must not get worse</b> A second goal, such as hugs under a survival goal, may not drop by
                             two standard errors.</p>
@@ -1550,14 +1550,14 @@
                         <h3>Fine-tune where the model already runs</h3>
                         <p><b>Mutate</b> Stored 4-bit levels of a deployed language, vision or audio model, in the
                             deployed format, on the device’s own CPU.</p>
-                        <p><b>Survival</b> The task metric on fresh inputs from the device.</p>
+                        <p><b>Game time</b> The task metric on fresh inputs from the device.</p>
                         <p><b>Must not get worse</b> Held-out reference inputs; every step stays revertible.</p>
                     </div>
                     <div class="uc-panel" id="uc-panel-6" role="tabpanel" aria-labelledby="uc-tab-6" hidden>
                         <h3>Small decision weights on a frozen backbone</h3>
                         <p><b>Mutate</b> The small matrices that turn a frozen language, vision or audio backbone’s
                             features into decisions, as EvoWeights did with Astra 6’s sensor weights.</p>
-                        <p><b>Survival</b> The decision quality the task defines.</p>
+                        <p><b>Game time</b> The decision quality the task defines.</p>
                         <p><b>Must not get worse</b> Safety-relevant behavior measured separately, for example
                             collisions, damage taken or refusals.</p>
                     </div>
@@ -1565,7 +1565,7 @@
                         <h3>A tiny expert model instead of long rule code</h3>
                         <p><b>Mutate</b> The output rows of a small tabular model that takes the place of long, nested
                             if/else and switch/case rules, seeded with examples of the decisions those rules make.</p>
-                        <p><b>Survival</b> Agreement with expert-confirmed decisions on fresh cases, or the business
+                        <p><b>Game time</b> Agreement with expert-confirmed decisions on fresh cases, or the business
                             metric the rules were written for.</p>
                         <p><b>Must not get worse</b> Known reference cases may not change their decision without review;
                             every kept change ships as a reviewable diff.</p>
@@ -1573,20 +1573,20 @@
                     <div class="uc-panel" id="uc-panel-8" role="tabpanel" aria-labelledby="uc-tab-8" hidden>
                         <h3>Raise one metric, hold another</h3>
                         <p><b>Mutate</b> The classification rows of a small language-model spam filter.</p>
-                        <p><b>Survival</b> Catch rate on fresh mail.</p>
+                        <p><b>Game time</b> Catch rate on fresh mail.</p>
                         <p><b>Must not get worse</b> False positives, with a hard limit.</p>
                     </div>
                     <div class="uc-panel" id="uc-panel-9" role="tabpanel" aria-labelledby="uc-tab-9" hidden>
                         <h3>Tune a control model where the simulator is the metric</h3>
                         <p><b>Mutate</b> The action rows on top of a frozen vision encoder that sees the scene.</p>
-                        <p><b>Survival</b> Task success in simulation on shared seeds, CPU cores in parallel.</p>
+                        <p><b>Game time</b> Task success in simulation on shared seeds, CPU cores in parallel.</p>
                         <p><b>Must not get worse</b> Transfer checks on held-out scenarios before any hardware run.</p>
                     </div>
                     <div class="uc-panel" id="uc-panel-10" role="tabpanel" aria-labelledby="uc-tab-10" hidden>
                         <h3>Ship a change as a reviewable diff</h3>
                         <p><b>Mutate</b> Any of the above: each kept child is its parent plus a short list of moved
                             weights.</p>
-                        <p><b>Survival</b> The validated metric, recorded in the child’s receipt.</p>
+                        <p><b>Game time</b> The validated metric, recorded in the child’s receipt.</p>
                         <p><b>Must not get worse</b> Rollback to the parent fingerprint; the receipt replays bit for
                             bit.</p>
                     </div>
