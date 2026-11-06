@@ -971,7 +971,7 @@
                         <span><i class="luck-key-loss" aria-hidden="true"></i>Large loss</span>
                         <span><i class="luck-key-zero" aria-hidden="true"></i>Zero = no improvement</span>
                     </div>
-                    <figcaption>Each dot compares EvoWeights Terminator with Astra 6’s model in the DOOM arena.
+                    <figcaption>Each dot compares EvoWeights Hugginator with Astra 6’s model in the DOOM arena.
                         <strong>At game 24, the band includes zero.</strong> The average is still positive, but its
                         lower uncertainty limit is below zero, so the gain no longer clears t ≥ 2.
                         The band describes uncertainty in the average, not the spread of individual games.</figcaption>
@@ -996,10 +996,10 @@
                             in this DOOM arena</h2>
                     </div><span class="chapter-meta">EvoWeights vs.<br />Frontier AI Models</span>
                 </div>
-                <p class="section-lead">Across 48 held-out games per model, EvoWeights Terminator averaged more Honey+Hugs,
-                    and EvoWeights Survivor averaged longer survival, than either tested frontier-model direct edit.</p>
-                <p class="section-lead">Terminator achieved 33.3 honey+Hugs per game, versus 27.5 for Astra 6 and 27.4 for
-                    Opus 5.5. Survivor averaged 131.4 seconds of survival, versus 40.6 and 50.9 seconds respectively,
+                <p class="section-lead">Across 48 held-out games per model, EvoWeights Hugginator averaged more Honey+Hugs,
+                    and EvoWeights Introvertor averaged longer survival, than either tested frontier-model direct edit.</p>
+                <p class="section-lead">Hugginator achieved 33.3 honey+Hugs per game, versus 27.5 for Astra 6 and 27.4 for
+                    Opus 5.5. Introvertor averaged 131.4 seconds of survival, versus 40.6 and 50.9 seconds respectively,
                     with fewer Honey+Hugs.</p>
                 <p class="section-lead">These comparisons evaluate the resulting policies on their target metrics.
                     The displayed percentage changes and paired t-statistics use Astra 6 as the reference.</p>
@@ -1025,11 +1025,11 @@
                                     Programming<small>parent: 4-bit base + Astra 6’s sensors, all sensor weights
                                         0</small></span><span class="res-bar"><i style="--w:38.8%"></i></span><span
                                     class="res-val"><b>50.9 s</b> · +25.4 % (t 0.8)</span></li>
-                            <li class="evo" style="--k:2"><span class="res-name">EvoWeights Terminator<small>parent:
+                            <li class="evo" style="--k:2"><span class="res-name">EvoWeights Hugginator<small>parent:
                                         4-bit base + Astra 6’s sensors, all sensor weights 0</small></span><span
                                     class="res-bar"><i style="--w:37.0%"></i></span><span class="res-val"><b>48.5 s</b>
                                     · +19.5 % (t 2.7)</span></li>
-                            <li class="evo best" style="--k:3"><span class="res-name">EvoWeights Survivor<small>parent:
+                            <li class="evo best" style="--k:3"><span class="res-name">EvoWeights Introvertor<small>parent:
                                         4-bit base + Astra 6’s sensors, all sensor weights 0</small></span><span
                                     class="res-bar"><i style="--w:100.0%"></i></span><span class="res-val"><b>131.4
                                         s</b> · +223.5 % (t 3.6)</span></li>
@@ -1047,10 +1047,10 @@
                                         0</small></span><span class="res-bar"><i style="--w:82.4%"></i></span><span
                                     class="res-val"><b>27.4</b> · -0.2 % (t -0.0)</span></li>
                             <li class="evo best" style="--k:2"><span class="res-name">EvoWeights
-                                    Terminator<small>parent: 4-bit base + Astra 6’s sensors, all sensor weights
+                                    Hugginator<small>parent: 4-bit base + Astra 6’s sensors, all sensor weights
                                         0</small></span><span class="res-bar"><i style="--w:100.0%"></i></span><span
                                     class="res-val"><b>33.3</b> · +21.2 % (t 4.8)</span></li>
-                            <li class="evo" style="--k:3"><span class="res-name">EvoWeights Survivor<small>parent: 4-bit
+                            <li class="evo" style="--k:3"><span class="res-name">EvoWeights Introvertor<small>parent: 4-bit
                                         base + Astra 6’s sensors, all sensor weights 0</small></span><span
                                     class="res-bar"><i style="--w:73.9%"></i></span><span class="res-val"><b>24.6</b> ·
                                     -10.5 % (t -3.1)</span></li>
@@ -1068,10 +1068,10 @@
                                         0</small></span><span class="res-bar"><i style="--w:100.0%"></i></span><span
                                     class="res-val"><b>27 min 44 s</b></span></li>
                             <li class="evo best" style="--k:2"><span class="res-name">EvoWeights
-                                    Terminator<small>parent: 4-bit base + Astra 6’s sensors, all sensor weights
+                                    Hugginator<small>parent: 4-bit base + Astra 6’s sensors, all sensor weights
                                         0</small></span><span class="res-bar"><i style="--w:38.9%"></i></span><span
                                     class="res-val"><b>10 min 47 s</b></span></li>
-                            <li class="evo" style="--k:3"><span class="res-name">EvoWeights Survivor<small>parent: 4-bit
+                            <li class="evo" style="--k:3"><span class="res-name">EvoWeights Introvertor<small>parent: 4-bit
                                         base + Astra 6’s sensors, all sensor weights 0</small></span><span
                                     class="res-bar"><i style="--w:87.1%"></i></span><span class="res-val"><b>24 min 10
                                         s</b></span></li>
@@ -1096,7 +1096,7 @@
                     those scores substantially reduced both survival and kills.</p>
                 <div class="tf-cards">
                     <div class="tf-card">
-                        <h4>EvoWeights Survivor</h4>
+                        <h4>EvoWeights Introvertor</h4>
                         <div class="tf-metric"><span>Time per game</span>
                             <div class="tf-pair"><i class="tf-full" style="width:100%"></i><b>121.0 s</b></div>
                             <div class="tf-pair"><i class="tf-zeroed" style="width:20%"></i><b>23.7 s</b></div><em>-80
@@ -1110,7 +1110,7 @@
                             (kills)</small>
                     </div>
                     <div class="tf-card">
-                        <h4>EvoWeights Terminator</h4>
+                        <h4>EvoWeights Hugginator</h4>
                         <div class="tf-metric"><span>Time per game</span>
                             <div class="tf-pair"><i class="tf-full" style="width:41%"></i><b>49.2 s</b></div>
                             <div class="tf-pair"><i class="tf-zeroed" style="width:11%"></i><b>12.9 s</b></div><em>-74
