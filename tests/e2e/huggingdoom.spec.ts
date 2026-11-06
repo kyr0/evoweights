@@ -135,13 +135,26 @@ test('human picnic needs no model, preserves the original ammo budget, and expos
     if (request.url().endsWith('.pack')) modelRequests.push(request.url());
   });
   await page.goto('./');
-  await expect(page).toHaveTitle(/HuggingDOOM.*EvoWeights/);
+  await expect(page).toHaveTitle(/EvoWeights/);
   await expect(page.locator('#arena-title')).toHaveText('HuggingDOOM');
   await expect(page.locator('.pick-card h3').filter({ hasText: 'EvoWeights Hugginator' })).toBeVisible();
   await expect(page.locator('.pick-card h3').filter({ hasText: 'EvoWeights Introvertor' })).toBeVisible();
   await page.locator('#pick-human').click();
   await expect(page.locator('#status')).toContainText('LIVE');
   await expect(page.locator('#actual-backend')).toContainText('no model download');
+  // Owner requirement: Pause and Restart wear the darker honey of the other buttons, with icons larger than their labels.
+  const launchHoney = await page.locator('#launch').evaluate((el) => getComputedStyle(el).backgroundColor);
+  for (const id of ['#toggle', '#restart']) {
+    await expect(page.locator(id)).toHaveCSS('background-color', launchHoney);
+    const [icon, label] = await page
+      .locator(id)
+      .evaluate((el) =>
+        [el.querySelector('.symbol')!, el.querySelector('span:last-child')!].map((e) =>
+          parseFloat(getComputedStyle(e).fontSize),
+        ),
+      );
+    expect(icon).toBeGreaterThan(label * 1.3);
+  }
   await expect(page.locator('#ammo')).toHaveText('26');
   // The hearts are announced by their accessible name, not only carried as an attribute.
   await expect(page.getByRole('img', { name: '5 of 5 hearts' })).toBeVisible();
@@ -164,19 +177,33 @@ test('human picnic needs no model, preserves the original ammo budget, and expos
   expect(errors).toEqual([]);
 });
 
-test('five cartoon bites end in an emergency-honey picnic and the next game resets every counter', async ({ page }) => {
+test('five cartoon bites end in an emergency-honey picnic, the end screen returns to the menu and the next game resets every counter', async ({
+  page,
+}) => {
   const errors = collectProblems(page);
   await page.goto('./');
   await page.locator('#pick-human').click();
   await expect(page.locator('#status')).toContainText('LIVE');
+  const firstSeed = await page.locator('#seed').inputValue();
+  await expect(page.locator('#stage-mode')).toContainText('Seed ' + firstSeed);
   await expect(page.locator('#times-bitten')).toHaveText('5', { timeout: 60_000 });
   await expect(page.locator('#status')).toContainText('FINISHED', { timeout: 10_000 });
   await expect(page.locator('#picnic-summary')).toContainText('5 times bitten.');
   await expect(page.locator('#picnic-mode')).toBeEmpty();
   await expect(page.getByRole('img', { name: '0 of 5 hearts' })).toBeVisible();
   await page.screenshot({ path: 'output/huggingdoom-emergency-honey.png', fullPage: false });
+  // A lost game offers no "Play again": the end screen returns to the home menu, and Pause/Resume is off.
+  await expect(page.locator('#launch')).toHaveText(/^\S+ Return to Home Menu$/);
+  await expect(page.locator('#toggle')).toBeDisabled();
   await page.locator('#launch').click();
+  await expect(page.locator('#status')).toContainText('STANDBY');
+  await expect(page.locator('#pick')).toBeVisible();
+  await page.locator('#pick-human').click();
   await expect(page.locator('#status')).toContainText('LIVE');
+  // Every started game draws a fresh seed (2^32 values, so a repeat is practically impossible).
+  const secondSeed = await page.locator('#seed').inputValue();
+  expect(secondSeed).not.toBe(firstSeed);
+  await expect(page.locator('#stage-mode')).toContainText('Seed ' + secondSeed);
   await expect(page.locator('#times-bitten')).toHaveText('0');
   await expect(page.locator('#bears-fed')).toHaveText('0');
   await expect(page.locator('#bears-befriended')).toHaveText('0');

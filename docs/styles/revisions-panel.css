@@ -286,7 +286,7 @@
   font: 10px/1.4 var(--mono);
   margin: 5px 0;
 }
-@media (max-width: 800px) and (min-width: 651px) {
+@media (max-width: 1200px) and (min-width: 976.5px) and (min-width: 585px), (max-width: 800px) and (min-width: 651px) and (width < 585px) {
   .live-revisions .revision-actions {
     gap: 3px;
   }

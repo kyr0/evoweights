@@ -48,3 +48,11 @@ Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC,
 2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/app/main.ts:546-570 learn=none: Needs a missing built-in to reproduce.
 2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/app/picnic-audio.ts:dispose learn=none: Dead code.
 2026-11-05T12:20:03Z s=8d2d66c5 FINDING src/styles/revisions-panel.css + portal.css learn=none: Dead code.
+2026-11-06T01:56:42Z s=8d2d66c5 FAIL tests.e2e.1,docs.build-fresh
+2026-11-06T02:13:43Z s=8d2d66c5 DONE fp=2b2e809ca941 cov=76.8% paths=docs/app/main.js,docs/assets/huggingdoom/PROVENANCE.md,docs/index.html,docs/styles/huggingdoom.css(+6)
+2026-11-06T02:13:43Z s=8d2d66c5 FINDING commit 7b31477: src/index.html <title>, docs/index.html, tests/e2e/huggingdoom.spec.ts:138 learn=memory: .vae/MEMORY.md line: the owner edits src/ in VS Code during agent runs; rerun the vae gate in the commit's own command.
+2026-11-06T03:07:54Z s=8d2d66c5 DONE fp=34126c6a6525 cov=77.7% paths=ARCH.md,docs/app/hero-evolution.js,docs/app/main.js,docs/app/revisions-panel.js(+24)
+2026-11-06T03:07:54Z s=8d2d66c5 FINDING scripts/page-zoom.ts:zoomQuery (height queries) learn=test: tests/unit/page-zoom.test.ts 'height breakpoints scale like widths…'
+2026-11-06T03:07:54Z s=8d2d66c5 FINDING scripts/page-zoom.ts:BELOW_ZOOM learn=test: tests/unit/page-zoom.test.ts asserts the (width < 585px) form
+2026-11-06T03:07:54Z s=8d2d66c5 FINDING src/app/revisions-panel.ts:fitModelColumn learn=none: column width depends on font metrics; a pinned width test would assert env values; covered by the probe comparison and ARCH.md note
+2026-11-06T03:07:54Z s=8d2d66c5 FINDING src/app/hero-evolution.ts:draw learn=test: tests/e2e/site.spec.ts asserts canvas.width/clientWidth ≈ 1.5 at a 1500 px window

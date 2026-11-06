@@ -1062,6 +1062,7 @@ button {
   background: var(--portal-card);
   font: 600 0.6rem/1.2 var(--portal-mono);
   color: var(--portal-accent);
+  zoom: 1.5;
 }
 .evo-num {
   display: none;
@@ -3305,7 +3306,7 @@ body.portal-page {
 .portal-hero .hero-aura > .btn {
   min-height: 44px;
 }
-/* Rainbow aura around the EvoWeights models' "Let it play" buttons in the model menu. */
+/* Rainbow aura around the EvoWeights models' " Let AI play" buttons in the model menu. */
 .pick .pick-card .pick-aura {
   --shape-round: 4px;
   margin-top: 8px;

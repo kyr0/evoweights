@@ -52,7 +52,7 @@
 }
 :where(.lab-ui) .wrap {
   max-width: 1260px;
-  padding: 0 clamp(20px, 4.2vw, 68px);
+  padding: 0 clamp(20px, calc(4.2vw / var(--page-zoom, 1)), 68px);
   margin: auto;
 }
 :where(.lab-ui) .top {
@@ -125,7 +125,7 @@
   margin: 0;
 }
 :where(.lab-ui) h1 {
-  font-size: clamp(44px, 6.2vw, 86px);
+  font-size: clamp(44px, calc(6.2vw / var(--page-zoom, 1)), 86px);
   line-height: 0.98;
   letter-spacing: -0.075em;
   margin: 16px 0 11px;
@@ -521,7 +521,7 @@
   scroll-margin-top: 12px;
 }
 :where(.lab-ui) .section h2 {
-  font-size: clamp(27px, 4vw, 45px);
+  font-size: clamp(27px, calc(4vw / var(--page-zoom, 1)), 45px);
   line-height: 1.07;
   letter-spacing: -0.055em;
   margin: 12px 0 0;
@@ -628,7 +628,7 @@
 :where(.lab-ui) #arena {
   scroll-margin-top: 16px;
 }
-@media (min-width: 1450px) {
+@media (min-width: 2175px) and (min-width: 585px), (min-width: 1450px) and (width < 585px) {
   :where(.lab-ui) .intro {
     padding-top: 55px;
   }
@@ -636,7 +636,7 @@
     aspect-ratio: 1.72;
   }
 }
-@media (max-width: 800px) {
+@media (max-width: 1200px) and (min-width: 585px), (max-width: 800px) and (width < 585px) {
   :where(.lab-ui) .nav {
     height: 55px;
   }
@@ -657,7 +657,7 @@
     padding: 28px 0 22px;
   }
 }
-@media (max-width: 650px) {
+@media (max-width: 975px) and (min-width: 585px), (max-width: 650px) and (width < 585px) {
   :where(.lab-ui) .wrap {
     padding: 0 16px;
   }
@@ -878,7 +878,7 @@
 :where(.lab-ui) .panel {
   align-self: start;
 }
-@media (max-width: 680px) {
+@media (max-width: 1020px) and (min-width: 585px), (max-width: 680px) and (width < 585px) {
   :where(.lab-ui) .runtime-panel {
     grid-template-columns: 1fr;
   }
@@ -1023,7 +1023,7 @@
 :where(.lab-ui) .runtime-panel {
   grid-template-columns: 1fr auto;
 }
-@media (max-width: 560px) {
+@media (max-width: 840px) and (min-width: 585px), (max-width: 560px) and (width < 585px) {
   :where(.lab-ui) .runtime-panel {
     grid-template-columns: 1fr;
   }
@@ -1062,7 +1062,7 @@
   color: var(--acid);
   padding: 6px 0;
 }
-@media (max-width: 450px) {
+@media (max-width: 675px) and (min-width: 585px), (max-width: 450px) and (width < 585px) {
   :where(.lab-ui) .top nav {
     gap: 9px;
   }

@@ -79,13 +79,14 @@ function status(s, detail) {
     badge.lastChild.nodeValue = ' ' + (previewing ? 'LEARNING' : headline[s]);
     badge.dataset.live = s === 'live' || previewing ? 'yes' : 'no';
     const running = ['live', 'paused', 'ended'].includes(s);
-    $('#toggle').disabled = !running;
+    // A finished game has nothing to pause or resume; its only way on is the menu (the overlay button and ↺ Restart).
+    $('#toggle').disabled = s !== 'live' && s !== 'paused';
     $('#restart').disabled = !running;
     $('#new-seed').disabled = s === 'loading';
     seedInput.disabled = s === 'loading';
-    $('#toggle-text').textContent = s === 'ended' ? 'Play again' : s === 'paused' ? 'Resume' : 'Pause';
-    // Pause shows the pause symbol, also while disabled; only Resume and Play again show ▶.
-    $('#toggle .symbol').textContent = s === 'paused' || s === 'ended' ? '▶' : 'Ⅱ';
+    $('#toggle-text').textContent = s === 'paused' ? 'Resume' : 'Pause';
+    // Pause shows the pause symbol, also while disabled; only Resume shows ▶.
+    $('#toggle .symbol').textContent = s === 'paused' ? '▶' : 'Ⅱ';
     $('#overlay').hidden = s === 'live' || previewing;
     $('#progress').hidden = s !== 'loading';
     const picking = s === 'idle' || s === 'paused';
@@ -103,16 +104,17 @@ function status(s, detail) {
         idle: 'Start live run',
         error: 'Retry',
         paused: 'Resume',
-        ended: 'Play again',
+        ended: 'Return to Home Menu',
     };
-    launchButton.innerHTML = '<span aria-hidden="true">▶</span> ' + (launchLabel[s] || 'Start live run');
+    launchButton.innerHTML =
+        '<span aria-hidden="true">' + (s === 'ended' ? '↩' : '▶') + '</span> ' + (launchLabel[s] || 'Start live run');
     $('#overlay-eyebrow').textContent =
         {
             idle: 'WELCOME TO HUGGINGDOOM',
-            loading: 'PREPARING LIVE SESSION',
+            loading: 'PREPARING LIVE SESSION - LOADING AI MODEL',
             error: 'SESSION UNAVAILABLE',
             paused: 'SESSION PAUSED',
-            ended: 'EVERYONE IS INVITED TO THE PICNIC',
+            ended: "THESE BEARS ARE TOO HUNGRY! YOU'VE GOT BITTEN A BIT TOO OFTEN!",
         }[s] || '';
     $('#load-detail').textContent =
         detail ||
@@ -139,7 +141,6 @@ export function activateRevision(record, play) {
             launch();
         return true;
     }
-    const wasStarted = !!worker;
     leaveWorker();
     // Every model-play action leaves keyboard mode, including the new-model congratulations dialog.
     if (play)
@@ -157,12 +158,15 @@ export function activateRevision(record, play) {
     $('#guard-status').textContent =
         choice === 'dnp' ? 'Facing guard · awaiting first decision' : 'Original model · three raw action logits';
     status('idle');
-    if (play) {
-        if (wasStarted)
-            seedInput.value = String(currentSeed);
+    if (play)
         launch();
-    }
     return true;
+}
+/** Every newly started game gets a fresh random seed, shown in the seed field. */
+function freshSeed() {
+    const seed = crypto.getRandomValues(new Uint32Array(1))[0];
+    seedInput.value = String(seed);
+    return seed;
 }
 function seedValue() {
     const x = Number(seedInput.value);
@@ -386,7 +390,8 @@ function launchModel() {
     }
     launch();
 }
-function launch() {
+/** Start a new game (or resume a paused one). Only an explicit seed (Enter in the seed field, 🔄) replays a seed. */
+function launch(explicitSeed) {
     if (timingBusy)
         return;
     if (state === 'loading')
@@ -397,18 +402,7 @@ function launch() {
         postToWorker({ type: 'resume' });
         return;
     }
-    let seed;
-    try {
-        seed = seedValue();
-    }
-    catch (e) {
-        $('#session-message').textContent = e.message;
-        return;
-    }
-    if (state === 'ended') {
-        restart(seed);
-        return;
-    }
+    const seed = explicitSeed ?? freshSeed();
     currentSeed = seed;
     picnicView.reset();
     picnicAudio.reset();
@@ -539,18 +533,23 @@ function restart(seed) {
         postToWorker({ type: 'reset', seed });
     }
     else if (state !== 'loading') {
-        launch();
+        launch(seed);
     }
 }
 function toggle() {
     if (state === 'live')
         postToWorker({ type: 'pause' });
-    else if (state !== 'loading')
+    else if (state !== 'loading' && state !== 'ended')
         launch();
 }
 $('#launch').onclick = async () => {
+    // After a lost game (the only way a live game ends: live play has no tic limit) the button returns to the menu.
+    if (state === 'ended') {
+        menu();
+        return;
+    }
     void picnicAudio.unlock().catch(() => { });
-    if (humanPlay() || state === 'ended') {
+    if (humanPlay()) {
         launch();
         return;
     }
@@ -584,10 +583,7 @@ document.addEventListener('click', async (e) => {
 document.querySelector('#pick-human')?.addEventListener('click', () => {
     void picnicAudio.unlock().catch(() => { });
     setHuman(true);
-    if (state === 'ended')
-        restart(currentSeed);
-    else
-        launch();
+    launch();
 });
 $('#toggle').onclick = toggle;
 // Restart ends the current game (its recording stays downloadable) and returns to the model menu.
@@ -608,15 +604,16 @@ $('#new-seed').onclick = () => {
 seedInput.onkeydown = (e) => {
     if (e.key !== 'Enter')
         return;
-    if (state === 'idle')
-        launch();
-    else
-        try {
-            restart(seedValue());
-        }
-        catch (err) {
-            $('#session-message').textContent = err.message;
-        }
+    try {
+        const seed = seedValue();
+        if (state === 'idle')
+            launch(seed);
+        else
+            restart(seed);
+    }
+    catch (err) {
+        $('#session-message').textContent = err.message;
+    }
 };
 $('#full').onclick = async () => {
     try {
@@ -692,7 +689,7 @@ async function restoreThreadSelection() {
             $('#backend-detail').textContent =
                 'This origin cannot enable shared memory. CPU requests fall back to one thread.';
         if (item.running)
-            launch();
+            launch(item.seed);
     }
     catch {
         /* A browser that blocks session storage can still run single-thread WASM. */

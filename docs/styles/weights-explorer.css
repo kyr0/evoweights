@@ -67,7 +67,7 @@
   color: var(--wx-muted);
 }
 .wx-metric strong {
-  font: 500 clamp(19px, 3.6vw, 31px)/1.08 var(--wx-mono);
+  font: 500 clamp(19px, calc(3.6vw / var(--page-zoom, 1)), 31px)/1.08 var(--wx-mono);
   letter-spacing: -0.06em;
   overflow-wrap: anywhere;
 }
@@ -421,7 +421,7 @@
   background: var(--honey-soft);
   border-radius: 12px;
 }
-@media (max-width: 960px) {
+@media (max-width: 1440px) and (min-width: 585px), (max-width: 960px) and (width < 585px) {
   .wx-group {
     grid-template-columns: minmax(0, 1fr);
     text-align: center;
@@ -439,7 +439,7 @@
     padding-left: 12px;
   }
 }
-@media (max-width: 680px) {
+@media (max-width: 1020px) and (min-width: 585px), (max-width: 680px) and (width < 585px) {
   .wx-panes,
   .wx-inventory-body {
     grid-template-columns: minmax(0, 1fr);
@@ -485,7 +485,7 @@
 .wx-swatch.wx-changed {
   box-shadow: inset 0 0 0 1px var(--wx-acid);
 }
-@media (max-width: 440px) {
+@media (max-width: 660px) and (min-width: 585px), (max-width: 440px) and (width < 585px) {
   .wx-metrics {
     grid-template-columns: minmax(0, 1fr);
   }

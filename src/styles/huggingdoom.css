@@ -163,7 +163,8 @@
 #arena .picnic-hearts strong {
   color: #b04a5c; /* 4.9:1 on --honey-soft */
   letter-spacing: 0;
-  font-size: 16px;
+  font-size: 32px;
+  line-height: 1;
 }
 #arena .keys-hint {
   color: #596d3c;
@@ -219,18 +220,50 @@
   #arena .picnic-stats {
     grid-template-columns: repeat(3, 1fr);
   }
-  #arena .picnic-stats > div:nth-child(4) {
+  /* The hearts get a row of their own so they can stay large; the five counters follow in rows of three. */
+  #arena .picnic-stats > .picnic-hearts {
+    grid-column: 1 / -1;
+  }
+  #arena .picnic-stats > div:nth-child(2),
+  #arena .picnic-stats > div:nth-child(5) {
     border-left: 0;
   }
 }
 
 /* Daylight contrast and cards stay inside the stage at laptop and mobile widths. */
-#arena .stage-head .playback,
-#arena .stage-head #restart,
 #arena .stage-toolbar .tool-button {
   background: var(--honey-soft);
   color: #344626;
   border-color: var(--honey-line);
+}
+/* Pause and Restart use the darker honey of the launch and selected-backend buttons. */
+#arena .stage-head .playback,
+#arena .stage-head #restart {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--honey-button);
+  color: var(--honey-ink);
+  border-color: var(--honey-accent);
+}
+#arena .stage-head .playback:hover:enabled,
+#arena .stage-head #restart:hover:enabled {
+  background: #ffdb77;
+}
+#arena .stage-head .playback .symbol,
+#arena .stage-head #restart .symbol {
+  font-size: 17px;
+  line-height: 1;
+}
+/* The heading sits inside the card, in the top padding the dancing bear shares (a dl may not contain a heading). */
+#arena .training-stats-title {
+  position: absolute;
+  top: 1.15rem;
+  left: calc(0.9rem + 1px);
+  right: calc(56px + 1rem);
+  margin: 0;
+  color: #000;
+  font: 700 14px/1.2 var(--mono);
 }
 #arena .runtime-info output,
 #arena .runtime-info small,
@@ -246,4 +279,36 @@
 }
 #arena .pick-card h3 {
   overflow-wrap: anywhere;
+}
+
+/* The training panel and the music card share the right-hand column; the card sits below the panel. */
+#arena .side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  align-self: start;
+}
+#arena .side-col > .panel {
+  align-self: stretch;
+}
+#arena .music-card h2 {
+  margin: 0.45rem 0 0.35rem;
+  font-size: 1rem;
+}
+#arena .music-card p {
+  margin: 0 0 0.8rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+#arena .music-card .music-download {
+  display: inline-block;
+  text-decoration: none;
+  white-space: normal;
+}
+#arena .music-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
 }

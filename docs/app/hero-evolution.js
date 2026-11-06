@@ -141,7 +141,9 @@ function plate(fig) {
         ctx.fillText(text, left + 4, y);
     }
     function draw(now) {
-        const W = canvas.clientWidth, H = canvas.clientHeight, dpr = devicePixelRatio || 1;
+        const W = canvas.clientWidth, H = canvas.clientHeight, 
+        // VERIFIED: CSS page zoom (scripts/page-zoom.ts) enlarges the canvas without raising devicePixelRatio.
+        dpr = (devicePixelRatio || 1) * (canvas.currentCSSZoom || 1);
         if (canvas.width !== Math.round(W * dpr)) {
             canvas.width = Math.round(W * dpr);
             canvas.height = Math.round(H * dpr);

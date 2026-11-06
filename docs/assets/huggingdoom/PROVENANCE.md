@@ -36,7 +36,7 @@ VERIFIED: all nine files are mono, 16-bit PCM WAV at 44,100 Hz. `sounds/manifest
 
 `src/app/picnic-audio.ts` plays `gamemusic/gamemusic_huggingdoom.mp3` (133 s, looped as background music while a game runs) and `gamemusic/ouch_1.mp3` to `ouch_5.mp3` (1.3 s bite reactions, one chosen at random).
 
-VERIFIED: the ID3 metadata of all six files names Logic Pro 11.2.2 as the encoding software. UNKNOWN: their author and licence are not recorded here.
+VERIFIED: the ID3 metadata of all six files names Logic Pro 11.2.2 as the encoding software. The project owner presents the game music as Aron Homberg's own (2026-11-06); the arena's music card offers `gamemusic_huggingdoom.mp3` as a download and links his Spotify and YouTube channels. UNKNOWN: the licence of the six files and the author of the five ouch clips.
 
 ## Retained third-party material
 

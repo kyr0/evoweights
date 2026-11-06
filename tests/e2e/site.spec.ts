@@ -1,6 +1,6 @@
 /** The built site in Chromium: every section renders, every live path runs, and nothing logs an error or fails to load. */
 import { expect, test, type Page } from '@playwright/test';
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import type { RevisionRecord } from '../../src/revisions/store.ts';
 import type { PlayRequest } from '../../src/workers/play-worker.ts';
 
@@ -206,6 +206,28 @@ test('every built-in game card opens its matching weight comparison', async ({ p
   await expect(page.locator('[data-weights-explorer] .wx-viewer > .wx-metrics .wx-metric')).toHaveCount(3);
   // Opening comparisons uses the published weight data, without downloading inference model packs.
   expect(packNames(page)).toEqual([]);
+});
+
+// Owner requirement (2026-11-06): the site renders at 150 %, as Chrome renders it after ctrl+ to 150 %.
+test('the page renders at 150 % like Chrome zoom from 585 px windows up; phones stay at 100 %', async ({ page }) => {
+  const zoom = () => page.evaluate(() => getComputedStyle(document.documentElement).zoom);
+  const hearts = page.locator('#arena .picnic-stats > .picnic-hearts');
+  await page.setViewportSize({ width: 1500, height: 900 });
+  expect(await zoom()).toBe('1.5');
+  // Chrome at 150 % lays a 1500 px window out 1000 CSS px wide, where the title's 6vw is 60px (CSS zoom alone: 90px).
+  await expect(page.locator('#hero-title')).toHaveCSS('font-size', '60px');
+  // The canvas backing store follows the zoom, as it follows devicePixelRatio under browser zoom.
+  await expect
+    .poll(() => page.locator('[data-evo="canvas"]').evaluate((c: HTMLCanvasElement) => c.width / c.clientWidth))
+    .toBeCloseTo(1.5, 1);
+  // The 800px breakpoint of huggingdoom.css applies up to a 1200 px window, as under browser zoom.
+  await page.setViewportSize({ width: 1190, height: 900 });
+  await expect(hearts).toHaveCSS('grid-column-start', '1');
+  await page.setViewportSize({ width: 1210, height: 900 });
+  await expect(hearts).toHaveCSS('grid-column-start', 'auto');
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await zoom()).toBe('1');
+  await expect(hearts).toHaveCSS('grid-column-start', '1');
 });
 
 test('the hero shows its completion card and can repeat the evolution', async ({ page }) => {
@@ -434,6 +456,18 @@ test('cached weights survive reloads and are shared by play, benchmarking, train
   await page.locator('#revision-lanes').selectOption('2');
   await page.locator('#revision-learn').click();
   await expect(page.locator('#revision-lanes-active')).toContainText('2', { timeout: 60_000 });
+  // Owner requirement: a black heading inside the statistics card, above Generation, Games and Decisions.
+  const title = page.locator('#revision-progress .training-stats-title');
+  await expect(title).toHaveText('Evolution is happening:');
+  await expect(title).toHaveCSS('color', 'rgb(0, 0, 0)');
+  const [card, heading, generation] = await Promise.all(
+    ['.training-metrics', '.training-stats-title', '#revision-round'].map((s) =>
+      page.locator('#revision-progress ' + s).boundingBox(),
+    ),
+  );
+  expect(heading!.y).toBeGreaterThan(card!.y);
+  expect(heading!.x).toBeGreaterThan(card!.x);
+  expect(heading!.y + heading!.height).toBeLessThan(generation!.y);
   await expect(page.locator('#revision-decisions')).toHaveText(/^[1-9][\d,]*$/, { timeout: 90_000 });
   await page.locator('#revision-stop').click();
   await expect(page.locator('#revision-stop')).toContainText('Abort now');
@@ -612,4 +646,30 @@ test('training uses the neutral default or the explicitly selected parent regard
       }),
     )
     .toEqual([neutral, hugginator].sort());
+});
+
+test('the music card below the training panel offers the game music and links to Spotify and YouTube', async ({
+  page,
+}) => {
+  const card = page.locator('#arena .music-card');
+  await expect(card.getByRole('heading', { name: 'Like the game music?' })).toBeVisible();
+  const panel = await page.locator('#arena .side-col > aside.panel').boundingBox(),
+    box = await card.boundingBox();
+  expect(box!.y).toBeGreaterThanOrEqual(panel!.y + panel!.height);
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    card.getByRole('link', { name: /Download the game music/ }).click(),
+  ]);
+  expect(download.suggestedFilename()).toBe('HuggingDOOM game music - Aron Homberg.mp3');
+  expect(statSync((await download.path())!).size).toBe(
+    statSync('public/assets/huggingdoom/gamemusic/gamemusic_huggingdoom.mp3').size,
+  );
+  await expect(card.getByRole('link', { name: /Spotify/ })).toHaveAttribute(
+    'href',
+    'https://open.spotify.com/artist/3M2oPVMtw7Km9kIGVKzYVO',
+  );
+  await expect(card.getByRole('link', { name: /YouTube/ })).toHaveAttribute(
+    'href',
+    'https://www.youtube.com/channel/UCU0VCWx4b1c4XCgS3JUl2LA',
+  );
 });

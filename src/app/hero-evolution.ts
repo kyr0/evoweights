@@ -206,7 +206,8 @@ function plate(fig: Element): void {
   function draw(now: number): void {
     const W = canvas.clientWidth,
       H = canvas.clientHeight,
-      dpr = devicePixelRatio || 1;
+      // VERIFIED: CSS page zoom (scripts/page-zoom.ts) enlarges the canvas without raising devicePixelRatio.
+      dpr = (devicePixelRatio || 1) * (canvas.currentCSSZoom || 1);
     if (canvas.width !== Math.round(W * dpr)) {
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(H * dpr);

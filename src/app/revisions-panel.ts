@@ -1415,7 +1415,7 @@ export function installRevisions({
       const hint = document.createElement('p');
       hint.className = 'own-hint';
       hint.innerHTML =
-        '<span class="own-arrow" aria-hidden="true"></span><span>Train your own model in this browser with <b>Start Evolution</b> in the training panel, then choose it here and let it play.</span>';
+        '<span class="own-arrow" aria-hidden="true"></span><span>Train your own model in this browser with <b>Start Evolution</b> in the training panel, then choose it here and  Let AI play.</span>';
       card.replaceChildren(h, hint);
       card.dataset.empty = '';
       return;
@@ -1450,7 +1450,7 @@ export function installRevisions({
     const b = document.createElement('button');
     b.className = 'launch';
     b.dataset.ownPlay = '';
-    b.innerHTML = '<span aria-hidden="true">▶</span> Let it play';
+    b.innerHTML = '<span aria-hidden="true">▶</span>  Let AI play';
     const row = document.createElement('div');
     row.className = 'own-row';
     row.append(pick, b);
@@ -1491,7 +1491,7 @@ export function installRevisions({
     el.innerHTML =
       '<div class="born-inner"><span class="overline">NEW MODEL GENERATION</span><h3>🎉 Congratulations, a new best candidate model has been born!</h3><p class="born-name"></p>' +
       '<p class="born-status" role="status"></p><progress max="1" value="0"></progress><dl class="born-results" hidden></dl>' +
-      '<div class="born-actions"><button type="button" class="launch born-play" hidden><span aria-hidden="true">▶</span> Let it play</button><button type="button" class="born-close">Close</button></div></div>';
+      '<div class="born-actions"><button type="button" class="launch born-play" hidden><span aria-hidden="true">▶</span>  Let AI play</button><button type="button" class="born-close">Close</button></div></div>';
     const mins = run ? Math.floor(run.seconds / 60) : 0,
       secs = run ? Math.round(run.seconds % 60) : 0;
     $in(el, '.born-name').textContent =
@@ -1737,8 +1737,10 @@ export function installRevisions({
     const cols = ['--col-model', '--col-rank', '--col-performance', '--col-parent', '--col-delta'];
     cols.forEach((c) => grid.style.setProperty(c, 'max-content'));
     const rowsNow = [...grid.querySelectorAll('.data-grid-row')];
+    // VERIFIED: getBoundingClientRect measures after CSS page zoom; the custom properties are zoomed again when applied.
+    const zoom = grid.currentCSSZoom || 1;
     cols.forEach((c, i) => {
-      const w = Math.max(0, ...rowsNow.map((r) => r.children[i]?.getBoundingClientRect().width || 0));
+      const w = Math.max(0, ...rowsNow.map((r) => (r.children[i]?.getBoundingClientRect().width || 0) / zoom));
       if (w > 20) grid.style.setProperty(c, Math.ceil(w) + (i === 0 ? 12 : 2) + 'px');
       else grid.style.removeProperty(c);
     });
@@ -1750,8 +1752,7 @@ export function installRevisions({
           k = c?.lastElementChild;
         if (!c || !k) return 0;
         return (
-          k.getBoundingClientRect().right -
-          c.getBoundingClientRect().left +
+          (k.getBoundingClientRect().right - c.getBoundingClientRect().left) / zoom +
           parseFloat(getComputedStyle(c).paddingRight || '0')
         );
       }),

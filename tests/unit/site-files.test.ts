@@ -6,9 +6,11 @@
 import { expect, test } from 'bun:test';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, posix } from 'node:path';
+import { ROOT_CSS_PATH } from '../../scripts/page-zoom.ts';
 
 const root = join(import.meta.dir, '..', '..');
 const inSite = (path: string) =>
+  path === ROOT_CSS_PATH ||
   existsSync(join(root, 'public', path)) ||
   existsSync(join(root, 'src', path)) ||
   existsSync(join(root, 'src', path.replace(/\.js$/, '.ts')));

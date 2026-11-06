@@ -48,6 +48,23 @@ VERIFIED: the site uses a fixed light appearance and shared honey-colour CSS tok
 
 VERIFIED: `src/app/picnic-audio.ts` unlocks Web Audio after a user gesture. The supplied MP3 music loops during human and AI play, pauses with the game, and restarts from the beginning for a new game. A shared gain controls music and effects through the Sound toggle. Each bite selects one of five supplied ouch clips using randomness separate from the seeded simulation. Decoded audio stays in memory between games. `scripts/generate-picnic-sounds.py` reproduces the original nine WAV files; the chomp and dizzy files are retained but no longer loaded or played.
 
+## Why the page zooms through CSS and a build step
+
+The site renders at 150 %, the way Chrome renders it after ctrl+ to 150 %. A page cannot set the browser's own zoom, so `scripts/build.ts` writes `styles/page-zoom.css`, which sets `zoom: 1.5` on the root element, and rewrites every built stylesheet with `scripts/page-zoom.ts`. Rescaling every length in the sources by hand would also work, but it would touch hundreds of values, including vendored defuss-shadcn sheets, and every later edit would have to use the scaled sizes.
+
+VERIFIED (Chromium 156 probes): CSS zoom differs from browser zoom in four ways, and the build covers each one:
+
+- Media queries ignore CSS zoom, so every width and height breakpoint gets a second form scaled by 1.5. Under browser zoom, an 800 px breakpoint applies up to a 1200 px window.
+- `vw` and `vh` lengths are zoomed a second time: `100vh` measured 1200 px in an 800 px window. The build divides every viewport length by the zoom.
+- `devicePixelRatio` stays 1, so `src/app/hero-evolution.ts` multiplies its canvas backing store by `currentCSSZoom`.
+- `getBoundingClientRect` returns zoomed sizes, so `fitModelColumn` in `src/app/revisions-panel.ts` divides by the zoom before writing column widths that the zoom enlarges again.
+
+Container queries measure in unzoomed CSS pixels, the same as under browser zoom, and stay unchanged.
+
+Windows narrower than 585 px stay at 100 %. At 150 %, a 390 px phone would lay out at 260 px, and the site overflows at that width (335 px of content). The threshold is 390 × 1.5, where 390 px is the narrowest layout width the e2e tests cover.
+
+VERIFIED: compared with the earlier build rendered at a CSS width of W / 1.5 with device scale 1.5 (Chrome's 150 % on a 1× screen), the zoomed build matches the horizontal layout at 600, 900, 1200 and 1500 px windows within 4 px. Vertical positions drift by about 0.5 % of the page height at most from text-metric rounding, and where a line sits 1 px from its width limit, it can wrap differently.
+
 ## Why the build emits modules 1:1
 
 `scripts/build.ts` compiles every `src/**/*.ts` to `docs/**/*.js` with `tsc` and copies `public/` beside it, instead of bundling. The page and five worker kinds load modules by URL, two of them from inside other workers. With a 1:1 emit every module keeps one predictable URL in development, in tests and in production, so `src/shared/site.ts` can resolve site files and worker scripts relative to its own location without bundler-specific worker syntax. The cost is one request per module.
